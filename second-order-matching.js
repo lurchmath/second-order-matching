@@ -63,7 +63,7 @@ function makeExpressionFunction(variable, body) {
     if (variable.type !== 'v') {
         throw 'When creating an expression function, its parameter must be a variable';
     }
-    OM.bin(expressionFunction, variable, body);
+    return OM.bin(expressionFunction, variable, body);
 }
 
 /**
@@ -72,7 +72,8 @@ function makeExpressionFunction(variable, body) {
  */
 function isExpressionFunction(expression) {
     return (
-        expression.type === 'bi' 
+        expression instanceof OM
+        && expression.type === 'bi' 
         && expression.variables.length === 1 
         && expression.symbol.equals(expressionFunction)
     );
@@ -94,7 +95,8 @@ function makeExpressionFunctionApplication(func, argument) {
  */
 function isExpressionFunctionApplication(expression) {
     return (
-        expression.type === 'a' 
+        expression instanceof OM
+        && expression.type === 'a' 
         && expression.children.length === 3 
         && expression.children[0].equals(expressionFunctionApplication)
     );
@@ -125,7 +127,7 @@ function alphaEquivalent(func1, func2) {
         return expr.equals(newVar());
     }
     var pair = OM.app(func1, func2);
-    while (pair.hasDescendantsSatisfying(isNewVar)) {
+    while (pair.hasDescendantSatisfying(isNewVar)) {
         index++;
     }
     var apply1 = applyExpressionFunction(func1, newVar());
