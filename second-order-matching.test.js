@@ -245,8 +245,8 @@ describe('The Constraint class', () => {
     });
 });
 
-describe('The ConstraintList class', function () {
-    it('should construct instances with right new variable lists', function () {
+describe('The ConstraintList class', () => {
+    test('should construct instances with right new variable lists', () => {
         var con1 = new M.Constraint(quick('and(_A,_B)'), quick('and(x,y)'));
         var con2 = new M.Constraint(quick('plus(_x,_x)'), quick('HELLO'));
         var con3 = new M.Constraint(quick('_v0'), quick('v1'));
@@ -293,9 +293,10 @@ describe('The ConstraintList class', function () {
         next = CL4.nextNewVariable();
         expect(next instanceof OM).toBe(true);
         expect(next.type).toBe('v');
-        return expect(next.name).toBe('v3');
+        expect(next.name).toBe('v3');
     });
-    it('should construct instances with right lengths', function () {
+
+    test('should construct instances with right lengths', () => {
         var con1 = new M.Constraint(quick('and(_A,_B)'), quick('and(x,y)'));
         var con2 = new M.Constraint(quick('plus(_x,_x)'), quick('HELLO'));
         var con3 = new M.Constraint(quick('_v0'), quick('v1'));
@@ -314,9 +315,10 @@ describe('The ConstraintList class', function () {
         var CL4 = new M.ConstraintList(con3);
         expect(CL4).toBeTruthy();
         expect(CL4 instanceof M.ConstraintList).toBe(true);
-        return expect(CL4.length).toBe(1);
+        expect(CL4.length).toBe(1);
     });
-    it('should copy instances correctly', function () {
+
+    test('should copy instances correctly', () => {
         var con1 = new M.Constraint(quick('and(_A,_B)'), quick('and(x,y)'));
         var con2 = new M.Constraint(quick('plus(_x,_x)'), quick('HELLO'));
         var con3 = new M.Constraint(quick('_v0'), quick('v1'));
@@ -327,8 +329,7 @@ describe('The ConstraintList class', function () {
         expect(CL1 instanceof M.ConstraintList).toBe(true);
         expect(CL1copy instanceof M.ConstraintList).toBe(true);
         expect(CL1.length).toBe(CL1copy.length);
-        expect(CL1.nextNewVariable().equals(
-            CL1copy.nextNewVariable())).toBe(true);
+        expect(CL1.nextNewVariable().equals(CL1copy.nextNewVariable())).toBe(true);
         var CL2 = new M.ConstraintList(con1, con2, con3);
         var CL2copy = CL2.copy();
         expect(CL2).toBeTruthy();
@@ -336,14 +337,10 @@ describe('The ConstraintList class', function () {
         expect(CL2 instanceof M.ConstraintList).toBe(true);
         expect(CL2copy instanceof M.ConstraintList).toBe(true);
         expect(CL2.length).toBe(CL2copy.length);
-        expect(CL2.contents[0].equals(
-            CL2copy.contents[0])).toBe(true);
-        expect(CL2.contents[1].equals(
-            CL2copy.contents[1])).toBe(true);
-        expect(CL2.contents[2].equals(
-            CL2copy.contents[2])).toBe(true);
-        expect(CL2.nextNewVariable().equals(
-            CL2copy.nextNewVariable())).toBe(true);
+        expect(CL2.contents[0].equals(CL2copy.contents[0])).toBe(true);
+        expect(CL2.contents[1].equals(CL2copy.contents[1])).toBe(true);
+        expect(CL2.contents[2].equals(CL2copy.contents[2])).toBe(true);
+        expect(CL2.nextNewVariable().equals(CL2copy.nextNewVariable())).toBe(true);
         var CL3 = new M.ConstraintList(con1);
         var CL3copy = CL3.copy();
         expect(CL3).toBeTruthy();
@@ -351,10 +348,8 @@ describe('The ConstraintList class', function () {
         expect(CL3 instanceof M.ConstraintList).toBe(true);
         expect(CL3copy instanceof M.ConstraintList).toBe(true);
         expect(CL3.length).toBe(CL3copy.length);
-        expect(CL3.contents[0].equals(
-            CL3copy.contents[0])).toBe(true);
-        expect(CL3.nextNewVariable().equals(
-            CL3copy.nextNewVariable())).toBe(true);
+        expect(CL3.contents[0].equals(CL3copy.contents[0])).toBe(true);
+        expect(CL3.nextNewVariable().equals(CL3copy.nextNewVariable())).toBe(true);
         var CL4 = new M.ConstraintList(con3);
         var CL4copy = CL4.copy();
         expect(CL4).toBeTruthy();
@@ -362,12 +357,11 @@ describe('The ConstraintList class', function () {
         expect(CL4 instanceof M.ConstraintList).toBe(true);
         expect(CL4copy instanceof M.ConstraintList).toBe(true);
         expect(CL4.length).toBe(CL4copy.length);
-        expect(CL4.contents[0].equals(
-            CL4copy.contents[0])).toBe(true);
-        return expect(CL4.nextNewVariable().equals(
-            CL4copy.nextNewVariable())).toBe(true);
+        expect(CL4.contents[0].equals(CL4copy.contents[0])).toBe(true);
+        expect(CL4.nextNewVariable().equals(CL4copy.nextNewVariable())).toBe(true);
     });
-    it('should add constraints correctly', function () {
+
+    test('should add constraints correctly', () => {
         var con1 = new M.Constraint(quick('and(_A,_B)'), quick('and(x,y)'));
         var con2 = new M.Constraint(quick('plus(_x,_x)'), quick('HELLO'));
         var con3 = new M.Constraint(quick('_v0'), quick('v1'));
@@ -375,6 +369,8 @@ describe('The ConstraintList class', function () {
         var CL2 = new M.ConstraintList(con1, con2, con3);
         expect(CL1.length).toBe(0);
         expect(CL2.length).toBe(3);
+        var failedAdd = CL2.add(con1, con2, con3);
+        expect(failedAdd.length).toBe(3);
         expect(CL2.contents[0]).toBe(con1);
         expect(CL2.contents[1]).toBe(con2);
         expect(CL2.contents[2]).toBe(con3);
@@ -399,9 +395,10 @@ describe('The ConstraintList class', function () {
         expect(otherCL.length).toBe(2);
         expect(otherCL.contents[0]).not.toBe(con1);
         expect(otherCL.contents[0].equals(con1)).toBe(true);
-        return expect(otherCL.contents[1]).toBe(con2);
+        expect(otherCL.contents[1]).toBe(con2);
     });
-    it('should subtract constraints correctly', function () {
+
+    test('should subtract constraints correctly', () => {
         var con1 = new M.Constraint(quick('and(_A,_B)'), quick('and(x,y)'));
         var con2 = new M.Constraint(quick('plus(_x,_x)'), quick('HELLO'));
         var con3 = new M.Constraint(quick('_v0'), quick('v1'));
@@ -440,9 +437,10 @@ describe('The ConstraintList class', function () {
         expect(otherCL.contents[0]).not.toBe(con1);
         expect(otherCL.contents[0].equals(con1)).toBe(true);
         expect(otherCL.contents[1]).not.toBe(con2);
-        return expect(otherCL.contents[1].equals(con2)).toBe(true);
+        expect(otherCL.contents[1].equals(con2)).toBe(true);
     });
-    it('should find constraint indices correctly', function () {
+
+    test('should find constraint indices correctly', () => {
         var con1 = new M.Constraint(quick('and(_A,_B)'), quick('and(x,y)'));
         var con2 = new M.Constraint(quick('plus(_x,_x)'), quick('HELLO'));
         var con3 = new M.Constraint(quick('_v0'), quick('v1'));
@@ -452,20 +450,15 @@ describe('The ConstraintList class', function () {
         var CL4 = new M.ConstraintList(con3);
         expect(CL1.firstSatisfying(() => true)).toBeNull();
         expect(CL2.firstSatisfying(() => true)).toBe(con1);
-        expect(CL2.firstSatisfying(c => c.pattern.type === 'v'))
-            .toBe(con3);
-        expect(CL3.firstSatisfying(c => c.pattern.type === 'v'))
-            .toBeNull();
-        expect(CL4.firstSatisfying(c => c.pattern.type === 'v'))
-            .toBe(con3);
-        expect(CL2.firstSatisfying(c => c.expression.type === 'v'))
-            .toBe(con2);
-        expect(CL4.firstSatisfying(c => c.expression.type === 'v'))
-            .toBe(con3);
-        return expect(CL3.firstSatisfying(c => c.expression.type === 'v'))
-            .toBeNull();
+        expect(CL2.firstSatisfying(c => c.pattern.type === 'v')).toBe(con3);
+        expect(CL3.firstSatisfying(c => c.pattern.type === 'v')).toBeNull();
+        expect(CL4.firstSatisfying(c => c.pattern.type === 'v')).toBe(con3);
+        expect(CL2.firstSatisfying(c => c.expression.type === 'v')).toBe(con2);
+        expect(CL4.firstSatisfying(c => c.expression.type === 'v')).toBe(con3);
+        expect(CL3.firstSatisfying(c => c.expression.type === 'v')).toBeNull();
     });
-    it('should find constraint pairs correctly', function () {
+
+    test('should find constraint pairs correctly', () => {
         var con1 = new M.Constraint(quick('and(_A,_B)'), quick('and(x,y)'));
         var con2 = new M.Constraint(quick('plus(_x,_x)'), quick('HELLO'));
         var con3 = new M.Constraint(quick('_v0'), quick('v1'));
@@ -477,27 +470,21 @@ describe('The ConstraintList class', function () {
         var [a, b] = Array.from(CL2.firstPairSatisfying(() => true));
         expect(a).toBe(con1);
         expect(b).toBe(con2);
-        var expressionTypesEqual = (constr1, constr2) => constr1.expression.type === constr2.expression.type;
-        expect(CL1.firstPairSatisfying(expressionTypesEqual))
-            .toBeNull();
-        expect(CL2.firstPairSatisfying(expressionTypesEqual)).toEqual(
-            [con2, con3]);
-        expect(CL3.firstPairSatisfying(expressionTypesEqual))
-            .toBeNull();
-        expect(CL4.firstPairSatisfying(expressionTypesEqual))
-            .toBeNull();
-        var biggerPattern = (constr1, constr2) =>
-            constr1.pattern.simpleEncode().length >
-            constr2.pattern.simpleEncode().length
-            ;
+        var expressionTypesEqual = (constr1, constr2) => { return constr1.expression.type === constr2.expression.type; }
+        expect(CL1.firstPairSatisfying(expressionTypesEqual)).toBeNull();
+        expect(CL2.firstPairSatisfying(expressionTypesEqual)).toEqual([con2, con3]);
+        expect(CL3.firstPairSatisfying(expressionTypesEqual)).toBeNull();
+        expect(CL4.firstPairSatisfying(expressionTypesEqual)).toBeNull();
+        var biggerPattern = (constr1, constr2) => {
+            return constr1.pattern.simpleEncode().length > constr2.pattern.simpleEncode().length;
+        }
         expect(CL1.firstPairSatisfying(biggerPattern)).toBeNull();
-        expect(CL2.firstPairSatisfying(biggerPattern)).toEqual(
-            [con1, con3]);
-        expect(CL3.firstPairSatisfying(biggerPattern)).toEqual(
-            [con2, con1]);
-        return expect(CL4.firstPairSatisfying(biggerPattern)).toBeNull();
+        expect(CL2.firstPairSatisfying(biggerPattern)).toEqual([con1, con3]);
+        expect(CL3.firstPairSatisfying(biggerPattern)).toEqual([con2, con1]);
+        expect(CL4.firstPairSatisfying(biggerPattern)).toBeNull();
     });
-    it('should know if an instance is a function', function () {
+
+    test('should know if an instance is a function', () => {
         var con1 = new M.Constraint(quick('and(_A,_B)'), quick('and(x,y)'));
         var con2 = new M.Constraint(quick('plus(_x,_x)'), quick('HELLO'));
         var con3 = new M.Constraint(quick('_v0'), quick('v1'));
@@ -516,9 +503,10 @@ describe('The ConstraintList class', function () {
         expect(fun3.isFunction()).toBe(true);
         expect(fun4.isFunction()).toBe(true);
         expect(non1.isFunction()).toBe(false);
-        return expect(non2.isFunction()).toBe(false);
+        expect(non2.isFunction()).toBe(false);
     });
-    it('should correctly handle lookups', function () {
+
+    test('should correctly handle lookups', () => {
         var con3 = new M.Constraint(quick('_v0'), quick('v1'));
         var con4 = new M.Constraint(quick('_v0'), quick('thing(one,two)'));
         var con5 = new M.Constraint(quick('_yo'), quick('dawg'));
@@ -531,13 +519,47 @@ describe('The ConstraintList class', function () {
         expect(empty.lookup('yo')).toBeNull();
         expect(fun1.lookup('v0').equals(quick('v1'))).toBe(true);
         expect(fun1.lookup('yo')).toBeNull();
-        expect(fun2.lookup('v0').equals(quick('thing(one,two)')))
-            .toBe(true);
+        expect(fun2.lookup('v0').equals(quick('thing(one,two)'))).toBe(true);
         expect(fun2.lookup('yo')).toBeNull();
         expect(fun3.lookup('v0').equals(quick('v1'))).toBe(true);
         expect(fun3.lookup('yo').equals(quick('dawg'))).toBe(true);
-        expect(fun4.lookup('v0').equals(quick('thing(one,two)')))
-            .toBe(true);
-        return expect(fun4.lookup('yo').equals(quick('dawg'))).toBe(true);
+        expect(fun4.lookup('v0').equals(quick('thing(one,two)'))).toBe(true);
+        expect(fun4.lookup('yo').equals(quick('dawg'))).toBe(true);
+    });
+
+    test('should check equality correctly', () => {
+        var con1 = new M.Constraint(quick('and(_A,_B)'), quick('and(x,y)'));
+        var con2 = new M.Constraint(quick('plus(_x,_x)'), quick('HELLO'));
+        var con3 = new M.Constraint(quick('_v0'), quick('v1'));
+        var CL1 = new M.ConstraintList();
+        var CL2 = new M.ConstraintList(con1, con2, con3);
+        var CL3 = new M.ConstraintList(con1, con3);
+        var CL4 = new M.ConstraintList(con1, con2, con3);
+
+        expect(CL1.equals(CL1)).toBe(true);
+        expect(CL1.equals(CL2)).toBe(false);
+        expect(CL1.equals(CL3)).toBe(false);
+        expect(CL1.equals(CL4)).toBe(false);
+
+        expect(CL2.equals(CL1)).toBe(false);
+        expect(CL2.equals(CL2)).toBe(true);
+        expect(CL2.equals(CL3)).toBe(false);
+        expect(CL2.equals(CL4)).toBe(true);
+
+        expect(CL3.equals(CL1)).toBe(false);
+        expect(CL3.equals(CL2)).toBe(false);
+        expect(CL3.equals(CL3)).toBe(true);
+        expect(CL3.equals(CL4)).toBe(false);
+
+        expect(CL4.equals(CL1)).toBe(false);
+        expect(CL4.equals(CL2)).toBe(true);
+        expect(CL4.equals(CL3)).toBe(false);
+        expect(CL4.equals(CL4)).toBe(true);
+
+        var CL2copy = CL2.copy();
+        expect(CL2copy.equals(CL1)).toBe(false);
+        expect(CL2copy.equals(CL2)).toBe(true);
+        expect(CL2copy.equals(CL3)).toBe(false);
+        expect(CL2copy.equals(CL4)).toBe(true);
     });
 });
