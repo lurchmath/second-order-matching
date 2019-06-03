@@ -228,6 +228,21 @@ describe('The Constraint class', () => {
         c3copy = new M.Constraint(p3.copy(), e3.copy());
         expect(c3.equals(c3copy)).toBe(true);
     });
+
+    test('should check substiution property correctly`', () => {
+        var p1 = quick('_X');
+        var e1 = quick('a(b)');
+        var p2 = quick('_g(_x)');
+        var e2 = quick('a(b)');
+        var e3 = quick('a');
+        var c1 = new M.Constraint(p1, e1);
+        var c2 = new M.Constraint(p2, e2);
+        var c3 = new M.Constraint(e3, e3);
+
+        expect(c1.isSubstitution()).toBe(true);
+        expect(c2.isSubstitution()).toBe(false);
+        expect(c3.isSubstitution()).toBe(false);
+    });
 });
 
 describe('The ConstraintList class', function () {
