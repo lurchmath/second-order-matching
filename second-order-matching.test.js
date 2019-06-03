@@ -63,9 +63,6 @@ function efa(func, param) {
     return M.makeExpressionFunctionApplication(func, param);
 }
 
-
-/*
-
 describe('Global functions', () => {
     test('should reliably mark metavariables', () => {
         // Check that functions work correctly
@@ -165,6 +162,60 @@ describe('Global functions', () => {
 
 describe('The Constraint class', () => {
     test('should construct new instances correctly', () => {
-        //
+        var p1 = quick('_f(_x)');
+        var e1 = quick('a(b)');
+        var c = new M.Constraint(p1, e1);
+        expect(c).toBeTruthy()
+        expect(c instanceof M.Constraint).toBe(true)
+        expect(c.pattern.sameObjectAs(p1)).toBe(true)
+        expect(c.expression.sameObjectAs(e1)).toBe(true)
     });
-});*/
+
+    test('should make copies correctly', () => {
+        var p1 = quick('_f(_x)');
+        var e1 = quick('a(b)');
+        var c1 = new M.Constraint(p1, e1);
+        var c2 = c1.copy();
+
+        expect(c2).toBeTruthy();
+        expect(c2).toBeInstanceOf(M.Constraint);
+
+        expect(c2.pattern.sameObjectAs(p1)).toBe(false);
+        expect(c2.expression.sameObjectAs(e1)).toBe(false);
+
+        expect(c2.pattern.equals(p1)).toBe(true);
+        expect(c2.expression.equals(e1)).toBe(true);
+    });
+
+    test('should check equality correctly', () => {
+        var p1 = quick('_f(_x)');
+        var e1 = quick('a(b)');
+        var p2 = quick('_g(_x)');
+        var e2 = quick('a(b)');
+        var p3 = quick('_f(_x)');
+        var e3 = quick('17');
+        var c1 = new M.Constraint(p1, e1);
+        var c2 = new M.Constraint(p2, e2);
+        var c3 = new M.Constraint(p3, e3);
+
+        expect(c1).toBeInstanceOf(M.Constraint);
+        expect(c2).toBeInstanceOf(M.Constraint);
+        expect(c3).toBeInstanceOf(M.Constraint);
+
+        expect(c1.equals(c1)).toBe(true);
+        expect(c2.equals(c2)).toBe(true);
+        expect(c3.equals(c3)).toBe(true);
+
+        expect(c1.equals(c2)).toBe(false);
+        expect(c1.equals(c3)).toBe(false);
+        expect(c2.equals(c1)).toBe(false);
+        expect(c2.equals(c3)).toBe(false);
+        expect(c3.equals(c1)).toBe(false);
+        expect(c3.equals(c2)).toBe(false);
+
+        var c3copy = c3.copy();
+        expect(c3.equals(c3copy)).toBe(true);
+        c3copy = new M.Constraint(p3.copy(), e3.copy());
+        expect(c3.equals(c3copy)).toBe(true);
+    });
+});
