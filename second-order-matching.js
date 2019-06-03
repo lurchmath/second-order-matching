@@ -192,6 +192,32 @@ class Constraint {
 }
 
 /**
+ * Helper function for ConstraintList constructor. 
+ * Takes a variable and checks if it of the form, `vX` where `X` is some number.
+ * If it is of this form, it returns `X` if it is greater than the given index.
+ * @param {OM} variable - the variable to be checked
+ * @param {Number} nextNewVariableIndex - the number to check against
+ */
+function checkVariable(variable, nextNewVariableIndex) {
+    if (/^v[0-9]+$/.test(variable.name)) {
+        nextNewVariableIndex = Math.max(
+            nextNewVariableIndex,
+            parseInt(variable.name.slice(1)) + 1
+        );
+    }
+    return nextNewVariableIndex;
+}
+
+/**
+ * Helper function for ConstraintList constructor.
+ * @param {OM} expression - the expression to be checked
+ * @returns a list containing any variables in the given expression
+ */
+function getVariablesIn(expression) {
+    return expression.descendantsSatisfying((d) => { return d.type == 'v'; });
+}
+
+/**
  * Represents a list of constraints. 
  * However, most of the behaviour of this class mimics a set, 
  * except for a few cases in which we use indexes.
@@ -208,37 +234,17 @@ class ConstraintList {
         this.contents = constraints;
         this.nextNewVariableIndex = 0;
 
-        function checkVariable(variable) {
-            if (/^v[0-9]+$/.test(variable.name)) {
-                this.nextNewVariableIndex = Math.max(
-                    this.nextNewVariableIndex,
-                    parseInt(variable.name.slice(1)) + 1
-                );
-            }
-        }
-
-        function getVariablesIn(expression) {
-            return expression.descendantsSatisfying((d) => { return d.type == 'v'; });
-        }
-
         for (let i = 0; i < this.contents.length; i++) {
             var constraint = this.contents[i];
             var p_vars = getVariablesIn(constraint.pattern);
             for (let j = 0; j < p_vars.length; j++) {
-                checkVariable(p_vars[j]);
+                this.nextNewVariableIndex = checkVariable(p_vars[j], this.nextNewVariableIndex);
             }
             var e_vars = getVariablesIn(constraint.expression);
             for (let k = 0; k < e_vars.length; k++) {
-                checkVariable(e_vars[k]);
+                this.nextNewVariableIndex = checkVariable(e_vars[k], this.nextNewVariableIndex);
             }
         }
-    }
-
-    /**
-     * @returns a new variable starting at `vn` (see constructor for definition of `vn`).
-     */
-    get nextNewVariable() {
-        return OM.simple('v' + this.nextNewVariableIndex++);
     }
 
     /**
@@ -246,6 +252,13 @@ class ConstraintList {
      */
     get length() {
         return this.contents.length;
+    }
+
+    /**
+     * @returns a new variable starting at `vn` (see constructor for definition of `vn`).
+     */
+    nextNewVariable() {
+        return OM.simple('v' + this.nextNewVariableIndex++);
     }
 
     /**
@@ -276,7 +289,7 @@ class ConstraintList {
         var result = this.copy();
         for (let i = 0; i < constraints.length; i++) {
             var constraint = constraints[i];
-            var index = this.indexAtWhich((c) => { return c.equals(constraint); });
+            var index = result.indexAtWhich((c) => { return c.equals(constraint); });
             if (index == -1) {
                 result.contents.push(constraint);
             }
@@ -293,8 +306,8 @@ class ConstraintList {
         var result = this.copy();
         for (let i = 0; i < constraints.length; i++) {
             var constraint = constraints[i];
-            var index = this.indexAtWhich((c) => { return c.equals(constraint); });
-            if (index !== -1) {
+            var index = result.indexAtWhich((c) => { return c.equals(constraint); });
+            if (index > -1) {
                 result.contents.splice(index, 1);
             }
         }
