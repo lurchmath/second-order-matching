@@ -142,7 +142,9 @@ function alphaEquivalent(func1, func2) {
 // * The classes below allow us to represent constraints.
 // * A constraint is an ordered pattern-expression pair.
 // * A pattern is an expression containing metavariables.
-// * A (plain) expression does not contain metavariables. 
+// * A (plain) expression does not contain metavariables.
+// * A special case of a constraint is a substitution. In a substiution,
+// * the pattern is just a metavariable.
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -151,10 +153,16 @@ function alphaEquivalent(func1, func2) {
 class Constraint {
     /**
      * Creates a new constraint with given pattern and expression.
-     * @param {OM} pattern - an OM expression which must contain a metavariable
-     * @param {OM} expression - an OM expression with no metavariables
+     * @param {OM} pattern - an OM expression which should contain a metavariable (but may not)
+     * @param {OM} expression - an OM expression which must not contain a metavariable
      */
     constructor(pattern, expression) {
+        if (!(pattern instanceof OM) || !(expression instanceof OM)) {
+            throw 'Both arguments must be instances of OMNode';
+        }
+        if (expression.hasDescendantSatisfying((x) => { return isMetavariable(x); })) {
+            throw 'Expression must not contain metavariables';
+        }
         this.pattern = pattern;
         this.expression = expression;
     }
@@ -174,11 +182,193 @@ class Constraint {
     equals(other) {
         return this.pattern.equals(other.pattern, false) && this.expression.equals(other.expression, false);
     }
+
+    /**
+     * @returns true if the pattern is a metavariable, false otherwise.
+     */
+    isSubstitution() {
+        return isMetavariable(this.pattern);
+    }
 }
 
-// TODO: Class - ConstraintList
-    // TODO: Function - .equals()
-//
+/**
+ * Represents a list of constraints. 
+ * However, most of the behaviour of this class mimics a set, 
+ * except for a few cases in which we use indexes.
+ */
+class ConstraintList {
+    /**
+     * Creates an array from arguments. 
+     * Also computes the first variable from the list `v0, v1, v2,...` such that neither it nor 
+     * any variable after it in that list appears in any of the constraints. 
+     * Call this `vn`. See `nextNewVariable` for the use.
+     * @param ...constraints - an arbitrary number of Constraints (can be zero)
+     */
+    constructor(...constraints) {
+        this.contents = constraints;
+        this.nextNewVariableIndex = 0;
+
+        function checkVariable(variable) {
+            if (/^v[0-9]+$/.test(variable.name)) {
+                this.nextNewVariableIndex = Math.max(
+                    this.nextNewVariableIndex,
+                    parseInt(variable.name.slice(1)) + 1
+                );
+            }
+        }
+
+        function getVariablesIn(expression) {
+            return expression.descendantsSatisfying((d) => { return d.type == 'v'; });
+        }
+
+        for (let i = 0; i < this.contents.length; i++) {
+            var constraint = this.contents[i];
+            var p_vars = getVariablesIn(constraint.pattern);
+            for (let j = 0; j < p_vars.length; j++) {
+                checkVariable(p_vars[j]);
+            }
+            var e_vars = getVariablesIn(constraint.expression);
+            for (let k = 0; k < e_vars.length; k++) {
+                checkVariable(e_vars[k]);
+            }
+        }
+    }
+
+    /**
+     * @returns a new variable starting at `vn` (see constructor for definition of `vn`).
+     */
+    get nextNewVariable() {
+        return OM.simple('v' + this.nextNewVariableIndex++);
+    }
+
+    /**
+     * @returns the length of the array of constraints.
+     */
+    get length() {
+        return this.contents.length;
+    }
+
+    /**
+     * @returns a deep copy of the list.
+     */
+    copy() {
+        var contents_copy = this.contents.map(c => c.copy());
+        var result = new ConstraintList(...contents_copy);
+        result.nextNewVariableIndex = this.nextNewVariableIndex;
+        return result;
+    }
+    /**
+     * @returns the first index at which predicate is true when evaluated on contents, -1 otherwise.
+     */
+    indexAtWhich(predicate) {
+        for (let i = 0; i < this.contents.length; i++) {
+            if (predicate(this.contents[i])) return i;
+        }
+        return -1;
+    }
+
+    /**
+     * Adds constraints only if they are not in the current list (as if we had a set). 
+     * @param ...constraints - the constraints to be added
+     * @returns a copy of this list with any added constraints
+     */
+    add(...constraints) {
+        var result = this.copy();
+        for (let i = 0; i < constraints.length; i++) {
+            var constraint = constraints[i];
+            var index = this.indexAtWhich((c) => { return c.equals(constraint); });
+            if (index == -1) {
+                result.contents.push(constraint);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Removes constraints from the list and ignores any constraints not in the list.
+     * @param ...constraints - the constraints to be removed
+     * @returns a copy of this list with constraints removed
+     */
+    remove(...constraints) {
+        var result = this.copy();
+        for (let i = 0; i < constraints.length; i++) {
+            var constraint = constraints[i];
+            var index = this.indexAtWhich((c) => { return c.equals(constraint); });
+            if (index !== -1) {
+                result.contents.splice(index, 1);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * @returns the first constraint in the list satisfying the given predicate, otherwise null.
+     */
+    firstSatisfying(predicate) {
+        var index = this.indexAtWhich(predicate);
+        return (index == -1 ? null : this.contents[index]);
+    }
+
+    /**
+     * @returns an array of length two containing the first two constraints satisfying the given binary predicate, 
+     * or null if there is not one.
+     */
+    firstPairSatisfying(predicate) {
+        for (let i = 0; i < this.contents.length; i++) {
+            for (let j = 0; j < this.contents.length; j++) {
+                if (i != j) {
+                    var constraint1 = this.contents[i];
+                    var constraint2 = this.contents[j];
+                    if (predicate(constraint1, constraint2)) {
+                        return [constraint1, constraint2];
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Some constraint lists are functions from the space of metavariables to the space of expressions. 
+     * To be such a function, the constraint list must contain only constraints 
+     * whose left hand sides are metavariables (called substitutions above), 
+     * and no metavariable must appear in more than one constraint.
+     */
+    isFunction() {
+        var seen_so_far = [];
+        for (let i = 0; i < this.contents.length; i++) {
+            var constraint = this.contents[i];
+            if (!constraint.isSubstitution()) {
+                return false;
+            }
+            if (seen_so_far.includes(constraint.pattern.name)) {
+                return false;
+            }
+            seen_so_far.push(constraint.pattern.name);
+        }
+        return true;
+    }
+
+    /**
+     * If the constraint list is a function, this routine returns the expression associated with a given metavariable.
+     * @param variable - a string or OM object
+     * @returns the OM object that is the expression of the constraint 
+     * with the pattern that equals the variable, null otherwise.
+     */
+    lookup(variable) {
+        if (!(variable instanceof OM)) {
+            variable = OM.var(variable);
+            setMetavariable(variable);
+        }
+        for (let i = 0; i < this.contents.length; i++) {
+            var constraint = this.contents[i]; 
+            if (constraint.pattern.equals(variable)) {
+                return constraint.expression;
+            }
+        }
+        return null;
+    }
+}
 
 // TODO: Function - instantiate
 
@@ -206,4 +396,5 @@ module.exports = {
     applyExpressionFunction,
     alphaEquivalent,
     Constraint,
+    ConstraintList
 };
