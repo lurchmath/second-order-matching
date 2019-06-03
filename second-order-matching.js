@@ -368,12 +368,30 @@ class ConstraintList {
         }
         return null;
     }
+
+    /**
+     * @returns true only if both lists contain the same constraints.
+     */
+    equals(other) {
+        for (let i = 0; i < this.contents.length; i++) {
+            let constraint = this.contents[i];
+            if (!other.firstSatisfying((c) => { return c.equals(constraint) })) {
+                return false;
+            }
+        }
+        for (let i = 0; i < other.contents.length; i++) {
+            let constraint = other.contents[i];
+            if (!this.firstSatisfying((c) => { return c.equals(constraint) })) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
 
 // TODO: Function - instantiate
 
 // TODO: Function - applySubs
-
 
 // TODO: Function - makeConstantExpression
 
