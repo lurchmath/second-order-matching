@@ -4,10 +4,10 @@
 // Import openmath-js for testing purposes
 const OM = require('openmath-js').OM;
 
-/*******************************************************************************
- * The following are functions and constants related to metavariables.
- * A metavariable is a variable that will be used for substitution.
-*******************************************************************************/
+////////////////////////////////////////////////////////////////////////////////
+// * The following are functions and constants related to metavariables.
+// * A metavariable is a variable that will be used for substitution.
+////////////////////////////////////////////////////////////////////////////////
 
 // Define the metavariable symbol to be used as an attribute key, and its corresponding value
 const metavariableSymbol = OM.symbol('metavariable', 'SecondOrderMatching');
@@ -45,11 +45,11 @@ function isMetavariable(variable) {
     );
 }
 
-/*******************************************************************************
- * The following are functions and constants related to expression functions.
- * When P: E -> E, P is an expression function.
- * If P is a metavariable, then P is an expression function application.
-*******************************************************************************/
+////////////////////////////////////////////////////////////////////////////////
+// * The following are functions and constants related to expression functions.
+// * When P: E -> E, P is an expression function.
+// * If P is a metavariable, then P is an expression function application.
+////////////////////////////////////////////////////////////////////////////////
 
 const expressionFunction = OM.symbol('EF', 'SecondOrderMatching');
 const expressionFunctionApplication = OM.symbol('EFA', 'SecondOrderMatching');
@@ -138,17 +138,52 @@ function alphaEquivalent(func1, func2) {
     return isExpressionFunction(func1) && isExpressionFunction(func2) && apply1.equals(apply2);
 }
 
-// TODO: Function - instantiate
+////////////////////////////////////////////////////////////////////////////////
+// * The classes below allow us to represent constraints.
+// * A constraint is an ordered pattern-expression pair.
+// * A pattern is an expression containing metavariables.
+// * A (plain) expression does not contain metavariables. 
+////////////////////////////////////////////////////////////////////////////////
 
-// TODO: Function - applySubs
+/**
+ * Represents a pattern-expression pair.
+ */
+class Constraint {
+    /**
+     * Creates a new constraint with given pattern and expression.
+     * @param {OM} pattern - an OM expression which must contain a metavariable
+     * @param {OM} expression - an OM expression with no metavariables
+     */
+    constructor(pattern, expression) {
+        this.pattern = pattern;
+        this.expression = expression;
+    }
 
-// TODO: Class - Constraint
-    // TODO: Function - .equals()
-//
+    /**
+     * @returns a deep copy
+     */
+    copy() {
+        return new Constraint(this.pattern.copy(), this.expression.copy());
+    }
+
+    /**
+     * Returns true if and only if constraints are structurally equal as pairs.
+     * Ignores any OpenMath attributes.
+     * @param {Constraint} other - another Constraint
+     */
+    equals(other) {
+        return this.pattern.equals(other.pattern, false) && this.expression.equals(other.expression, false);
+    }
+}
 
 // TODO: Class - ConstraintList
     // TODO: Function - .equals()
 //
+
+// TODO: Function - instantiate
+
+// TODO: Function - applySubs
+
 
 // TODO: Function - makeConstantExpression
 
@@ -170,4 +205,5 @@ module.exports = {
     isExpressionFunctionApplication,
     applyExpressionFunction,
     alphaEquivalent,
+    Constraint,
 };
