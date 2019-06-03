@@ -54,8 +54,10 @@ function isMetavariable(variable) {
 const expressionFunction = OM.symbol('EF', 'SecondOrderMatching');
 const expressionFunctionApplication = OM.symbol('EFA', 'SecondOrderMatching');
 
+// TODO: Generalise the functions below to handle the case of multiple variables, i.e. λv1,...,vn.B
+
 /**
- * Makes a new expression function with the meaning λv.b, where v is a variable and b is any OpenMath expression.
+ * Makes a new expression function with the meaning λv.B, where v is a variable and B is any OpenMath expression.
  * The variable will be bound in the resulting expression.
  * @param {OM} variable - the variable to be bound
  * @param {OM} body - the expression which may bind the variable
@@ -105,6 +107,8 @@ function isExpressionFunctionApplication(expression) {
 
 /**
  * Applies an expression function to an expression.
+ * This is the equivalent of a beta reduction. 
+ * One important caveat is that no checking is done for variable capture.
  * @param  {OM} func - the expression function to be applied
  * @param  {OM} expression - the expression to which the expression function is applied
  */
@@ -138,13 +142,33 @@ function alphaEquivalent(func1, func2) {
     return isExpressionFunction(func1) && isExpressionFunction(func2) && apply1.equals(apply2);
 }
 
+/**
+ * Performs alpha conversion for the single variable case.
+ * That is, given a single variable expression function, the bound variable in this function is replaced
+ * by another OM var instance, given as replacement.
+ * @param {OM} func - a single variable expression function
+ * @param {OM} replacement - an OM variable
+ * @returns a new expression function, with the bound variable replaced.
+ */
+function alphaCovert(func, replacement) {
+    var result = func.copy();
+    var bound_variables = result.variables;
+    for (let i = 0; i < bound_variables.length; i++) {
+        result.body.replaceFree(bound_variables[i], replacement);
+        result.variables[i].replaceWith(replacement);
+    }
+    return result;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // * The classes below allow us to represent constraints.
 // * A constraint is an ordered pattern-expression pair.
 // * A pattern is an expression containing metavariables.
 // * A (plain) expression does not contain metavariables.
-// * A special case of a constraint is a substitution. In a substiution,
-// * the pattern is just a metavariable.
+// * In some cases the pattern may not contain metavariables, but we would
+// * look to remove this constraint from any lists it appeared in.
+// * A special case of a constraint is a substitution. 
+// * In a substiution, the pattern is just a metavariable.
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -270,6 +294,7 @@ class ConstraintList {
         result.nextNewVariableIndex = this.nextNewVariableIndex;
         return result;
     }
+
     /**
      * @returns the first index at which predicate is true when evaluated on contents, -1 otherwise.
      */
@@ -402,17 +427,95 @@ class ConstraintList {
     }
 }
 
-// TODO: Function - instantiate
+/**
+ * Applies a singe instantiation (substitution) to a single pattern.
+ * Used by instantiate to handle the list case.
+ * @param {OM} substitution - a single substitution
+ * @param {OM} pattern - a single pattern
+ * @returns a copy of the pattern with any substitutions
+ */
+function applyInstantiation(substitution, pattern) {
+    var result = pattern.copy();
+    if (isMetavariable(pattern)) {
+        return result.replaceFree(substitution.pattern, substitution.expression);
+    } else if (pattern.type == 'a') {
+        for (let i = 0; i < pattern.children.length; i++) {
+            result.children[i].replaceWith(applyInstantiation(substitution, result.children[i]));
+        }
+    } else if (pattern.type == 'bi') {
+        // First check if substitution is free to replace
+        if (pattern.isFreeToReplace(substitution.pattern)) {
+            // Then check for variable capture
+            var bound_variable_names = pattern.variables.map(x => x.name);
+            var expr_var_names;
+            if (substitution.expression.type != 'bi') { // All expr variables free
+                expr_var_names = substitution.expression.descendantsSatisfying(
+                    (d) => { return d.type == 'v'; }
+                ).map(x => x.name);
+            } else { // Only get unbound variables
+                expr_var_names = substitution.expression.freeVariables()
+            }
+            // Check if the expression contains a free instance of a bound variable
+            for (let i = 0; i < expr_var_names.length; i++) {
+                var var_name = expr_var_names[i];
+                if (bound_variable_names.includes(var_name)) { // variable capture will occur
+                    // TODO: the following:
+                    // Get new variable not in pattern or expression
+                    // Do alpha conversion on pattern and replace all occurences of variable in expression
+                    // Recursively call this function on variables and body of binding
+                }
+            }
+        }
+    }
+    return result;
+}
 
-// TODO: Function - applySubs
+/**
+ * Takes two ConstraintList objects, one representing a list of substiutions, 
+ * the other containing the patterns that the substiutions will be applied to.
+ * Each substitution is applied to the pattern satisfying the conditions described 
+ * in the summary paper (section 3).
+ * @param {ConstraintList} substitutions - a non empty constraint list satisfying isFunction()
+ * @param {ConstraintList} patterns - a non empty constraint list
+ * @returns a copy of the constraints list containing the patterns with any substitutions
+ */
+function instantiate(substitutions, patterns) {
+    var result = patterns.copy()
+    for (let i = 0; i < substitutions.length; i++) {
+        var substitution = substitutions.contents[i];
+        for (let j = 0; j < patterns.length; j++) {
+            var pattern = patterns.contents[j].pattern;
+            result.contents[j].pattern.replaceWith(
+                applyInstantiation(substitution, pattern)
+            );
+        }
+    }
+    return result;
+}
 
-// TODO: Function - makeConstantExpression
+function makeConstantExpression(new_variable, expression) {
+    // TODO: take a new variable vn (relative to some constraint list)
+    // return an expression of the form:
+    // CF = λvn.expression
+}
 
-// TODO: Function - makeProjectionExpression
+function makeProjectionExpression(variables, point) {
+    // TODO: take in a list of variables v1,...,vk and a single point vi
+    // return an expression function of the form:
+    // π_{k,i} = λv1,...,vk.vi
+}
 
-// TODO: Function - makeImitationExpression
+function makeImitationExpression(variables, exoression) {
+    // TODO: take in a list of variables and an expression of the form:
+    // expr = g(e1,...,em)
+    // return an expression function of the form:
+    // EF = λv1,...,vk.g(H1(v1,...,vk),...,Hm(v1,...,vk))
+    // where the v1,...,vk are the given variables
+}
 
-// TODO: Class - MatchingChallenge
+class MatchingChallenge {
+    //TODO: implement this class
+}
 
 
 module.exports = {
@@ -426,6 +529,9 @@ module.exports = {
     isExpressionFunctionApplication,
     applyExpressionFunction,
     alphaEquivalent,
+    alphaCovert,
     Constraint,
-    ConstraintList
+    ConstraintList,
+    applyInstantiation,
+    instantiate,
 };
