@@ -1,5 +1,6 @@
 "use strict"
 
+// TODO: handle the case of this module running in the browser
 // Import openmath-js for testing purposes
 const OM = require('openmath-js').OM;
 
@@ -101,6 +102,7 @@ function isExpressionFunctionApplication(expression) {
         && expression.children[0].equals(expressionFunctionApplication)
     );
 }
+
 /**
  * Applies an expression function to an expression.
  * @param  {OM} func - the expression function to be applied
@@ -113,6 +115,7 @@ function applyExpressionFunction(func, expression) {
         return result;
     } else return null;
 }
+
 /**
  * Returns true if and only if both functions are expression functions which are alpha equivalent.
  * @param  {OM} func1 - an expression function
@@ -134,6 +137,27 @@ function alphaEquivalent(func1, func2) {
     var apply2 = applyExpressionFunction(func2, newVar());
     return isExpressionFunction(func1) && isExpressionFunction(func2) && apply1.equals(apply2);
 }
+
+// TODO: Function - instantiate
+
+// TODO: Function - applySubs
+
+// TODO: Class - Constraint
+    // TODO: Function - .equals()
+//
+
+// TODO: Class - ConstraintList
+    // TODO: Function - .equals()
+//
+
+// TODO: Function - makeConstantExpression
+
+// TODO: Function - makeProjectionExpression
+
+// TODO: Function - makeImitationExpression
+
+// TODO: Class - MatchingChallenge
+
 
 module.exports = {
     OM,
