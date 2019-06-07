@@ -48,13 +48,10 @@ function isMetavariable(variable) {
 ////////////////////////////////////////////////////////////////////////////////
 // * The following are functions and constants related to expression functions.
 // * When P: E -> E, P is an expression function.
-// * If P is a metavariable, then P is an expression function application.
 ////////////////////////////////////////////////////////////////////////////////
 
 const expressionFunction = OM.symbol('EF', 'SecondOrderMatching');
 const expressionFunctionApplication = OM.symbol('EFA', 'SecondOrderMatching');
-
-// TODO: Generalise the functions below to handle the case of multiple variables, i.e. λv1,...,vn.B
 
 /**
  * Makes a new expression function with the meaning λv.B, where v is a variable and B is any OpenMath expression.
@@ -120,42 +117,268 @@ function applyExpressionFunction(func, expression) {
     } else return null;
 }
 
+// /**
+//  * Returns true if and only if both functions are expression functions which are alpha equivalent.
+//  * @param  {OM} func1 - an expression function
+//  * @param  {OM} func2 - an expression function
+//  */
+// function alphaEquivalent(func1, func2) {
+//     var index = 0;
+//     function newVar() {
+//         return OM.var("v" + index);
+//     }
+//     function isNewVar(expr) {
+//         return expr.equals(newVar());
+//     }
+//     var pair = OM.app(func1, func2);
+//     while (pair.hasDescendantSatisfying(isNewVar)) {
+//         index++;
+//     }
+//     var apply1 = applyExpressionFunction(func1, newVar());
+//     var apply2 = applyExpressionFunction(func2, newVar());
+//     return isExpressionFunction(func1) && isExpressionFunction(func2) && apply1.equals(apply2);
+// }
+
+// /**
+//  * Performs alpha conversion for the single variable case.
+//  * That is, given a single variable expression function, the bound variable in this function is replaced
+//  * by another OM var instance, given as replacement.
+//  * @param {OM} func - a single variable expression function
+//  * @param {OM} replacement - an OM variable
+//  * @returns a new expression function, with the bound variable replaced.
+//  */
+// function alphaCovert(func, replacement) {
+//     var result = func.copy();
+//     var bound_variables = result.variables;
+//     for (let i = 0; i < bound_variables.length; i++) {
+//         result.body.replaceFree(bound_variables[i], replacement);
+//         result.variables[i].replaceWith(replacement);
+//     }
+//     return result;
+// }
+
+////////////////////////////////////////////////////////////////////////////////
+// * The following are generalised versions of the functions above.
+// * This allows us to have expression functions with more than one variable.
+// * TODO: When these functions work as intended, remove the section above and
+// *       refactor any code relying on the old functions.
+// *       To make this simpler, use same arguments structure (if possible).
+////////////////////////////////////////////////////////////////////////////////
+
+const generalExpressionFunction = OM.symbol('gEF', 'SecondOrderMatching');
+
 /**
- * Returns true if and only if both functions are expression functions which are alpha equivalent.
- * @param  {OM} func1 - an expression function
- * @param  {OM} func2 - an expression function
+ * Makes a new expression function with the meaning
+ * λv1,...,vk.B where v1,...,vk are the variables and B is any OM expression.
+ * @param {OM[]} variables - a list of OM variables
+ * @param {OM} body - any OM expression
  */
-function alphaEquivalent(func1, func2) {
-    var index = 0;
-    function newVar() {
-        return OM.var("v" + index);
+function makeGeneralExpressionFunction(variables, body) {
+    for (let i = 0; i < variables.length; i++) {
+        var variable = variables[i];
+        if (variable.type !== 'v') {
+            throw 'When making a general expression function,\
+all elements of first argument must have type variable';
+        }
     }
-    function isNewVar(expr) {
-        return expr.equals(newVar());
-    }
-    var pair = OM.app(func1, func2);
-    while (pair.hasDescendantSatisfying(isNewVar)) {
-        index++;
-    }
-    var apply1 = applyExpressionFunction(func1, newVar());
-    var apply2 = applyExpressionFunction(func2, newVar());
-    return isExpressionFunction(func1) && isExpressionFunction(func2) && apply1.equals(apply2);
+    return OM.bin(generalExpressionFunction, ...variables, body);
 }
 
 /**
- * Performs alpha conversion for the single variable case.
- * That is, given a single variable expression function, the bound variable in this function is replaced
- * by another OM var instance, given as replacement.
- * @param {OM} func - a single variable expression function
- * @param {OM} replacement - an OM variable
- * @returns a new expression function, with the bound variable replaced.
+ * Tests whether an expression is a general expression function.
+ * @param {OM} expression - the expression to be checked
  */
-function alphaCovert(func, replacement) {
-    var result = func.copy();
-    var bound_variables = result.variables;
-    for (let i = 0; i < bound_variables.length; i++) {
-        result.body.replaceFree(bound_variables[i], replacement);
-        result.variables[i].replaceWith(replacement);
+function isGeneralExpressionFunction(expression) {
+    return (
+        expression instanceof OM
+        && expression.type == 'bi'
+        && expression.symbol.equals(generalExpressionFunction)
+    );
+}
+
+function makeGeneralExpressionFunctionApplication() {
+    //
+}
+
+function isGeneralExpressionFunctionApplication() {
+    //
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// * The following are functions for manipulating expressions
+// * and for checking certain properties of expressions.
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Helper function for other expression manipulation functions.
+ * @param {OM} expr - an OM expression
+ * @returns the first variable of the form xN 
+ * which appears nowhere in the supplied expression.
+ */
+function getNewVariableRelativeTo(expr) {
+    var vars = getVariablesIn(expr);
+    var index = 0;
+    for (let i = 0; i < vars.length; i++) {
+        var next_var = vars[i];
+        if (/^x[0-9]+$/.test(next_var.name)) {
+            index = Math.max(
+                index,
+                parseInt(next_var.name.slice(1)) + 1
+            );
+        }
+    }
+    var var_name = 'x' + index;
+    return OM.var(var_name);
+}
+
+/**
+ * Takes a binding, a bound variable in that binding, and a replacement variable.
+ * Returns the result of replacing (without capture) all instances of the bound
+ * variable with the replacement variable.
+ * @param {OM} binding - an OM binding
+ * @param {OM} which_var - the bound variable to replace
+ * @param {OM} replace_var - the replacement variable
+ * @returns a copy of the alpha converted binding
+ */
+function alphaCovert(binding, which_var, replace_var) {
+    var result = binding.copy();
+    var bound_vars = result.variables
+
+    if (!bound_vars.map(x => x.name).includes(which_var.name)) {
+        throw 'which_var must be bound in binding'
+    }
+
+    for (let i = 0; i < bound_vars.length; i++) {
+        var variable = bound_vars[i];
+        if (variable.equals(which_var)) {
+            variable.replaceWith(replace_var.copy());
+        }
+    }
+    replaceWithoutCapture(result.body, which_var, replace_var);
+    return result;
+}
+
+/**
+ * Takes an expression, a variable, and a replacement expression.
+ * Manipulates the expression in place in order to replace all occurences
+ * of the variable with the expression in such a way that variable capture
+ * will not occur.
+ * @param {OM} expr - an OM expression 
+ * @param {OM} variable - an OM variable
+ * @param {OM} replacement - an OM expression
+ */
+function replaceWithoutCapture(expr, variable, replacement) {
+    if (!(expr instanceof OM) 
+        || !(variable instanceof OM) 
+        || !(replacement instanceof OM)) {
+        throw 'all arguments must be instances of OMNode';
+    }
+
+    if (expr.type != 'bi') {
+        if (expr.type == 'v' && expr.equals(variable)) {
+            expr.replaceWith(replacement.copy());
+        } else {
+            var children = expr.children;
+            for (let i = 0; i < children.length; i++) {
+                var ch = children[i];
+                replaceWithoutCapture(ch, variable, replacement);
+            }
+        }
+    } else {
+        var bound_vars = expr.variables;
+        for (let i = 0; i < bound_vars.length; i++) {
+            var bound_var = bound_vars[i];
+            // variable capture will occur in the following case
+            if (expr.body.occursFree(variable) && replacement.occursFree(bound_var)) { 
+                // FIXME: this doesn't seem like the best way to get new variables, but works for now.
+                expr.replaceWith(alphaCovert(expr, bound_var, getNewVariableRelativeTo(expr)));
+            }
+        }
+        replaceWithoutCapture(expr.body, variable, replacement);
+    }
+}
+
+/**
+ * Checks if two expressions are alpha equivalent.
+ * Two expresssions are alpha equivalent if one can be transformed into the other
+ * by the renaming of bound variables.
+ * If called when neither expr1 nor expr2 are applications or bindings, this function
+ * returns false because alpha equivalence is not defined for free variables or constants.
+ * @param {OM} expr1 - an OM expression
+ * @param {OM} expr2 - an OM expression
+ * @returns true if the two expressions are alpha equivalent, false otherwise
+ */
+function alphaEquivalent(expr1, expr2, firstcall=true) {
+    var possible_types = ['a', 'bi'];
+    if (expr1.type != expr2.type) {
+        return false;
+    }
+    if (firstcall && 
+        (!possible_types.includes(expr1.type) || !possible_types.includes(expr2.type))) {
+        return false;
+    }
+    if (expr1.type == 'a') {
+        var expr1_children = expr1.children;
+        var expr2_children = expr2.children;
+        if (expr1_children.length != expr2_children.length) {
+            return false;
+        }
+        for (let i = 0; i < expr1_children.length; i++) {
+            var ch1 = expr1_children[i];
+            var ch2 = expr2_children[i];
+            if (ch1.type == 'bi' && ch2.type == 'bi') {
+                var equal = alphaEquivalent(ch1, ch2, false);
+                if (!equal) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    } else if (expr1.type == 'bi') {
+        if ((expr1.variables.length != expr2.variables.length)
+            || !(expr1.symbol.equals(expr2.symbol))) {
+            return false;
+        }
+        for (let i = 0; i < expr1.variables.length; i++) {
+            var expr2conv = alphaCovert(expr2, expr2.variables[i], expr1.variables[i]);
+        }
+        return alphaEquivalent(expr1.body, expr2conv.body, false);
+    } else {
+        return expr1.equals(expr2);
+    }
+}
+
+/**
+ * Takes a general expression function representing λv_1,...,v_k.B
+ * and a list of expressions e_1,...,e_k and returns the beta reduction
+ * of ((λv_1,...,v_k.B)(e_1,...,e_k)) which is the expression B
+ * with all v_i replaced by the corresponding e_i.
+ * 
+ * This beta reduction is capture avoiding. 
+ * See `replaceWithoutCapture` for details.
+ * @param {OM} gEF - a general expression function with n variables
+ * @param {OM[]} expr_list - a list of _listessions of length n
+ * @returns an expression manipulated as described above
+ */
+function betaReduce(gEF, expr_list) {
+    // Check we can actually do a beta reduction
+    if (!isGeneralExpressionFunction(gEF)) {
+        throw 'In beta reduction, the first argument must be a general expression function'
+    }
+    if (!(expr_list instanceof Array)) {
+        throw 'In beta reduction,, the second argument must be a list of expressions'
+    }
+    if (gEF.variables.length != expr_list.length) {
+        throw 'In beta reduction, the number of expressions must match number of variables'
+    }
+    // }
+
+    var variables = gEF.variables
+    var result = gEF.body.copy();
+    for (let i = 0; i < expr_list.length; i++) {
+        var v_i = variables[i];
+        var e_i = expr_list[i];
+        replaceWithoutCapture(result, v_i, e_i);
     }
     return result;
 }
@@ -218,7 +441,7 @@ class Constraint {
 /**
  * Helper function for ConstraintList constructor. 
  * Takes a variable and checks if it of the form, `vX` where `X` is some number.
- * If it is of this form, it returns `X` if it is greater than the given index.
+ * If it is of this form, it returns X + 1 if it is greater than the given index.
  * @param {OM} variable - the variable to be checked
  * @param {Number} nextNewVariableIndex - the number to check against
  */
@@ -436,37 +659,6 @@ class ConstraintList {
  */
 function applyInstantiation(substitution, pattern) {
     var result = pattern.copy();
-    if (isMetavariable(pattern)) {
-        return result.replaceFree(substitution.pattern, substitution.expression);
-    } else if (pattern.type == 'a') {
-        for (let i = 0; i < pattern.children.length; i++) {
-            result.children[i].replaceWith(applyInstantiation(substitution, result.children[i]));
-        }
-    } else if (pattern.type == 'bi') {
-        // First check if substitution is free to replace
-        if (pattern.isFreeToReplace(substitution.pattern)) {
-            // Then check for variable capture
-            var bound_variable_names = pattern.variables.map(x => x.name);
-            var expr_var_names;
-            if (substitution.expression.type != 'bi') { // All expr variables free
-                expr_var_names = substitution.expression.descendantsSatisfying(
-                    (d) => { return d.type == 'v'; }
-                ).map(x => x.name);
-            } else { // Only get unbound variables
-                expr_var_names = substitution.expression.freeVariables()
-            }
-            // Check if the expression contains a free instance of a bound variable
-            for (let i = 0; i < expr_var_names.length; i++) {
-                var var_name = expr_var_names[i];
-                if (bound_variable_names.includes(var_name)) { // variable capture will occur
-                    // TODO: the following:
-                    // Get new variable not in pattern or expression
-                    // Do alpha conversion on pattern and replace all occurences of variable in expression
-                    // Recursively call this function on variables and body of binding
-                }
-            }
-        }
-    }
     return result;
 }
 
@@ -523,15 +715,25 @@ module.exports = {
     setMetavariable, 
     clearMetavariable,
     isMetavariable,
+
     makeExpressionFunction,
     isExpressionFunction,
     makeExpressionFunctionApplication,
     isExpressionFunctionApplication,
     applyExpressionFunction,
-    alphaEquivalent,
+
+    makeGeneralExpressionFunction,
+    isGeneralExpressionFunction,
+
+    getNewVariableRelativeTo,
     alphaCovert,
+    replaceWithoutCapture,
+    alphaEquivalent,
+    betaReduce,
+
     Constraint,
     ConstraintList,
+
     applyInstantiation,
     instantiate,
 };
