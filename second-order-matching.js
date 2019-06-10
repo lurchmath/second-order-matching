@@ -117,46 +117,6 @@ function applyExpressionFunction(func, expression) {
     } else return null;
 }
 
-// /**
-//  * Returns true if and only if both functions are expression functions which are alpha equivalent.
-//  * @param  {OM} func1 - an expression function
-//  * @param  {OM} func2 - an expression function
-//  */
-// function alphaEquivalent(func1, func2) {
-//     var index = 0;
-//     function newVar() {
-//         return OM.var("v" + index);
-//     }
-//     function isNewVar(expr) {
-//         return expr.equals(newVar());
-//     }
-//     var pair = OM.app(func1, func2);
-//     while (pair.hasDescendantSatisfying(isNewVar)) {
-//         index++;
-//     }
-//     var apply1 = applyExpressionFunction(func1, newVar());
-//     var apply2 = applyExpressionFunction(func2, newVar());
-//     return isExpressionFunction(func1) && isExpressionFunction(func2) && apply1.equals(apply2);
-// }
-
-// /**
-//  * Performs alpha conversion for the single variable case.
-//  * That is, given a single variable expression function, the bound variable in this function is replaced
-//  * by another OM var instance, given as replacement.
-//  * @param {OM} func - a single variable expression function
-//  * @param {OM} replacement - an OM variable
-//  * @returns a new expression function, with the bound variable replaced.
-//  */
-// function alphaConvert(func, replacement) {
-//     var result = func.copy();
-//     var bound_variables = result.variables;
-//     for (let i = 0; i < bound_variables.length; i++) {
-//         result.body.replaceFree(bound_variables[i], replacement);
-//         result.variables[i].replaceWith(replacement);
-//     }
-//     return result;
-// }
-
 ////////////////////////////////////////////////////////////////////////////////
 // * The following are generalised versions of the functions above.
 // * This allows us to have expression functions with more than one variable.
@@ -166,6 +126,7 @@ function applyExpressionFunction(func, expression) {
 ////////////////////////////////////////////////////////////////////////////////
 
 const generalExpressionFunction = OM.symbol('gEF', 'SecondOrderMatching');
+const generalExpressionFunctionApplication = OM.symbol('gEFA', 'SecondOrderMatching');
 
 /**
  * Makes a new expression function with the meaning
@@ -196,12 +157,32 @@ function isGeneralExpressionFunction(expression) {
     );
 }
 
-function makeGeneralExpressionFunctionApplication() {
-    //
+/**
+ * Makes a new expression function application with the meaning
+ * F(arg) where F is either a general expression function (gEF), or a 
+ * metavariable which is expected to be replaced by a gEF.
+ * In the case that F is a gEF, the expression function can be applied
+ * to the argument see `applyGeneralExpressionFunction`.
+ * @param {OM} func - either a gEF or something which can be instantiated as a gEF.
+ * @param {OM} argument - any OM expression
+ */
+function makeGeneralExpressionFunctionApplication(func, argument) {
+    if (!(isGeneralExpressionFunction(func) || isMetavariable(func))) {
+        throw 'When making gEFAs, the func must be either a EF or a metavariable'
+    }
+    return OM.app(generalExpressionFunctionApplication, func, argument);
 }
 
-function isGeneralExpressionFunctionApplication() {
-    //
+/**
+ * @returns true if the supplied expression is a gEFA
+ */
+function isGeneralExpressionFunctionApplication(expression) {
+    return (
+        expression instanceof OM
+        && expression.type === 'a'
+        && expression.children.length === 3
+        && expression.children[0].equals(generalExpressionFunctionApplication)
+    );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -731,6 +712,8 @@ module.exports = {
 
     makeGeneralExpressionFunction,
     isGeneralExpressionFunction,
+    makeGeneralExpressionFunctionApplication,
+    isGeneralExpressionFunctionApplication,
 
     getNewVariableRelativeTo,
     alphaConvert,
