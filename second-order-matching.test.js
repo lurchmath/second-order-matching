@@ -170,19 +170,47 @@ describe('Generalized Expression Functions', () => {
         var b1 = OM.simple('f.f(v1,v2,v3)');
         var b2 = OM.simple('z.z(a)');
 
-        var f1 = M.makeGeneralExpressionFunction([v1, v2, v3], b1);
-        var f2 = M.makeGeneralExpressionFunction([v1], b1);
-        var f3 = M.makeGeneralExpressionFunction([v1], b2);
+        var gef1 = M.makeGeneralExpressionFunction([v1, v2, v3], b1);
+        var gef2 = M.makeGeneralExpressionFunction([v1], b1);
+        var gef3 = M.makeGeneralExpressionFunction([v1], b2);
 
-        expect(M.isGeneralExpressionFunction(f1)).toBe(true);
-        expect(M.isGeneralExpressionFunction(f2)).toBe(true);
-        expect(M.isGeneralExpressionFunction(f3)).toBe(true);
+        expect(M.isGeneralExpressionFunction(gef1)).toBe(true);
+        expect(M.isGeneralExpressionFunction(gef2)).toBe(true);
+        expect(M.isGeneralExpressionFunction(gef3)).toBe(true);
 
-        expect(f1.freeVariables().length).toBe(0);
-        expect(f2.freeVariables().length).toBe(2);
+        expect(gef1.freeVariables().length).toBe(0);
+        expect(gef2.freeVariables().length).toBe(2);
 
         expect(() => {
             M.makeGeneralExpressionFunction([v1,v2,b2], b1);
+        }).toThrow();
+    });
+
+    test('should reliably make general expression function applications', () => {
+        var gEF1 = M.makeGeneralExpressionFunction(
+            [OM.var('v1')],
+            OM.simple('v1')
+        );
+        var gEFA1 = M.makeGeneralExpressionFunctionApplication(
+            gEF1,
+            OM.simple('sq.uare(v1)')
+        );
+
+        expect(M.isGeneralExpressionFunctionApplication(gEFA1)).toBe(true);
+        
+        var v1 = OM.var('P');
+        M.setMetavariable(v1);
+        var gEFA2 = M.makeGeneralExpressionFunctionApplication(
+            v1,
+            OM.simple('sq.uare(v1)')
+        );
+
+        expect(M.isGeneralExpressionFunctionApplication(gEFA2)).toBe(true);
+
+        M.clearMetavariable(v1);
+
+        expect(() => {
+            M.makeGeneralExpressionFunctionApplication(v1, OM.simple('sq.uare(v1)'))
         }).toThrow();
     });
 });
