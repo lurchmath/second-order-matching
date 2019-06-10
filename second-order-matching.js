@@ -147,7 +147,7 @@ function applyExpressionFunction(func, expression) {
 //  * @param {OM} replacement - an OM variable
 //  * @returns a new expression function, with the bound variable replaced.
 //  */
-// function alphaCovert(func, replacement) {
+// function alphaConvert(func, replacement) {
 //     var result = func.copy();
 //     var bound_variables = result.variables;
 //     for (let i = 0; i < bound_variables.length; i++) {
@@ -211,15 +211,18 @@ function isGeneralExpressionFunctionApplication() {
 
 /**
  * Helper function for other expression manipulation functions.
- * @param {OM} expr - an OM expression
+ * @param {OM} expr - an OM expression, more expr arguments are accepted.
  * @returns the first variable of the form xN 
- * which appears nowhere in the supplied expression.
+ * which appears nowhere in the supplied expression(s).
  */
-function getNewVariableRelativeTo(expr) {
-    var vars = getVariablesIn(expr);
-    var index = 0;
-    for (let i = 0; i < vars.length; i++) {
-        var next_var = vars[i];
+function getNewVariableRelativeTo(expr /*, expr2, ... */) {
+    let all_vars = getVariablesIn(expr);
+    for (let i = 1; i < arguments.length; i++) {
+        all_vars.push(...getVariablesIn(arguments[i]));
+    }
+    let index = 0;
+    for (let i = 0; i < all_vars.length; i++) {
+        let next_var = all_vars[i];
         if (/^x[0-9]+$/.test(next_var.name)) {
             index = Math.max(
                 index,
@@ -227,7 +230,7 @@ function getNewVariableRelativeTo(expr) {
             );
         }
     }
-    var var_name = 'x' + index;
+    let var_name = 'x' + index;
     return OM.var(var_name);
 }
 
@@ -240,7 +243,7 @@ function getNewVariableRelativeTo(expr) {
  * @param {OM} replace_var - the replacement variable
  * @returns a copy of the alpha converted binding
  */
-function alphaCovert(binding, which_var, replace_var) {
+function alphaConvert(binding, which_var, replace_var) {
     var result = binding.copy();
     var bound_vars = result.variables
 
@@ -291,7 +294,7 @@ function replaceWithoutCapture(expr, variable, replacement) {
             // variable capture will occur in the following case
             if (expr.body.occursFree(variable) && replacement.occursFree(bound_var)) { 
                 // FIXME: this doesn't seem like the best way to get new variables, but works for now.
-                expr.replaceWith(alphaCovert(expr, bound_var, getNewVariableRelativeTo(expr)));
+                expr.replaceWith(alphaConvert(expr, bound_var, getNewVariableRelativeTo(expr)));
             }
         }
         replaceWithoutCapture(expr.body, variable, replacement);
@@ -304,8 +307,8 @@ function replaceWithoutCapture(expr, variable, replacement) {
  * by the renaming of bound variables.
  * If called when neither expr1 nor expr2 are applications or bindings, this function
  * returns false because alpha equivalence is not defined for free variables or constants.
- * @param {OM} expr1 - an OM expression
- * @param {OM} expr2 - an OM expression
+ * @param {OM} expr1 - an OM expression (must be application or binding on first call)
+ * @param {OM} expr2 - an OM expression (must be application or binding on first call)gef
  * @returns true if the two expressions are alpha equivalent, false otherwise
  */
 function alphaEquivalent(expr1, expr2, firstcall=true) {
@@ -326,11 +329,8 @@ function alphaEquivalent(expr1, expr2, firstcall=true) {
         for (let i = 0; i < expr1_children.length; i++) {
             var ch1 = expr1_children[i];
             var ch2 = expr2_children[i];
-            if (ch1.type == 'bi' && ch2.type == 'bi') {
-                var equal = alphaEquivalent(ch1, ch2, false);
-                if (!equal) {
-                    return false;
-                }
+            if (!alphaEquivalent(ch1, ch2, false)) {
+                return false;
             }
         }
         return true;
@@ -339,10 +339,17 @@ function alphaEquivalent(expr1, expr2, firstcall=true) {
             || !(expr1.symbol.equals(expr2.symbol))) {
             return false;
         }
+        // Alpha convert all bound variables in both expressions to
+        // new variables, which appear nowhere in either expression.
+        // This avoids the problem of 'overwriting' a previous alpha conversion.
+        var expr1conv = expr1.copy();
+        var expr2conv = expr2.copy();
         for (let i = 0; i < expr1.variables.length; i++) {
-            var expr2conv = alphaCovert(expr2, expr2.variables[i], expr1.variables[i]);
+            let new_var = getNewVariableRelativeTo(expr1conv, expr2conv);
+            expr1conv = alphaConvert(expr1conv, expr1.variables[i], new_var)
+            expr2conv = alphaConvert(expr2conv, expr2.variables[i], new_var);
         }
-        return alphaEquivalent(expr1.body, expr2conv.body, false);
+        return alphaEquivalent(expr1conv.body, expr2conv.body, false);
     } else {
         return expr1.equals(expr2);
     }
@@ -726,7 +733,7 @@ module.exports = {
     isGeneralExpressionFunction,
 
     getNewVariableRelativeTo,
-    alphaCovert,
+    alphaConvert,
     replaceWithoutCapture,
     alphaEquivalent,
     betaReduce,
