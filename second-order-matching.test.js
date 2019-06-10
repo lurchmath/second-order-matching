@@ -188,7 +188,7 @@ describe('Generalized Expression Functions', () => {
 });
 
 describe('Expression manipluation', () => {
-    test('should get new variables relative to an expression', () => {
+    test('should get new variables relative to expressions', () => {
         var e1 = OM.simple('v1');
         var e2 = OM.simple('f.a[v1,x0,x1,x2]')
         var e3 = OM.simple('F(x0,x1,x2,x3,x4)');
@@ -214,6 +214,18 @@ describe('Expression manipluation', () => {
         expect(x5.equals(OM.var('x5'))).toBe(true);
         expect(x2.equals(OM.var('x2'))).toBe(true);
         expect(x0two.equals(OM.var('x0'))).toBe(true);
+
+        var x3two = M.getNewVariableRelativeTo(e1, e2);
+        var x5two = M.getNewVariableRelativeTo(e1, e2, e3, e4, e5);
+
+        expect(x3two instanceof OM).toBe(true);
+        expect(x5two instanceof OM).toBe(true);
+
+        expect(x3two.equals(OM.var('x3'))).toBe(true);
+        expect(x5two.equals(OM.var('x5'))).toBe(true);
+
+        expect(x3two.equals(M.getNewVariableRelativeTo(e2,e1))).toBe(true);
+        expect(x5two.equals(M.getNewVariableRelativeTo(e5, e3))).toBe(true);
     });
 
     test('should implement alpha coversion for cases with no capture', () => {
@@ -228,22 +240,22 @@ describe('Expression manipluation', () => {
         var gef1copy = gef1.copy();
 
         expect(M.isGeneralExpressionFunction(gef1)).toBe(true);
-        var ac1 = M.alphaCovert(gef1, v1, r1);
+        var ac1 = M.alphaConvert(gef1, v1, r1);
         expect(ac1.equals(M.makeGeneralExpressionFunction([r1, v2], b2))).toBe(true);
-        var ac2 = M.alphaCovert(ac1, v2, r2);
+        var ac2 = M.alphaConvert(ac1, v2, r2);
         expect(ac2.equals(M.makeGeneralExpressionFunction([r1, r2], b3))).toBe(true);
         expect(gef1.equals(gef1copy)).toBe(true);
 
         var b4 = OM.simple('F(v1,v2,c)');
         var gef2 = M.makeGeneralExpressionFunction([v1, v2], b4);
         expect(() => {
-            M.alphaCovert(gef2, OM.var('c'), v1);
+            M.alphaConvert(gef2, OM.var('c'), v1);
         }).toThrow();
     });
 
     test('should implement alpha conversion for cases with capture', () => {
         var bind1 = OM.simple('lamb.da[z,for.all[y,plus(y,z)]]')
-        var ac1 = M.alphaCovert(bind1, OM.var('z'), OM.var('y'));
+        var ac1 = M.alphaConvert(bind1, OM.var('z'), OM.var('y'));
         var expected1 = OM.simple('lamb.da[y,for.all[x0,plus(x0,y)]]')
         expect(ac1.equals(expected1)).toBe(true);
 
@@ -258,7 +270,7 @@ describe('Expression manipluation', () => {
         var gef1copy = gef1.copy();
 
         expect(M.isGeneralExpressionFunction(gef1)).toBe(true);
-        var ac2 = M.alphaCovert(gef1, v1, OM.var('x'));
+        var ac2 = M.alphaConvert(gef1, v1, OM.var('x'));
         expect(ac2.equals(expected2)).toBe(true);
         expect(gef1.equals(gef1copy)).toBe(true);
     });
@@ -398,6 +410,12 @@ describe('Expression manipluation', () => {
         expect(M.alphaEquivalent(gef7,gef7)).toBe(true);
         expect(M.alphaEquivalent(gef7,gef8)).toBe(true);
         expect(M.alphaEquivalent(gef7,gef9)).toBe(false);
+        expect(M.alphaEquivalent(gef8,gef7)).toBe(true);
+        expect(M.alphaEquivalent(gef8,gef8)).toBe(true);
+        expect(M.alphaEquivalent(gef8,gef9)).toBe(false);
+        expect(M.alphaEquivalent(gef9,gef7)).toBe(false);
+        expect(M.alphaEquivalent(gef9,gef8)).toBe(false);
+        expect(M.alphaEquivalent(gef9,gef9)).toBe(true);
     });
 
     test('should implement beta reduction for expressions in cases with no capture', () => {
