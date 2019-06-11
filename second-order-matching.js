@@ -50,72 +50,72 @@ function isMetavariable(variable) {
 // * When P: E -> E, P is an expression function.
 ////////////////////////////////////////////////////////////////////////////////
 
-const expressionFunction = OM.symbol('EF', 'SecondOrderMatching');
-const expressionFunctionApplication = OM.symbol('EFA', 'SecondOrderMatching');
+// const expressionFunction = OM.symbol('EF', 'SecondOrderMatching');
+// const expressionFunctionApplication = OM.symbol('EFA', 'SecondOrderMatching');
 
-/**
- * Makes a new expression function with the meaning λv.B, where v is a variable and B is any OpenMath expression.
- * The variable will be bound in the resulting expression.
- * @param {OM} variable - the variable to be bound
- * @param {OM} body - the expression which may bind the variable
- */
-function makeExpressionFunction(variable, body) {
-    if (variable.type !== 'v') {
-        throw 'When creating an expression function, its parameter must be a variable';
-    }
-    return OM.bin(expressionFunction, variable, body);
-}
+// /**
+//  * Makes a new expression function with the meaning λv.B, where v is a variable and B is any OpenMath expression.
+//  * The variable will be bound in the resulting expression.
+//  * @param {OM} variable - the variable to be bound
+//  * @param {OM} body - the expression which may bind the variable
+//  */
+// function makeExpressionFunction(variable, body) {
+//     if (variable.type !== 'v') {
+//         throw 'When creating an expression function, its parameter must be a variable';
+//     }
+//     return OM.bin(expressionFunction, variable, body);
+// }
 
-/**
- * Tests whether an expression is an expression function.
- * @param {OM} expression - the expression to be checked
- */
-function isExpressionFunction(expression) {
-    return (
-        expression instanceof OM
-        && expression.type === 'bi' 
-        && expression.variables.length === 1 
-        && expression.symbol.equals(expressionFunction)
-    );
-}
+// /**
+//  * Tests whether an expression is an expression function.
+//  * @param {OM} expression - the expression to be checked
+//  */
+// function isExpressionFunction(expression) {
+//     return (
+//         expression instanceof OM
+//         && expression.type === 'bi' 
+//         && expression.variables.length === 1 
+//         && expression.symbol.equals(expressionFunction)
+//     );
+// }
 
-/**
- * Makes an expression whose meaning is the application of an expression function to an argument. 
- * Does not verify that func is an expression function; it need not be one, but can be a metavariable, for example. 
- * @param {OM} func - the function (or otherwise) which is applied
- * @param {OM} argument - the argument that the expression function is applied to
- */
-function makeExpressionFunctionApplication(func, argument) {
-    return OM.app(expressionFunctionApplication, func, argument);
-}
+// /**
+//  * Makes an expression whose meaning is the application of an expression function to an argument. 
+//  * Does not verify that func is an expression function; it need not be one, but can be a metavariable, for example. 
+//  * @param {OM} func - the function (or otherwise) which is applied
+//  * @param {OM} argument - the argument that the expression function is applied to
+//  */
+// function makeExpressionFunctionApplication(func, argument) {
+//     return OM.app(expressionFunctionApplication, func, argument);
+// }
 
-/**
- * Tests whether an expression is an expression function application.
- * @param {OM} expression - the expression to be tested
- */
-function isExpressionFunctionApplication(expression) {
-    return (
-        expression instanceof OM
-        && expression.type === 'a' 
-        && expression.children.length === 3 
-        && expression.children[0].equals(expressionFunctionApplication)
-    );
-}
+// /**
+//  * Tests whether an expression is an expression function application.
+//  * @param {OM} expression - the expression to be tested
+//  */
+// function isExpressionFunctionApplication(expression) {
+//     return (
+//         expression instanceof OM
+//         && expression.type === 'a' 
+//         && expression.children.length === 3 
+//         && expression.children[0].equals(expressionFunctionApplication)
+//     );
+// }
 
-/**
- * Applies an expression function to an expression.
- * This is the equivalent of a beta reduction. 
- * One important caveat is that no checking is done for variable capture.
- * @param  {OM} func - the expression function to be applied
- * @param  {OM} expression - the expression to which the expression function is applied
- */
-function applyExpressionFunction(func, expression) {
-    if (isExpressionFunction(func)) {
-        var result = func.body.copy();
-        result.replaceFree(func.variables[0], expression);
-        return result;
-    } else return null;
-}
+// /**
+//  * Applies an expression function to an expression.
+//  * This is the equivalent of a beta reduction. 
+//  * One important caveat is that no checking is done for variable capture.
+//  * @param  {OM} func - the expression function to be applied
+//  * @param  {OM} expression - the expression to which the expression function is applied
+//  */
+// function applyExpressionFunction(func, expression) {
+//     if (isExpressionFunction(func)) {
+//         var result = func.body.copy();
+//         result.replaceFree(func.variables[0], expression);
+//         return result;
+//     } else return null;
+// }
 
 ////////////////////////////////////////////////////////////////////////////////
 // * The following are generalised versions of the functions above.
@@ -704,11 +704,11 @@ module.exports = {
     clearMetavariable,
     isMetavariable,
 
-    makeExpressionFunction,
-    isExpressionFunction,
-    makeExpressionFunctionApplication,
-    isExpressionFunctionApplication,
-    applyExpressionFunction,
+    // makeExpressionFunction,
+    // isExpressionFunction,
+    // makeExpressionFunctionApplication,
+    // isExpressionFunctionApplication,
+    // applyExpressionFunction,
 
     makeGeneralExpressionFunction,
     isGeneralExpressionFunction,

@@ -47,7 +47,7 @@ function ef(variable, body) {
     if (!(body instanceof OM)) {
         body = quick(body);
     }
-    return M.makeExpressionFunction(variable, body);
+    return M.makeGeneralExpressionFunction([variable], body);
 }
 
 /**
@@ -60,7 +60,7 @@ function efa(func, param) {
     if (!(param instanceof OM)) {
         param = quick(param);
     }
-    return M.makeExpressionFunctionApplication(func, param);
+    return M.makeGeneralExpressionFunctionApplication(func, param);
 }
 
 describe('Metavariables', () => {
