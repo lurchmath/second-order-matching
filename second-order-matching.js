@@ -650,6 +650,7 @@ function applyInstantiation(substitution, pattern) {
     } else if (result.type == 'a') {
         let head;
         let args;
+
         if (isGeneralExpressionFunctionApplication(result)) {
             head = result.children[1];
             args = result.children.slice(2);
@@ -657,21 +658,29 @@ function applyInstantiation(substitution, pattern) {
             head = result.children[0]
             args = result.children.slice(1);
         }
+
         head.replaceWith(applyInstantiation(substitution, head));
         for (let i = 0; i < args.length; i++) {
             let arg = args[i];
             arg.replaceWith(applyInstantiation(substitution, arg));
         }
+        
         if (isGeneralExpressionFunction(head)) {
             return betaReduce(head, args);
         }
-        return result;
     } else if (result.type == 'bi') {
+        // Apply this instantiation to the body first to avoid a naive substitution of metavariables
         result.body.replaceWith(applyInstantiation(substitution, result.body));
-        return result;
-    } else {
-        return result;
+        // Any remaining free variable which matches the substitution pattern is okay to replace
+        let vars = getVariablesIn(result);
+        for (let i = 0; i < vars.length; i++) {
+            let variable = vars[i];
+            if (substitution.pattern.equals(variable) && result.occursFree(variable)) {
+                replaceWithoutCapture(result, variable, substitution.expression);
+            }
+        }
     }
+    return result;
 }
 
 /**

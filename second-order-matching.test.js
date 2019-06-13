@@ -933,6 +933,26 @@ describe('Instantiation', () => {
 
         expect(M.applyInstantiation(sub4, p4).equals(quick('_H(a)'))).toBe(true);
         expect(p4.equals(p4copy)).toBe(true);
+
+        // Test the case where the pattern is a binding
+        var p5 = quick('for.all[x,gr.th(sq.uare(x),0)]');
+        var p5copy = p5.copy();
+        var sub5 = new M.Constraint(quick('x'), quick('3'));
+        expect(M.applyInstantiation(sub5, p5).equals(p5copy)).toBe(true);
+        expect(p5.equals(p5copy)).toBe(true);
+
+        var p6 = quick('for.all[y,gr.th(sq.uare(x),y)]');
+        var p6copy = p6.copy();
+        var sub6 = new M.Constraint(quick('x'), quick('3'));
+        expect(M.applyInstantiation(sub6, p6).equals(quick('for.all[y,gr.th(sq.uare(3),y)]'))).toBe(true);
+        expect(p6.equals(p6copy)).toBe(true);
+
+        // Test the case where replacement can cause variable capture
+        var p7 = quick('for.all[x,gr.th(sq.uare(x),c)]');
+        var p7copy = p7.copy();
+        var sub7 = new M.Constraint(quick('c'), quick('x'));
+        expect(M.applyInstantiation(sub7, p7).equals(quick('for.all[x0,gr.th(sq.uare(x0),x)]'))).toBe(true);
+        expect(p7.equals(p7copy)).toBe(true);
     });
 
     test('should correctly apply a list of instantiations', () => {
@@ -1007,6 +1027,7 @@ describe('Instantiation', () => {
         var result4 = M.instantiate(SL3, CL3);
         expect(result4.contents[0].pattern.equals(con3.expression)).toBe(true);
         expect(result4.contents[0].pattern.equals(result4.contents[0].expression)).toBe(true);
+
         // In this case, the order of substitutions does matter. 
         // But, replacing the temporary variables should give the same result.
         var sub8 = sub5.copy();
