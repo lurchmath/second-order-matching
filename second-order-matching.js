@@ -164,13 +164,16 @@ function isGeneralExpressionFunction(expression) {
  * In the case that F is a gEF, the expression function can be applied
  * to the argument see `applyGeneralExpressionFunction`.
  * @param {OM} func - either a gEF or something which can be instantiated as a gEF.
- * @param {OM} argument - any OM expression
+ * @param {OM[]} arguments - a list of OM expressions
  */
 function makeGeneralExpressionFunctionApplication(func, argument) {
     if (!(isGeneralExpressionFunction(func) || isMetavariable(func))) {
         throw 'When making gEFAs, the func must be either a EF or a metavariable'
     }
-    return OM.app(generalExpressionFunctionApplication, func, argument);
+    if (!(argument instanceof Array)) {
+        argument = [argument]
+    }
+    return OM.app(generalExpressionFunctionApplication, func, ...argument);
 }
 
 /**
@@ -180,7 +183,6 @@ function isGeneralExpressionFunctionApplication(expression) {
     return (
         expression instanceof OM
         && expression.type === 'a'
-        && expression.children.length === 3
         && expression.children[0].equals(generalExpressionFunctionApplication)
     );
 }
@@ -359,7 +361,6 @@ function betaReduce(gEF, expr_list) {
     if (gEF.variables.length != expr_list.length) {
         throw 'In beta reduction, the number of expressions must match number of variables'
     }
-    // }
 
     var variables = gEF.variables
     var result = gEF.body.copy();
@@ -394,9 +395,6 @@ class Constraint {
     constructor(pattern, expression) {
         if (!(pattern instanceof OM) || !(expression instanceof OM)) {
             throw 'Both arguments must be instances of OMNode';
-        }
-        if (expression.hasDescendantSatisfying((x) => { return isMetavariable(x); })) {
-            throw 'Expression must not contain metavariables';
         }
         this.pattern = pattern;
         this.expression = expression;
@@ -641,17 +639,43 @@ class ConstraintList {
 /**
  * Applies a singe instantiation (substitution) to a single pattern.
  * Used by instantiate to handle the list case.
- * @param {OM} substitution - a single substitution
+ * @param {Constraint} substitution - a single substitution
  * @param {OM} pattern - a single pattern
  * @returns a copy of the pattern with any substitutions
  */
 function applyInstantiation(substitution, pattern) {
     var result = pattern.copy();
-    return result;
+    if (isMetavariable(result) && substitution.pattern.equals(result)) {
+        return substitution.expression.copy();
+    } else if (result.type == 'a') {
+        let head;
+        let args;
+        if (isGeneralExpressionFunctionApplication(result)) {
+            head = result.children[1];
+            args = result.children.slice(2);
+        } else {
+            head = result.children[0]
+            args = result.children.slice(1);
+        }
+        head.replaceWith(applyInstantiation(substitution, head));
+        for (let i = 0; i < args.length; i++) {
+            let arg = args[i];
+            arg.replaceWith(applyInstantiation(substitution, arg));
+        }
+        if (isGeneralExpressionFunction(head)) {
+            return betaReduce(head, args);
+        }
+        return result;
+    } else if (result.type == 'bi') {
+        result.body.replaceWith(applyInstantiation(substitution, result.body));
+        return result;
+    } else {
+        return result;
+    }
 }
 
 /**
- * Takes two ConstraintList objects, one representing a list of substiutions, 
+ * Takes two ConstraintList objects, one representing a list of substitutions, 
  * the other containing the patterns that the substiutions will be applied to.
  * Each substitution is applied to the pattern satisfying the conditions described 
  * in the summary paper (section 3).
@@ -660,12 +684,12 @@ function applyInstantiation(substitution, pattern) {
  * @returns a copy of the constraints list containing the patterns with any substitutions
  */
 function instantiate(substitutions, patterns) {
-    var result = patterns.copy()
+    let result = patterns.copy()
     for (let i = 0; i < substitutions.length; i++) {
         var substitution = substitutions.contents[i];
-        for (let j = 0; j < patterns.length; j++) {
-            var pattern = patterns.contents[j].pattern;
-            result.contents[j].pattern.replaceWith(
+        for (let j = 0; j < result.length; j++) {
+            var pattern = result.contents[j].pattern;
+            pattern.replaceWith(
                 applyInstantiation(substitution, pattern)
             );
         }
