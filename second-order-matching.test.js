@@ -40,27 +40,37 @@ function quick(string) {
 /**
  * Helper function to quickly make expression functions.
  */
-function ef(variable, body) {
-    if (!(variable instanceof OM)) {
-        variable = quick(variable);
+function ef(variables, body) {
+    if (!(variables instanceof Array)) {
+        variables = [variables];
+    }
+    for (let i = 0; i < variables.length; i++) {
+        if (!(variables[i] instanceof OM)) {
+            variables[i] = quick(variables[i]);
+        }
     }
     if (!(body instanceof OM)) {
         body = quick(body);
     }
-    return M.makeGeneralExpressionFunction([variable], body);
+    return M.makeGeneralExpressionFunction(variables, body);
 }
 
 /**
  * Helper function to quickly make expression function applications.
  */
-function efa(func, param) {
+function efa(func, params) {
     if (!(func instanceof OM)) {
         func = quick(func);
     }
-    if (!(param instanceof OM)) {
-        param = quick(param);
+    if (!(params instanceof Array)) {
+        params = [params];
     }
-    return M.makeGeneralExpressionFunctionApplication(func, param);
+    for (let i = 0; i < params.length; i++) {
+        if (!(params[i] instanceof OM)) {
+            params[i] = quick(params[i]);
+        }
+    }
+    return M.makeGeneralExpressionFunctionApplication(func, params);
 }
 
 describe('Metavariables', () => {
@@ -81,84 +91,6 @@ describe('Metavariables', () => {
         expect(M.setMetavariable(fofx)).toBe(null);
         expect(M.isMetavariable(one)).toBe(false);
         expect(M.isMetavariable(fofx)).toBe(false);
-    });
-});
-
-describe.skip('Expression Functions', () => {
-    test('should reliably make expression functions', () => {
-        var x = OM.simple('x');
-        var body1 = OM.simple('x(1,2)');
-        var body2 = OM.simple('z.z(x,y.y)');
-        expect(M.isExpressionFunction(x)).toBe(false);
-        expect(M.isExpressionFunction(body1)).toBe(false);
-        expect(M.isExpressionFunction(body2)).toBe(false);
-
-        var f = M.makeExpressionFunction(x, body1);
-        var g = M.makeExpressionFunction(x, body2);
-        expect(M.isExpressionFunction(f)).toBe(true);
-        expect(M.isExpressionFunction(g)).toBe(true);
-    });
-
-    test('should reliably make expression function applications', () => {
-        var F = OM.simple('F');
-        var x = OM.simple('x');
-        var y = OM.simple('y');
-        expect(M.isExpressionFunctionApplication(F)).toBe(false);
-        expect(M.isExpressionFunctionApplication(x)).toBe(false);
-        expect(M.isExpressionFunctionApplication(y)).toBe(false);
-
-        var Fx = M.makeExpressionFunctionApplication(F, x);
-        expect(M.isExpressionFunctionApplication(Fx)).toBe(true);
-        var Fx2 = OM.app(F, x);
-        expect(M.isExpressionFunctionApplication(Fx2)).toBe(false);
-        var Fx3 = OM.app(Fx.symbol, ...Fx.variables, Fx.body, y);
-        expect(M.isExpressionFunctionApplication(Fx3)).toBe(false);
-    });
-
-    test('should correctly apply expression functions to arguments', () => {
-        var f = M.makeExpressionFunction(OM.var('v'), OM.simple('plus(v,2)'));
-        var x = OM.simple('minus(3,k)');
-        var result = M.applyExpressionFunction(f, x);
-        expect(result.equals(OM.simple('plus(minus(3,k),2)'))).toBe(true);
-
-        f = M.makeExpressionFunction(OM.var('t'), OM.simple('t(t(tt))'));
-        x = OM.simple('for.all[x,P(x)]');
-        result = M.applyExpressionFunction(f, x);
-        expect(result.equals(OM.app(x, OM.app(x, OM.var('tt'))))).toBe(true);
-
-        // Check that we do not replace bound variables
-        f = M.makeExpressionFunction(OM.var('var'), OM.simple('two(free(var),bou.nd[var,f(var)])'));
-        x = OM.simple('10');
-        result = M.applyExpressionFunction(f, x);
-        expect(result.equals(OM.simple('two(free(10),bou.nd[var,f(var)])'))).toBe(true);
-    });
-    
-    test('should implement alpha equivalence of expression functions', () => {
-        // Create four similar functions, only two of which are alpha equivalent.
-        // Tests all pairings, in both directions, to ensure symmetry of the relation.
-        var f = M.makeExpressionFunction(OM.var('v'), OM.simple('plus(v,2)'));
-        expect(M.alphaEquivalent(f, f)).toBe(true);
-
-        var g = M.makeExpressionFunction(OM.var('w'), OM.simple('plus(w,2)'));
-        expect(M.alphaEquivalent(g, g)).toBe(true);
-        expect(M.alphaEquivalent(f, g)).toBe(true);
-        expect(M.alphaEquivalent(g, f)).toBe(true);
-
-        var h = M.makeExpressionFunction(OM.var('v'), OM.simple('plus(w,2)'));
-        expect(M.alphaEquivalent(h, h)).toBe(true);
-        expect(M.alphaEquivalent(f, h)).toBe(false);
-        expect(M.alphaEquivalent(h, f)).toBe(false);
-        expect(M.alphaEquivalent(g, h)).toBe(false);
-        expect(M.alphaEquivalent(h, g)).toBe(false);
-
-        var k = M.makeExpressionFunction(OM.var('w'), OM.simple('plus(w,w)'));
-        expect(M.alphaEquivalent(k, k)).toBe(true);
-        expect(M.alphaEquivalent(f, k)).toBe(false);
-        expect(M.alphaEquivalent(k, f)).toBe(false);
-        expect(M.alphaEquivalent(g, k)).toBe(false);
-        expect(M.alphaEquivalent(k, g)).toBe(false);
-        expect(M.alphaEquivalent(h, k)).toBe(false);
-        expect(M.alphaEquivalent(k, h)).toBe(false);
     });
 });
 
@@ -212,6 +144,40 @@ describe('Generalized Expression Functions', () => {
         expect(() => {
             M.makeGeneralExpressionFunctionApplication(v1, OM.simple('sq.uare(v1)'))
         }).toThrow();
+    });
+
+    test('should reliably detect whether a gEFA is applicable', () => {
+        var gEF1 = M.makeGeneralExpressionFunction(
+            [OM.var('v1')],
+            OM.simple('v1')
+        );
+        var gEFA1 = M.makeGeneralExpressionFunctionApplication(
+            gEF1,
+            OM.simple('sq.uare(v1)')
+        );
+
+        expect(M.isGeneralExpressionFunction(gEF1)).toBe(true);
+        expect(M.isGeneralExpressionFunctionApplication(gEFA1)).toBe(true);
+        expect(M.canApplyGeneralExpressionFunctionApplication(gEFA1)).toBe(true);
+
+        var gEFA2 = quick('_P_of_1');
+
+        expect(M.isGeneralExpressionFunctionApplication(gEFA2)).toBe(true);
+        expect(M.canApplyGeneralExpressionFunctionApplication(gEFA2)).toBe(false);
+    });
+
+    test('should correctly apply gEFAs to expressions', () => {
+        var gEFA1 = efa(ef('v1', 'pl.us(v1,10)'), '1');
+        var gEF1copy = gEFA1.copy();
+
+        expect(M.applyGeneralExpressionFunctionApplication(gEFA1).equals(quick('pl.us(1,10)'))).toBe(true);
+        expect(gEF1copy.equals(gEFA1)).toBe(true);
+
+        var gEFA2 = efa(ef(['v1','v2','v3'], 'pl.us(v1,v2,v3)'), ['10','20','30']);
+        var gEFA2copy = gEFA2.copy();
+
+        expect(M.applyGeneralExpressionFunctionApplication(gEFA2).equals(quick('pl.us(10,20,30)'))).toBe(true);
+        expect(gEFA2copy.equals(gEFA2)).toBe(true);
     });
 });
 
@@ -513,6 +479,32 @@ describe('The Constraint class', () => {
         }).toThrow();
     });
 
+    test('should correctly identify cases', () => {
+        var c1 = new M.Constraint(quick('a'), quick('a'));
+        expect(c1.case).toBe(M.CASES.CASE_IDENTITY);
+
+        var c2 = new M.Constraint(quick('_P'), quick('a'));
+        expect(c2.case).toBe(M.CASES.CASE_BINDING);
+
+        var c3 = new M.Constraint(quick('pl.us(X,Y)'), quick('pl.us(3,k)'));
+        expect(c3.case).toBe(M.CASES.CASE_SIMPLIFICATION);
+        
+        var c4 = new M.Constraint(quick('for.all[_X,_X]'), quick('for.all[y,y]'));
+        expect(c4.case).toBe(M.CASES.CASE_SIMPLIFICATION);
+
+        var c5 = new M.Constraint(quick('_P_of_1'), quick('a'));
+        expect(c5.case).toBe(M.CASES.CASE_EFA);
+
+        var c6 = new M.Constraint(quick('k'), quick('p'));
+        expect(c6.case).toBe(M.CASES.CASE_FAILURE);
+
+        var c7 = new M.Constraint(quick('pl.us(X,Y)'), quick('mi.nus(3,k)'));
+        expect(c7.case).toBe(M.CASES.CASE_FAILURE);
+
+        var c8 = new M.Constraint(quick('for.all[_X,_X]'), quick('there.exists[y,y]'));
+        expect(c8.case).toBe(M.CASES.CASE_FAILURE);
+    });
+
     test('should make copies correctly', () => {
         var p1 = quick('_f(_x)');
         var e1 = quick('a(b)');
@@ -593,6 +585,7 @@ describe('The ConstraintList class', () => {
         expect(next instanceof OM).toBe(true);
         expect(next.type).toBe('v');
         expect(next.name).toBe('v1');
+
         var CL2 = new M.ConstraintList(con1, con2, con3);
         expect(CL2).toBeTruthy();
         expect(CL2 instanceof M.ConstraintList).toBe(true);
@@ -604,6 +597,7 @@ describe('The ConstraintList class', () => {
         expect(next instanceof OM).toBe(true);
         expect(next.type).toBe('v');
         expect(next.name).toBe('v3');
+
         var CL3 = new M.ConstraintList(con1);
         expect(CL3).toBeTruthy();
         expect(CL3 instanceof M.ConstraintList).toBe(true);
@@ -615,6 +609,7 @@ describe('The ConstraintList class', () => {
         expect(next instanceof OM).toBe(true);
         expect(next.type).toBe('v');
         expect(next.name).toBe('v1');
+
         var CL4 = new M.ConstraintList(con3);
         expect(CL4).toBeTruthy();
         expect(CL4 instanceof M.ConstraintList).toBe(true);
@@ -699,35 +694,29 @@ describe('The ConstraintList class', () => {
         var con3 = new M.Constraint(quick('_v0'), quick('v1'));
         var CL1 = new M.ConstraintList();
         var CL2 = new M.ConstraintList(con1, con2, con3);
+
         expect(CL1.length).toBe(0);
         expect(CL2.length).toBe(3);
+        
         var failedAdd = CL2.add(con1, con2, con3);
         expect(failedAdd.length).toBe(3);
-        expect(CL2.contents[0]).toBe(con1);
-        expect(CL2.contents[1]).toBe(con2);
-        expect(CL2.contents[2]).toBe(con3);
-        var fakeCL2 = CL1.add(con1, con2, con3);
-        expect(fakeCL2.length).toBe(3);
-        expect(fakeCL2.contents[0]).toBe(con1);
-        expect(fakeCL2.contents[1]).toBe(con2);
-        expect(fakeCL2.contents[2]).toBe(con3);
+        expect(CL2.contents.length).toBe(3);
+
+        CL1.add(con1, con2, con3);
+        expect(CL1.contents.length).toBe(3);
+        expect(CL1.equals(CL2)).toBe(true);
+
         var CL3 = new M.ConstraintList(con1);
-        var fakeCL3 = CL1.add(con1);
         expect(CL3.length).toBe(1);
-        expect(CL3.contents[0]).toBe(con1);
-        expect(fakeCL3.length).toBe(1);
-        expect(fakeCL3.contents[0]).toBe(con1);
+        CL3.add(con2, con3)
+        expect(CL3.length).toBe(3);
+        expect(CL3.equals(CL2)).toBe(true);
+
         var CL4 = new M.ConstraintList(con3);
-        var fakeCL4 = CL1.add(con3);
-        expect(CL4.length).toBe(1);
-        expect(CL4.contents[0]).toBe(con3);
-        expect(fakeCL4.length).toBe(1);
-        expect(fakeCL4.contents[0]).toBe(con3);
-        var otherCL = CL3.add(con2);
-        expect(otherCL.length).toBe(2);
-        expect(otherCL.contents[0]).not.toBe(con1);
-        expect(otherCL.contents[0].equals(con1)).toBe(true);
-        expect(otherCL.contents[1]).toBe(con2);
+        expect(CL4.contents.length).toBe(1);
+        CL4.add(con1, con2, con3);
+        expect(CL4.contents.length).toBe(3);
+        expect(CL4.equals(CL2)).toBe(true);
     });
 
     test('should subtract constraints correctly', () => {
@@ -736,40 +725,38 @@ describe('The ConstraintList class', () => {
         var con3 = new M.Constraint(quick('_v0'), quick('v1'));
         var CL1 = new M.ConstraintList();
         var CL2 = new M.ConstraintList(con1, con2, con3);
+
         expect(CL1.length).toBe(0);
         expect(CL2.length).toBe(3);
-        expect(CL2.contents[0]).toBe(con1);
-        expect(CL2.contents[1]).toBe(con2);
-        expect(CL2.contents[2]).toBe(con3);
-        var fakeCL1 = CL2.remove(con1, con2, con3);
-        expect(fakeCL1.length).toBe(0);
+
+        CL2.remove(con1, con2, con3);
+        expect(CL2.length).toBe(0);
+        expect(CL2.equals(CL1)).toBe(true);
+
         var CL3 = new M.ConstraintList(con1);
-        var fakeCL3 = CL2.remove(con3, con2);
-        expect(CL2.length).toBe(3);
-        expect(CL2.contents[0]).toBe(con1);
-        expect(CL2.contents[1]).toBe(con2);
-        expect(CL2.contents[2]).toBe(con3);
-        expect(CL3.length).toBe(1);
-        expect(fakeCL3.length).toBe(1);
-        expect(fakeCL3.contents[0]).not.toBe(con1);
-        expect(fakeCL3.contents[0].equals(con1)).toBe(true);
-        var CL4 = new M.ConstraintList(con3);
-        var fakeCL4 = CL2.remove(con1, con2);
-        expect(CL4.length).toBe(1);
-        expect(CL4.contents[0]).toBe(con3);
-        expect(CL2.length).toBe(3);
-        expect(CL2.contents[0]).toBe(con1);
-        expect(CL2.contents[1]).toBe(con2);
-        expect(CL2.contents[2]).toBe(con3);
-        expect(fakeCL4.length).toBe(1);
-        expect(fakeCL4.contents[0]).not.toBe(con3);
-        expect(fakeCL4.contents[0].equals(con3)).toBe(true);
-        var otherCL = CL2.remove(con3);
-        expect(otherCL.length).toBe(2);
-        expect(otherCL.contents[0]).not.toBe(con1);
-        expect(otherCL.contents[0].equals(con1)).toBe(true);
-        expect(otherCL.contents[1]).not.toBe(con2);
-        expect(otherCL.contents[1].equals(con2)).toBe(true);
+        expect(CL3.contents.length).toBe(1);
+        CL3.remove(con2);
+        expect(CL3.contents.length).toBe(1);
+        CL3.remove(con1);
+        expect(CL3.contents.length).toBe(0);
+        expect(CL3.equals(CL1)).toBe(true);
+    });
+
+    test('should empty contents correctly', () => {
+        var con1 = new M.Constraint(quick('and(_A,_B)'), quick('and(x,y)'));
+        var con2 = new M.Constraint(quick('plus(_x,_x)'), quick('HELLO'));
+        var con3 = new M.Constraint(quick('_v0'), quick('v1'));
+        var CL1 = new M.ConstraintList();
+        var CL2 = new M.ConstraintList(con1, con2, con3);
+
+        expect(CL1.length).toBe(0);
+        expect(CL2.length).toBe(3);  
+        
+        CL1.empty();
+        CL2.empty();
+
+        expect(CL1.length).toBe(0);
+        expect(CL2.length).toBe(0);
     });
 
     test('should find constraint indices correctly', () => {
@@ -814,6 +801,33 @@ describe('The ConstraintList class', () => {
         expect(CL2.firstPairSatisfying(biggerPattern)).toEqual([con1, con3]);
         expect(CL3.firstPairSatisfying(biggerPattern)).toEqual([con2, con1]);
         expect(CL4.firstPairSatisfying(biggerPattern)).toBeNull();
+    });
+
+    test('should get best case correctly', () => {
+        var failure_constraint = new M.Constraint(quick('k'), quick('p'));
+        var identity_constraint = new M.Constraint(quick('a'), quick('a'));
+        var binding_constraint = new M.Constraint(quick('_Y'), quick('k'));
+        var simplification_constraint = new M.Constraint(quick('and(_P,_Q)'), quick('and(a,b)'));
+        var efa_constraint = new M.Constraint(quick('_P_of_1'), quick('0'));
+        var CL = new M.ConstraintList(
+            efa_constraint,
+            binding_constraint,
+            simplification_constraint,
+            failure_constraint,
+            identity_constraint,
+        );
+
+        expect(CL.getBestCase()).toBe(failure_constraint);
+        CL.remove(failure_constraint);
+        expect(CL.getBestCase()).toBe(identity_constraint);
+        CL.remove(identity_constraint);
+        expect(CL.getBestCase()).toBe(binding_constraint);
+        CL.remove(binding_constraint);
+        expect(CL.getBestCase()).toBe(simplification_constraint);
+        CL.remove(simplification_constraint);
+        expect(CL.getBestCase()).toBe(efa_constraint);
+        CL.remove(efa_constraint);
+        expect(CL.getBestCase()).toBeNull();
     });
 
     test('should know if an instance is a function', () => {
@@ -958,28 +972,20 @@ describe('Instantiation', () => {
     test('should correctly apply a list of instantiations', () => {
         // Check the case where the substitutions transform a pattern into an expression
         var con1 = new M.Constraint(quick('l.and(_P,_Q)'), quick('l.and(a,l.or(b,c))'));
-        var con1copy = con1.copy();
         var sub1 = new M.Constraint(quick('_P'), quick('a'));
-        var sub1copy = sub1.copy();
         var sub2 = new M.Constraint(quick('_Q'), quick('l.or(b,c)'));
-        var sub2copy = sub2.copy();
 
         var CL1 = new M.ConstraintList(con1);
-        var CL1copy = CL1.copy();
         var SL1 = new M.ConstraintList(sub1, sub2);
 
-        var result1 = M.instantiate(SL1, CL1);
-        expect(result1.contents[0].pattern.equals(quick('l.and(a,l.or(b,c))'))).toBe(true);
-        expect(result1.contents[0].pattern.equals(result1.contents[0].expression)).toBe(true);
-        // Check that instantiate leaves the originals untouched
-        expect(CL1.equals(CL1copy)).toBe(true);
-        expect(con1.equals(con1copy)).toBe(true);
-        expect(sub1.equals(sub1copy)).toBe(true);
-        expect(sub2.equals(sub2copy)).toBe(true);
+        M.instantiate(SL1, CL1);
+        expect(CL1.contents[0].pattern.equals(quick('l.and(a,l.or(b,c))'))).toBe(true);
+        expect(CL1.contents[0].pattern.equals(CL1.contents[0].expression)).toBe(true);
         // Check that the order of the subs list does not matter
+        var CL1new = new M.ConstraintList(con1);
         SL1 = new M.ConstraintList(sub2, sub1);
-        var result2 = M.instantiate(SL1,CL1);
-        expect(result1.equals(result2)).toBe(true);
+        M.instantiate(SL1,CL1new);
+        expect(CL1new.equals(CL1)).toBe(true);
 
         // Check the case where the substitutions do not make the pattern exactly match the expression
         var con2 = new M.Constraint(
@@ -992,9 +998,9 @@ describe('Instantiation', () => {
         var CL2 = new M.ConstraintList(con2);
         var SL2 = new M.ConstraintList(sub3, sub4);
 
-        var result3 = M.instantiate(SL2, CL2);
-        expect(result3.contents[0].pattern.equals(quick('m.ply(p.lus(3,k),mi.nus(3,k))'))).toBe(true);
-        expect(result3.equals(
+        M.instantiate(SL2, CL2);
+        expect(CL2.contents[0].pattern.equals(quick('m.ply(p.lus(3,k),mi.nus(3,k))'))).toBe(true);
+        expect(CL2.equals(
             new M.ConstraintList(
                 new M.Constraint(
                     quick('m.ply(p.lus(3,k),mi.nus(3,k))'),
@@ -1024,17 +1030,336 @@ describe('Instantiation', () => {
         var CL3 = new M.ConstraintList(con3);
         var SL3 = new M.ConstraintList(sub5, sub6, sub7);
 
-        var result4 = M.instantiate(SL3, CL3);
-        expect(result4.contents[0].pattern.equals(con3.expression)).toBe(true);
-        expect(result4.contents[0].pattern.equals(result4.contents[0].expression)).toBe(true);
+        M.instantiate(SL3, CL3);
+        expect(CL3.contents[0].pattern.equals(con3.expression)).toBe(true);
+        expect(CL3.contents[0].pattern.equals(CL3.contents[0].expression)).toBe(true);
 
         // In this case, the order of substitutions does matter. 
         // But, replacing the temporary variables should give the same result.
         var sub8 = sub5.copy();
         sub8.expression.replaceWith(M.applyInstantiation(sub6, sub8.expression));
         sub8.expression.replaceWith(M.applyInstantiation(sub7, sub8.expression));
-        var result5 = M.instantiate(new M.ConstraintList(sub8), CL3);
-        expect(result5.contents[0].pattern.equals(con3.expression)).toBe(true);
-        expect(result5.contents[0].pattern.equals(result5.contents[0].expression)).toBe(true);
+        var CL4 = new M.ConstraintList(con3)
+        M.instantiate(new M.ConstraintList(sub8), CL4);
+        expect(CL4.contents[0].pattern.equals(con3.expression)).toBe(true);
+        expect(CL4.contents[0].pattern.equals(CL4.contents[0].expression)).toBe(true);
     });
+});
+
+describe('Constraint manipulation functions',  () => {
+    test('should correctly break constraints into argument pairs', () => {
+        var constr1 = new M.Constraint(quick('and(_P,_Q)'), quick('and(a,or(b,c))'));
+        expect(constr1.case).toBe(M.CASES.CASE_SIMPLIFICATION);
+        var arg_pairs1 = M.breakIntoArgPairs(constr1);
+        expect(arg_pairs1.length).toBe(2);
+        expect(arg_pairs1[0].equals(new M.Constraint(quick('_P'), quick('a')))).toBe(true);
+        expect(arg_pairs1[1].equals(new M.Constraint(quick('_Q'), quick('or(b,c)')))).toBe(true);
+
+        var constr2 = new M.Constraint(
+            quick('times(plus(_X,_Y),minus(_X,_Y))'),
+            quick('times(plus(3,k),minus(3,p))')
+        );
+        var arg_pairs2 = M.breakIntoArgPairs(constr2);
+        expect(arg_pairs2.length).toBe(2);
+        var arg_pairs3 = arg_pairs2.map(arg => M.breakIntoArgPairs(arg))
+        arg_pairs3 = [].concat.apply([], arg_pairs3);
+        expect(arg_pairs3.length).toBe(4);
+        expect(arg_pairs3[0].equals(new M.Constraint(quick('_X'), quick('3')))).toBe(true);
+        expect(arg_pairs3[1].equals(new M.Constraint(quick('_Y'), quick('k')))).toBe(true);
+        expect(arg_pairs3[2].equals(new M.Constraint(quick('_X'), quick('3')))).toBe(true);
+        expect(arg_pairs3[3].equals(new M.Constraint(quick('_Y'), quick('p')))).toBe(true);
+    });
+});
+
+describe('Expression Function Creators', () => {
+    test('should correctly create constant functions', () => {
+        var e1 = quick('pl.us(41,1)');
+        var nv1 = quick('v1');
+
+        expect(e1.type).toBe('a');
+        expect(nv1.type).toBe('v');
+        expect(M.makeConstantExpression(nv1, e1).equals(ef('v1', 'pl.us(41,1)'))).toBe(true);
+
+        var e2 = quick('pl.us(a,b,c,d)');
+        var nv2 = quick('_X');
+        expect(e2.type).toBe('a');
+        expect(nv2.type).toBe('v');
+        expect(M.isMetavariable(nv2)).toBe(true);
+        expect(M.makeConstantExpression(nv2, e2).equals(ef('_X', 'pl.us(a,b,c,d)'))).toBe(true);
+
+        expect(M.makeConstantExpression('v1', 'pl.us(a,b)')).toBeNull();
+    });
+
+    test('should correctly create projections', () => {
+        var vars1 = [quick('v1')];
+        var p1 = quick('v1');
+        var proj1 = M.makeProjectionExpression(vars1, p1);
+        expect(proj1.equals(ef('v1','v1'))).toBe(true);
+        expect(vars1[0] === proj1.variables[0]).toBe(false);
+        expect(p1 === proj1.body).toBe(false);
+        expect(vars1[0].equals(proj1.variables[0])).toBe(true);
+        expect(p1.equals(proj1.body)).toBe(true);
+
+        var vars2 = [quick('v1'), quick('v2'), quick('v3'), quick('v4')];
+        var p2 = quick('v3');
+        var p3 = quick('v4');
+        var proj2 = M.makeProjectionExpression(vars2, p2);
+        var proj3 = M.makeProjectionExpression(vars2, p3);
+        expect(proj2.equals(ef(['v1','v2','v3','v4'],'v3'))).toBe(true);
+        expect(proj3.equals(ef(['v1', 'v2', 'v3', 'v4'], 'v4'))).toBe(true);
+
+        expect(() => {
+            M.makeProjectionExpression(vars1, p2)
+        }).toThrow();
+
+        expect(M.makeProjectionExpression(['v1','v2'], 'v1')).toBeNull();
+    });
+
+    test('should correctly create imitations', () => {
+        var vars1 = [quick('v1')];
+        var expr1 = quick('not.eq(0,1)');
+        var imit1 = M.makeImitationExpression(vars1, expr1);
+        expect(imit1.imitationExpr.equals(ef('v1', 'not.eq(_H1_of_v1,_H2_of_v1)'))).toBe(true);
+        expect(imit1.tempVars.length).toBe(2);
+        expect(imit1.tempVars[0].equals(quick('_H1'))).toBe(true);
+        expect(imit1.tempVars[1].equals(quick('_H2'))).toBe(true);
+
+        var vars2 = [quick('v1'), quick('v2'), quick('v3'), quick('v4')];
+        var expr2 = quick('pl.us(a,b,c,d)');
+        var imit2 = M.makeImitationExpression(vars2, expr2);
+        expect(imit2.imitationExpr.variables.length).toBe(4);
+        expect(imit2.imitationExpr.body.children[0].equals(quick('pl.us'))).toBe(true);
+        expect(imit2.tempVars.length).toBe(4);
+        expect(imit2.tempVars[0].equals(quick('_H1'))).toBe(true);
+        expect(imit2.tempVars[3].equals(quick('_H4'))).toBe(true);
+    });
+});
+
+describe('The MatchingChallenge class (basic functionality)', () => {
+    test('should correctly create instances of a matching challenge', () => {
+        // Test creating an empty instance
+        var mc1 = new M.MatchingChallenge()
+        expect(mc1).toBeInstanceOf(M.MatchingChallenge);
+        expect(mc1.challengeList.length).toBe(0);
+        expect(mc1.solutions.length).toBe(0);
+        expect(mc1.solvable).toBeUndefined();
+        
+        // Test calling constructor with args
+        var mc2 = new M.MatchingChallenge([quick('_X'), quick('a')]);
+        expect(mc2).toBeInstanceOf(M.MatchingChallenge);
+        expect(mc2.challengeList.length).toBe(1);
+        expect(mc2.solutions.length).toBe(0);
+        expect(mc2.solvable).toBeUndefined();
+
+        var constraints = [
+            [quick('_X'), quick('a')],
+            [quick('_Y'), quick('b')],
+            [quick('_Z'), quick('c')]
+        ];
+        var mc3 = new M.MatchingChallenge(...constraints);
+        expect(mc3).toBeInstanceOf(M.MatchingChallenge);
+        expect(mc3.challengeList.length).toBe(3);
+        expect(mc3.solutions.length).toBe(0);
+        expect(mc3.solvable).toBeUndefined();
+    });
+
+    test('should correctly add a single constraint when there are no solutions', () => {
+        // Test starting with an empty list
+        var mc1 = new M.MatchingChallenge();
+        mc1.addConstraint(quick('_X'), quick('a'));
+        expect(mc1.challengeList.length).toBe(1);
+        mc1.addConstraint(quick('_Y'), quick('b'));
+        expect(mc1.challengeList.length).toBe(2);
+        mc1.addConstraint(quick('_Z'), quick('c'));
+        expect(mc1.challengeList.length).toBe(3);
+
+        // Test starting with a list made using constructor
+        var constraints = [
+            [quick('_X'), quick('a')],
+            [quick('_Y'), quick('b')],
+            [quick('_Z'), quick('c')]
+        ];
+        var mc2 = new M.MatchingChallenge(...constraints);
+        expect(mc2.challengeList.length).toBe(3);
+        mc2.addConstraint(quick('_A'), quick('x'));
+        expect(mc2.challengeList.length).toBe(4);
+    });
+
+    test('should correctly add multiple constraints when there are no solutions', () => {
+        // Test starting with an empty list
+        var mc1 = new M.MatchingChallenge();
+        var constraints = [
+            [quick('_X'), quick('a')],
+            [quick('_Y'), quick('b')],
+            [quick('_Z'), quick('c')]
+        ];
+        mc1.addConstraints(...constraints);
+        expect(mc1.challengeList.length).toBe(3);
+
+        // Test starting with a list made using constructor
+        var mc2 = new M.MatchingChallenge(...constraints);
+        mc2.addConstraints([quick('_A'), quick('x')], [quick('_B'), quick('y')]);
+        expect(mc2.challengeList.length).toBe(5);
+    });
+
+    test('should correctly add a single constraint when there are solutions', () => {
+        var mc1 = new M.MatchingChallenge();
+        var sub1 = new M.Constraint(quick('_P'), quick('a'));
+        var sub2 = new M.Constraint(quick('_Q'), quick('l.or(b,c)'));
+        var SL1 = new M.ConstraintList(sub1, sub2);
+        mc1.solutions = SL1;
+        mc1.addConstraint(quick('l.and(_P,_Q)'), quick('l.and(a,l.or(b,c))'));
+        expect(mc1.challengeList.contents[0].pattern.equals(
+            mc1.challengeList.contents[0].expression
+        )).toBe(true);
+    });
+
+    test('should correctly add multiple constraints when there are solutions', () => {
+        var mc1 = new M.MatchingChallenge();
+        var sub1 = new M.Constraint(quick('_P'), quick('a'));
+        var sub2 = new M.Constraint(quick('_Q'), quick('l.or(b,c)'));
+        var SL1 = new M.ConstraintList(sub1, sub2);
+        mc1.solutions = SL1;
+        mc1.addConstraints([quick('l.and(_P,_Q)'), quick('l.and(a,l.or(b,c))')]);
+        expect(mc1.challengeList.contents[0].pattern.equals(
+            mc1.challengeList.contents[0].expression
+        )).toBe(true);
+    });
+
+    test('should correctly create clones of itself', () => {
+        // Test cloning empty challenge
+        var mc1 = new M.MatchingChallenge();
+        var mc1clone = mc1.clone();
+        expect(mc1.challengeList.equals(mc1clone.challengeList)).toBe(true);
+        expect(mc1.solutions.equals(mc1clone.solutions)).toBe(true);
+        expect(mc1.solvable).toEqual(mc1clone.solvable);
+
+        // Test cloning with some constraints
+        var constraints = [
+            [quick('_X'), quick('a')],
+            [quick('_Y'), quick('b')],
+            [quick('_Z'), quick('c')]
+        ];
+        var mc2 = new M.MatchingChallenge(...constraints);
+        var mc2clone = mc2.clone();
+        expect(mc2.challengeList.equals(mc2clone.challengeList)).toBe(true);
+        expect(mc2.solutions.equals(mc2clone.solutions)).toBe(true);
+        expect(mc2.solvable).toEqual(mc2clone.solvable);
+
+        // Test cloning with some constraints and solutions
+        var mc3 = new M.MatchingChallenge();
+        var sub1 = new M.Constraint(quick('_P'), quick('a'));
+        var sub2 = new M.Constraint(quick('_Q'), quick('l.or(b,c)'));
+        var SL1 = new M.ConstraintList(sub1, sub2);
+        mc3.solutions = SL1;
+        mc3.addConstraints([quick('l.and(_P,_Q)'), quick('l.and(a,l.or(b,c))')]);
+        var mc3clone = mc3.clone();
+        expect(mc3.challengeList.equals(mc3clone.challengeList)).toBe(true);
+        expect(mc3.solutions.equals(mc3clone.solutions)).toBe(true);
+        expect(mc3.solvable).toEqual(mc3clone.solvable);
+    });
+
+    test.todo('should correctly identify solvability');
+
+    test.todo('should correctly return the number of solutions');
+});
+
+describe('The MatchingChallenge class (solving)', () => {
+    const CToString = (c) => {
+        return '( ' + c.pattern.simpleEncode() + ', ' + c.expression.simpleEncode() + ' )';
+    };
+    const CLToString = (cl) => {
+        if (cl === null) { return null; }
+        return '{ ' + cl.contents.map((c) => CToString(c)).join(', ')  + ' }'
+    };
+    const debug_print_constraint = (c) => {
+        console.log(CToString(c));
+    }
+    const debug_print_constraintList = (cl) => {
+        console.log(CLToString(cl));
+    }
+
+    const newConstraintObject = (pattern_string, expression_string) => {
+        return new M.Constraint(
+            quick(pattern_string),
+            quick(expression_string)
+        );
+    }
+    const newConstraints = (...string_pairs) => {
+        var constraints = [];
+        for (let i = 0; i < string_pairs.length; i++) {
+            let string_pair = string_pairs[i];
+            constraints.push(
+                string_pair.map(
+                    (s) => quick(s)
+                )
+            );
+        }
+        return constraints;
+    };
+    const newMC = (constraints) => {
+        return new M.MatchingChallenge(...constraints);
+    }
+
+    test('should correctly solve example challenges in the paper', () => {
+        var constraints;
+        var mc;
+        var sols;
+
+        // Example 1
+        constraints = newConstraints(
+            ['and(_P,_Q)', 'and(a,or(b,c))']
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(sols.contents[0].equals(newConstraintObject('_P', 'a'))).toBe(true);
+        expect(sols.contents[1].equals(newConstraintObject('_Q', 'or(b,c)'))).toBe(true);
+
+        // Example 2
+        constraints = newConstraints(
+            ['multiply(plus(_X,_Y),minus(_X,_Y))', 'multiply(plus(3,k),minus(3,p))']
+        )
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(sols.length).toBe(0);
+
+        // Example 3
+        constraints = newConstraints(
+            ['and(_P_of_1,_P_of_2)', 'and(neq(0,1),neq(0,2))']
+        )
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        // debug_print_constraintList(sols);
+    });
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // * In the tests that follow, the comments marking test numbers
+    // * correspond to the document "Tests of the Matching Algorithm"
+    ////////////////////////////////////////////////////////////////////////////////
+
+    test.skip('should correctly solve small challenges', () => {
+        var constraints;
+        var mc;
+
+        // Test 1
+        constraints = newConstraints(
+            ['_P_of__x', 'b(2)'],
+            ['_P_of__y', 'b(3)']
+        );
+        mc = newMC(constraints);
+        mc.getSolutions();
+        expect(mc.solutions.length).toBe(2);
+    });
+
+    test.todo('should correctly solve challenges involving the equality elimination rule');
+
+    test.todo('should correctly solve challenges involving the universal elimination rule');
+
+    test.todo('should correctly solve challenges involving the universal introduction rule');
+
+    test.todo('should correctly solve challenges involving the existential introduction rule');
+
+    test.todo('should correctly solve challenges involving the existential elimination rule');
+
+    test.todo('should correctly solve challenges involving induction of the natural numbers');
 });

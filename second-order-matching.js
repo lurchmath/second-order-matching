@@ -45,84 +45,12 @@ function isMetavariable(variable) {
     );
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
-// * The following are functions and constants related to expression functions.
+// * The following are generalised versions expression functions.
 // * When P: E -> E, P is an expression function.
-////////////////////////////////////////////////////////////////////////////////
-
-// const expressionFunction = OM.symbol('EF', 'SecondOrderMatching');
-// const expressionFunctionApplication = OM.symbol('EFA', 'SecondOrderMatching');
-
-// /**
-//  * Makes a new expression function with the meaning λv.B, where v is a variable and B is any OpenMath expression.
-//  * The variable will be bound in the resulting expression.
-//  * @param {OM} variable - the variable to be bound
-//  * @param {OM} body - the expression which may bind the variable
-//  */
-// function makeExpressionFunction(variable, body) {
-//     if (variable.type !== 'v') {
-//         throw 'When creating an expression function, its parameter must be a variable';
-//     }
-//     return OM.bin(expressionFunction, variable, body);
-// }
-
-// /**
-//  * Tests whether an expression is an expression function.
-//  * @param {OM} expression - the expression to be checked
-//  */
-// function isExpressionFunction(expression) {
-//     return (
-//         expression instanceof OM
-//         && expression.type === 'bi' 
-//         && expression.variables.length === 1 
-//         && expression.symbol.equals(expressionFunction)
-//     );
-// }
-
-// /**
-//  * Makes an expression whose meaning is the application of an expression function to an argument. 
-//  * Does not verify that func is an expression function; it need not be one, but can be a metavariable, for example. 
-//  * @param {OM} func - the function (or otherwise) which is applied
-//  * @param {OM} argument - the argument that the expression function is applied to
-//  */
-// function makeExpressionFunctionApplication(func, argument) {
-//     return OM.app(expressionFunctionApplication, func, argument);
-// }
-
-// /**
-//  * Tests whether an expression is an expression function application.
-//  * @param {OM} expression - the expression to be tested
-//  */
-// function isExpressionFunctionApplication(expression) {
-//     return (
-//         expression instanceof OM
-//         && expression.type === 'a' 
-//         && expression.children.length === 3 
-//         && expression.children[0].equals(expressionFunctionApplication)
-//     );
-// }
-
-// /**
-//  * Applies an expression function to an expression.
-//  * This is the equivalent of a beta reduction. 
-//  * One important caveat is that no checking is done for variable capture.
-//  * @param  {OM} func - the expression function to be applied
-//  * @param  {OM} expression - the expression to which the expression function is applied
-//  */
-// function applyExpressionFunction(func, expression) {
-//     if (isExpressionFunction(func)) {
-//         var result = func.body.copy();
-//         result.replaceFree(func.variables[0], expression);
-//         return result;
-//     } else return null;
-// }
-
-////////////////////////////////////////////////////////////////////////////////
-// * The following are generalised versions of the functions above.
-// * This allows us to have expression functions with more than one variable.
-// * TODO: When these functions work as intended, remove the section above and
-// *       refactor any code relying on the old functions.
-// *       To make this simpler, use same arguments structure (if possible).
+// * This generalisation allows us to have expression functions 
+// * with more than one variable.
 ////////////////////////////////////////////////////////////////////////////////
 
 const generalExpressionFunction = OM.symbol('gEF', 'SecondOrderMatching');
@@ -135,6 +63,9 @@ const generalExpressionFunctionApplication = OM.symbol('gEFA', 'SecondOrderMatch
  * @param {OM} body - any OM expression
  */
 function makeGeneralExpressionFunction(variables, body) {
+    if (!(variables instanceof Array)) {
+        variables = [variables];
+    }
     for (let i = 0; i < variables.length; i++) {
         var variable = variables[i];
         if (variable.type !== 'v') {
@@ -162,18 +93,18 @@ function isGeneralExpressionFunction(expression) {
  * F(arg) where F is either a general expression function (gEF), or a 
  * metavariable which is expected to be replaced by a gEF.
  * In the case that F is a gEF, the expression function can be applied
- * to the argument see `applyGeneralExpressionFunction`.
+ * to the argument see `applyGeneralExpressionFunctionApplication`.
  * @param {OM} func - either a gEF or something which can be instantiated as a gEF.
  * @param {OM[]} arguments - a list of OM expressions
  */
-function makeGeneralExpressionFunctionApplication(func, argument) {
+function makeGeneralExpressionFunctionApplication(func, args) {
     if (!(isGeneralExpressionFunction(func) || isMetavariable(func))) {
         throw 'When making gEFAs, the func must be either a EF or a metavariable'
     }
-    if (!(argument instanceof Array)) {
-        argument = [argument]
+    if (!(args instanceof Array)) {
+        args = [args]
     }
-    return OM.app(generalExpressionFunctionApplication, func, ...argument);
+    return OM.app(generalExpressionFunctionApplication, func, ...args);
 }
 
 /**
@@ -185,6 +116,34 @@ function isGeneralExpressionFunctionApplication(expression) {
         && expression.type === 'a'
         && expression.children[0].equals(generalExpressionFunctionApplication)
     );
+}
+
+/**
+ * Tests whether a gEFA is of the form gEF(args).
+ * If the gEFA is of this form, `applyGeneralExpressionFunctionApplication`
+ * can be called with this gEFA as an argument.
+ * @param {OM} gEFA - a general expression function application
+ */
+function canApplyGeneralExpressionFunctionApplication(gEFA) {
+    if (
+        isGeneralExpressionFunctionApplication(gEFA)
+        && isGeneralExpressionFunction(gEFA.children[1])
+    ) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ * If `canApplyGeneralExpressionFunctionApplication` is true,
+ * returns the beta reduction of the gEF and the arguments it is applied to.
+ * @param {OM} gEFA - a general expression function application
+ */
+function applyGeneralExpressionFunctionApplication(gEFA) {
+    if (canApplyGeneralExpressionFunctionApplication(gEFA)) {
+        return betaReduce(gEFA.children[1], gEFA.children.slice(2));
+    }
+    return null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -277,6 +236,8 @@ function replaceWithoutCapture(expr, variable, replacement) {
             // variable capture will occur in the following case
             if (expr.body.occursFree(variable) && replacement.occursFree(bound_var)) { 
                 // FIXME: this doesn't seem like the best way to get new variables, but works for now.
+                //      need some way of generating global new variables  
+                //      E.g. a class called new variable stream
                 expr.replaceWith(alphaConvert(expr, bound_var, getNewVariableRelativeTo(expr)));
             }
         }
@@ -329,7 +290,7 @@ function alphaEquivalent(expr1, expr2, firstcall=true) {
         var expr2conv = expr2.copy();
         for (let i = 0; i < expr1.variables.length; i++) {
             let new_var = getNewVariableRelativeTo(expr1conv, expr2conv);
-            expr1conv = alphaConvert(expr1conv, expr1.variables[i], new_var)
+            expr1conv = alphaConvert(expr1conv, expr1.variables[i], new_var);
             expr2conv = alphaConvert(expr2conv, expr2.variables[i], new_var);
         }
         return alphaEquivalent(expr1conv.body, expr2conv.body, false);
@@ -347,7 +308,7 @@ function alphaEquivalent(expr1, expr2, firstcall=true) {
  * This beta reduction is capture avoiding. 
  * See `replaceWithoutCapture` for details.
  * @param {OM} gEF - a general expression function with n variables
- * @param {OM[]} expr_list - a list of _listessions of length n
+ * @param {OM[]} expr_list - a list of expressions of length n
  * @returns an expression manipulated as described above
  */
 function betaReduce(gEF, expr_list) {
@@ -384,6 +345,49 @@ function betaReduce(gEF, expr_list) {
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+ * @constant CASE_IDENTITY represents the case in which the pattern 
+ * and expression are equal (and hence the pattern contains no metavariables)
+ */
+const CASE_IDENTITY = 1
+
+/**
+ * @constant CASE_BINDING represents the case in which the pattern is 
+ * just a metavariable
+ */
+const CASE_BINDING = 2
+
+/**
+ * @constant CASE_SIMPLIFICATION represents the case in which both the pattern
+ * and the expression are functions and the 'head' of the pattern function is
+ * not a metavariable
+ */
+const CASE_SIMPLIFICATION = 3
+
+/**
+ * @constant CASE_EFA represents the case in which the pattern is gEFA,
+ * or a function with a metavariable as its 'head', and `CASE_SIMPLIFICATION`
+ * does not hold
+ */
+const CASE_EFA = 4
+
+/**
+ * @constant CASE_FAILURE represents the case of failure, when no other cases apply
+ */
+const CASE_FAILURE = 6
+
+/**
+ * @constant CASES an enum-like object to easily access cases.
+ */
+const CASES = {
+    CASE_IDENTITY: CASE_IDENTITY,
+    CASE_BINDING: CASE_BINDING,
+    CASE_SIMPLIFICATION: CASE_SIMPLIFICATION,
+    CASE_EFA: CASE_EFA,
+    CASE_FAILURE: CASE_FAILURE
+}
+Object.freeze(CASES);
+
+/**
  * Represents a pattern-expression pair.
  */
 class Constraint {
@@ -398,6 +402,7 @@ class Constraint {
         }
         this.pattern = pattern;
         this.expression = expression;
+        this.case = this.getCase(pattern, expression);
     }
 
     /**
@@ -421,6 +426,46 @@ class Constraint {
      */
     isSubstitution() {
         return isMetavariable(this.pattern);
+    }
+
+    /**
+     * Returns the case, as described in the corresponding paper 
+     * (and briefly in the case constant declarations)
+     * @param {OM} pattern 
+     * @param {OM} expression 
+     */
+    getCase(pattern, expression) {
+        if (pattern.equals(expression)) {
+            return CASE_IDENTITY;
+        } else if (isMetavariable(pattern)) {
+            return CASE_BINDING;
+        } else if (
+                (   
+                    (
+                        (pattern.type == 'a' && !isGeneralExpressionFunctionApplication(pattern)
+                        && !isMetavariable(pattern.children[0]))
+                        && expression.type == 'a'
+                    )
+                    && 
+                    pattern.children[0].equals(expression.children[0])
+                    &&
+                    pattern.children.length == expression.children.length
+                )
+                || 
+                (
+                    (pattern.type == 'bi' && expression.type == 'bi')
+                    &&
+                    pattern.symbol.equals(expression.symbol)
+                )
+            ) {
+            return CASE_SIMPLIFICATION;
+        } else if (isGeneralExpressionFunctionApplication(pattern) 
+            || isMetavariable(pattern.children[1])
+            ) {
+            return CASE_EFA;
+        } else {
+            return CASE_FAILURE;
+        }
     }
 }
 
@@ -453,7 +498,7 @@ function getVariablesIn(expression) {
 /**
  * Represents a list of constraints. 
  * However, most of the behaviour of this class mimics a set, 
- * except for a few cases in which we use indexes.
+ * except for a few cases in which we use indices.
  */
 class ConstraintList {
     /**
@@ -517,35 +562,40 @@ class ConstraintList {
     /**
      * Adds constraints only if they are not in the current list (as if we had a set). 
      * @param ...constraints - the constraints to be added
-     * @returns a copy of this list with any added constraints
+     * @returns the new contents
      */
     add(...constraints) {
-        var result = this.copy();
         for (let i = 0; i < constraints.length; i++) {
             var constraint = constraints[i];
-            var index = result.indexAtWhich((c) => { return c.equals(constraint); });
+            var index = this.indexAtWhich((c) => { return c.equals(constraint); });
             if (index == -1) {
-                result.contents.push(constraint);
+                this.contents.push(constraint.copy());
             }
         }
-        return result;
+        return this.contents;
     }
 
     /**
      * Removes constraints from the list and ignores any constraints not in the list.
      * @param ...constraints - the constraints to be removed
-     * @returns a copy of this list with constraints removed
+     * @returns the new contents
      */
     remove(...constraints) {
-        var result = this.copy();
         for (let i = 0; i < constraints.length; i++) {
             var constraint = constraints[i];
-            var index = result.indexAtWhich((c) => { return c.equals(constraint); });
+            var index = this.indexAtWhich((c) => { return c.equals(constraint); });
             if (index > -1) {
-                result.contents.splice(index, 1);
+                this.contents.splice(index, 1);
             }
         }
-        return result;
+        return this.contents;
+    }
+
+    /**
+     * Makes the list empty by removing all constraints
+     */
+    empty() {
+        this.contents = [];
     }
 
     /**
@@ -573,6 +623,28 @@ class ConstraintList {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the constraint with the 'best' case from the start of the list.
+     * The cases are defined in the corresponding paper.
+     * @returns {Constraint} the constraint with the best case
+     */
+    getBestCase() {
+        var constraint;
+        if ((constraint = this.firstSatisfying(c => c.case == CASE_FAILURE)) != null) {
+            return constraint;
+        } else if ((constraint = this.firstSatisfying(c => c.case == CASE_IDENTITY)) != null) {
+            return constraint;
+        } else if ((constraint = this.firstSatisfying(c => c.case == CASE_BINDING)) != null) {
+            return constraint;
+        } else if ((constraint = this.firstSatisfying(c => c.case == CASE_SIMPLIFICATION)) != null) {
+            return constraint;
+        } else if ((constraint = this.firstSatisfying(c => c.case == CASE_EFA)) != null) {
+            return constraint;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -648,25 +720,14 @@ function applyInstantiation(substitution, pattern) {
     if (isMetavariable(result) && substitution.pattern.equals(result)) {
         return substitution.expression.copy();
     } else if (result.type == 'a') {
-        let head;
-        let args;
-
-        if (isGeneralExpressionFunctionApplication(result)) {
-            head = result.children[1];
-            args = result.children.slice(2);
-        } else {
-            head = result.children[0]
-            args = result.children.slice(1);
+        // Apply this instantiation for each part of the application
+        for (let i = 0; i < result.children.length; i++) {
+            let ch = result.children[i];
+            ch.replaceWith(applyInstantiation(substitution, ch));
         }
-
-        head.replaceWith(applyInstantiation(substitution, head));
-        for (let i = 0; i < args.length; i++) {
-            let arg = args[i];
-            arg.replaceWith(applyInstantiation(substitution, arg));
-        }
-        
-        if (isGeneralExpressionFunction(head)) {
-            return betaReduce(head, args);
+        // If the above created a gEFA which can be applied, apply it
+        if (canApplyGeneralExpressionFunctionApplication(result)) {
+            return applyGeneralExpressionFunctionApplication(result);
         }
     } else if (result.type == 'bi') {
         // Apply this instantiation to the body first to avoid a naive substitution of metavariables
@@ -690,44 +751,369 @@ function applyInstantiation(substitution, pattern) {
  * in the summary paper (section 3).
  * @param {ConstraintList} substitutions - a non empty constraint list satisfying isFunction()
  * @param {ConstraintList} patterns - a non empty constraint list
- * @returns a copy of the constraints list containing the patterns with any substitutions
  */
 function instantiate(substitutions, patterns) {
-    let result = patterns.copy()
     for (let i = 0; i < substitutions.length; i++) {
         var substitution = substitutions.contents[i];
-        for (let j = 0; j < result.length; j++) {
-            var pattern = result.contents[j].pattern;
+        for (let j = 0; j < patterns.length; j++) {
+            var pattern = patterns.contents[j].pattern;
             pattern.replaceWith(
                 applyInstantiation(substitution, pattern)
             );
         }
     }
-    return result;
 }
 
+// TODO: Should breakIntoArgPairs also handle bindings?
+
+/**
+ * Takes a constraint which should match the case where
+ * the the pattern and expression are ordinary functions
+ * and their 'heads' are equal
+ * @param {Constraint} constraint - constraint with CASE_SIMPLIFICATION
+ * @returns {Constraint[]} a list of constraints (but not a constraint list) which is the
+ * result of 'zipping' the arguments of each function
+ */
+function breakIntoArgPairs(constraint) {
+    var arg_pairs = [];
+    if (constraint.pattern.type == 'a' && constraint.expression.type == 'a') {
+        let pattern_children = constraint.pattern.children;
+        let expression_children = constraint.expression.children;
+        // In getting the case, we checked that the length of children was the same
+        for (let i = 1; i < pattern_children.length; i++) {
+            arg_pairs.push(
+                new Constraint(
+                    pattern_children[i].copy(), 
+                    expression_children[i].copy()
+                )
+            );
+        }
+    }
+    return arg_pairs;
+}
+
+/**
+ * Takes a new variable (relative to some constraint list) and an expression
+ * and returns a gEF which has the meaning λv_n.expr where v_n is the new
+ * variable and expr is the expression. 
+ * I.e. creates a constant expression function.
+ * @param {OM} new_variable - an OM variable
+ * @param {OM} expression - an OM expression
+ */
 function makeConstantExpression(new_variable, expression) {
-    // TODO: take a new variable vn (relative to some constraint list)
-    // return an expression of the form:
-    // CF = λvn.expression
+    if (new_variable instanceof OM && expression instanceof OM) {
+        return makeGeneralExpressionFunction(new_variable.copy(), expression.copy());
+    }
+    return null;
 }
 
+/**
+ * Takes a list of variables v_1,...,v_k and a single variable (a point)
+ * v_i and returns a gEF with the meaning λv_1,...,v_k.v_i.
+ * I.e. returns a projection expression function for v_i with k arguments.
+ * @param {OM[]} variables - a list of OM variables 
+ * @param {OM} point -  a single OM variable
+ */
 function makeProjectionExpression(variables, point) {
-    // TODO: take in a list of variables v1,...,vk and a single point vi
-    // return an expression function of the form:
-    // π_{k,i} = λv1,...,vk.vi
+    if (variables.every((v) => v instanceof OM) && point instanceof OM) {
+        if (!(variables.map((v) => v.name).includes(point.name))) {
+            throw "When making a projection function, the point must occur in the list of variables"
+        }
+        return makeGeneralExpressionFunction(
+            variables.map((v) => v.copy()),
+            point.copy()
+        );
+    }
+    return null;
 }
 
-function makeImitationExpression(variables, exoression) {
-    // TODO: take in a list of variables and an expression of the form:
-    // expr = g(e1,...,em)
-    // return an expression function of the form:
-    // EF = λv1,...,vk.g(H1(v1,...,vk),...,Hm(v1,...,vk))
-    // where the v1,...,vk are the given variables
+// TODO: Should makeImitationExpression also handle bindings?
+
+/**
+ * Takes a list of variables, denoted `v1,...,vk`, and an expression 
+ * which is an application, denoted `g(e1,...,em)`. 
+ * Returns a gEF with the meaning 
+ * `λv_1,...,v_k.g(H_1(v_1,...,v_k),...,H_m(v_1,...,v_k))`
+ * where each `H_i` denotes a temporary gEFA as well as a list of the
+ * newly created temporary metavariables `[H_1,...,H_m]`.
+ * 
+ * I.e. it returns an 'imitation' expression function where
+ * the body is the original expression with each argument
+ * replaced by a temporary gEFA.
+ * @param {OM} variables - a list of OM variables
+ * @param {OM} expr - an OM application
+ * @returns an object with two properties as described above: 
+ * `imitationExpr` and `tempVars`.
+ */
+function makeImitationExpression(variables, expr) {
+    /**
+     * Helper function which takes a function and returns
+     * a list of metavariables named `H_1,...,H_m` where
+     * `m` is the number of arguments in the function.
+     */
+    function getTempVars(fn) {
+        let vars = [];
+        for (let index = 1; index < fn.children.length; index++) {
+            let new_metavar = OM.var('H' + index);
+            setMetavariable(new_metavar);
+            vars.push(new_metavar);
+        }
+        return vars;
+    }
+
+    /**
+     * Helper function which takes a head of a function,
+     * a list of bound variables (i.e. the variables argument) of the 
+     * parent function, and a list of temporary metavariables (created
+     * by `getTempVars`). Returns an expression which will become the body
+     * of the imitation function. This is an application of the form:
+     * `head(temp_metavars[0](bound_vars),...,temp_metavars[len-1](bound_vars))`
+     */
+    function createBody(head, bound_vars, temp_metavars) {
+        let args = [];
+        for (let i = 0; i < temp_metavars.length; i++) {
+            let temp_metavar = temp_metavars[i];
+            args.push(
+                makeGeneralExpressionFunctionApplication(
+                    temp_metavar,
+                    bound_vars
+                )
+            );
+        }
+        return OM.app(head, ...args);
+    }
+
+    var imitationExpr = null;
+    var tempVars = null;
+
+    if (variables.every((v) => v instanceof OM) && expr instanceof OM && expr.type == 'a') {
+        tempVars = getTempVars(expr);
+        imitationExpr = makeGeneralExpressionFunction(
+            variables,
+            createBody(expr.children[0], variables, tempVars)
+        );
+    }
+
+    return {
+        imitationExpr: imitationExpr,
+        tempVars: tempVars,
+    };
 }
 
+/**
+ * Represents a matching challenge. 
+ * A matching challenge is defined by two sets of constraints.
+ * The first set is the challenge to be solved, 
+ * the second set contains the solutions found when solving the challenge.
+ * Both sets may be empty upon construction of a matching challenge,
+ * and the solution set may remain empty if the challenge has no solutions.
+ */
 class MatchingChallenge {
-    //TODO: implement this class
+    /**
+     * Creates a new instance of MatchingChallenge by taking an arbitrary
+     * number of arrays (including zero), creating constraints from them,
+     * and then creating a constraints list out of them called challenge.
+     * @param {...[OM, OM]} constraints - an arbitrary number of arguments each
+     * of which is a length-2 array containing a pattern and an expression, 
+     * i.e. containing two OM expressions.
+     */
+    constructor(...constraints) {
+        this.challengeList = new ConstraintList();
+        this.solutions = new ConstraintList();
+        this.solvable = undefined;
+
+        for (let i = 0; i < constraints.length; i++) {
+            let constraint = constraints[i];
+            this.addConstraint(constraint[0], constraint[1]);
+        }
+    }
+
+    /**
+     * Takes two OM expressions, creates a Constraint object from them,
+     * and adds it to `this.challengeList`. 
+     * If any solutions have been found already, 
+     * they are applied to the constraint before it is added.
+     * @param {OM} pattern - An OM expression
+     * @param {OM} expr - An OM expression
+     */
+    addConstraint(pattern, expr) {
+        let constraint = new Constraint(pattern, expr);
+        if (this.solutions.length > 0) {
+            let temp_constraint_list = new ConstraintList(constraint);
+            instantiate(this.solutions, temp_constraint_list);
+            constraint = temp_constraint_list.contents[0];
+            // We've altered the state of the challenge list so we no longer know if it's solvable
+            this.solvable = undefined;
+        }
+        this.challengeList.add(constraint);
+    }
+
+    /**
+     * Adds an arbitrary number of constraints to the challenge,
+     * each supplies by a length-2 array containing a pattern and an expression.
+     * @param  {...[OM, OM]} constraints 
+     */
+    addConstraints(...constraints) {
+        for (let i = 0; i < constraints.length; i++) {
+            let constraint = constraints[i];
+            this.addConstraint(constraint[0], constraint[1]);
+        }
+    }
+
+    /**
+     * @returns a deep copy of the matching challenge, including solutions
+     */
+    clone() {
+        var challengeList_copy = this.challengeList.copy();
+        var solutions_copy = this.solutions.copy();
+        var result = new MatchingChallenge();
+        result.challengeList = challengeList_copy;
+        result.solutions = solutions_copy;
+        result.solvable = this.solvable;
+        return result;
+        // Will there ever be a situation in which we want a clone and the solutions
+        // have not yet been applied to the challenges list?
+        // If so, do the following after copying solutions:
+        // result.addConstraints(
+        //     ...challengeList_copy.contents.map(
+        //         (c) => [c.pattern, c.expression]
+        //     ) 
+        // );
+    }
+
+    /**
+     * @returns `this.solvable` if it is defined. 
+     * If it is undefined, then `getSolutions` has not been called.
+     * This function will call `getSolutions` in that case.
+     */
+    isSolvable() {
+        //
+    }
+
+    /**
+     * @returns `this.solutions.length` for convenience
+     */
+    numSolutions() {
+        //
+    }
+
+    /**
+     * If the matching challenge is unsolved, this finds any solutions.
+     * @returns `this.solutions`
+     */
+    getSolutions() {
+        if(this.solvable === undefined) {
+            this.solve();
+        }
+        return this.solutions;
+    }
+
+    /**
+     * Called by `getSolutions` to solve matching challenge.
+     * Main implementation of the overall algorithm described in the corresponding paper.
+     */
+    solve() {
+        // Success case occurs when the challenge list is empty
+        if (this.challengeList.length == 0) {
+            this.solvable = true;
+            return;
+        }
+        // Get the constraint with the 'best' case first
+        var current_constraint = this.challengeList.getBestCase();
+        // For whichever case the current constraint has, do action described in paper
+        switch (current_constraint.case) {
+            case CASE_FAILURE:
+                this.solutions.empty();
+                this.solvable = false;
+                break;
+            case CASE_IDENTITY:
+                this.challengeList.remove(current_constraint);
+                this.solve();
+                break;
+            case CASE_BINDING:
+                this.challengeList.remove(current_constraint);
+                this.solutions.add(current_constraint);
+                // Apply metavariable substitution to constraints
+                instantiate(
+                    new ConstraintList(current_constraint), 
+                    this.challengeList
+                );
+                this.solve();
+                break;
+            case CASE_SIMPLIFICATION:
+                this.challengeList.remove(current_constraint);
+                var arg_pairs = breakIntoArgPairs(current_constraint);
+                this.challengeList.add(...arg_pairs);
+                this.solve();
+                break;
+            case CASE_EFA:
+                // Subcase A, the function may be a constant function
+                var temp_mc_A = this.clone();
+                var const_sub = new ConstraintList(
+                    new Constraint(
+                        current_constraint.pattern.children[1],
+                        makeConstantExpression(this.challengeList.nextNewVariable(), current_constraint.expression)
+                    )
+                );
+                instantiate(const_sub, temp_mc_A.challengeList);
+                var solutions_A = temp_mc_A.getSolutions();
+
+                // Subcase B, the function may be a projection function
+                var temp_challengeList = this.challengeList.copy();
+                var pattern_children = current_constraint.pattern.children;
+                var head = pattern_children[1];
+                var new_vars = pattern_children.slice(2).map(() => temp_challengeList.nextNewVariable());
+                var solutions_B = new ConstraintList();
+                for (let i = 2; i < pattern_children.length; i++) {
+                    let temp_mc = this.clone();
+                    let proj_sub = new ConstraintList(
+                        new Constraint(
+                            head,
+                            makeProjectionExpression(new_vars, new_vars[i - 2])
+                        )
+                    );
+                    instantiate(proj_sub, temp_mc.challengeList);
+                    let temp_solutions = temp_mc.solutions;
+                    solutions_B.add(...temp_solutions.contents);
+                }
+
+                // Subcase C, the function may be more complex
+                var solutions_C = new ConstraintList();
+                var expression = current_constraint.expression;
+                if (expression.type == 'a') {
+                    let temp_mc_C = this.clone();
+                    let {imitation_expr, temp_metavars} = makeImitationExpression(new_vars, expression);
+                    let imitation_sub = new ConstraintList(
+                        new Constraint(
+                            head,
+                            imitation_expr
+                        )
+                    )
+                    instantiate(imitation_sub, temp_mc_C.challengeList);
+                    solutions_C = temp_mc_C.getSolutions();
+                    // Remove any temporary metavariables from the solutions, after making substitutions
+                    for (let i = 0; i < temp_metavars.length; i++) {
+                        let metavar = temp_metavars[i];
+                        let metavar_sub = solutions_C.firstSatisfying(c => c.pattern.equals(metavar));
+                        if (metavar_sub != null) {
+                            instantiate(
+                                new ConstraintList(metavar_sub),
+                                solutions_C
+                            )
+                            solutions_C.remove(metavar_sub);
+                        }
+                    }
+                }
+
+                // After all subcases are handled, return and record results
+                if (solutions_A.length != 0 || solutions_B.length != 0 || solutions_C.length != 0) {
+                    this.solvable = true;
+                    this.challengeList.empty();
+                    this.solutions.add(...solutions_A.contents, ...solutions_B.contents, ...solutions_C.contents);
+                }
+                return;
+        }
+    }
 }
 
 
@@ -737,16 +1123,12 @@ module.exports = {
     clearMetavariable,
     isMetavariable,
 
-    // makeExpressionFunction,
-    // isExpressionFunction,
-    // makeExpressionFunctionApplication,
-    // isExpressionFunctionApplication,
-    // applyExpressionFunction,
-
     makeGeneralExpressionFunction,
     isGeneralExpressionFunction,
     makeGeneralExpressionFunctionApplication,
     isGeneralExpressionFunctionApplication,
+    canApplyGeneralExpressionFunctionApplication,
+    applyGeneralExpressionFunctionApplication,
 
     getNewVariableRelativeTo,
     alphaConvert,
@@ -754,9 +1136,18 @@ module.exports = {
     alphaEquivalent,
     betaReduce,
 
+    CASES,
     Constraint,
     ConstraintList,
 
     applyInstantiation,
     instantiate,
+
+    breakIntoArgPairs,
+
+    makeConstantExpression,
+    makeProjectionExpression,
+    makeImitationExpression,
+
+    MatchingChallenge,
 };
