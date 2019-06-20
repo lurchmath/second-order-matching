@@ -442,20 +442,22 @@ class Constraint {
         } else if (
                 (   
                     (
-                        (pattern.type == 'a' && !isGeneralExpressionFunctionApplication(pattern)
-                        && !isMetavariable(pattern.children[0]))
+                        (
+                            pattern.type == 'a' 
+                            && !(isGeneralExpressionFunctionApplication(pattern))
+                            && !(isMetavariable(pattern.children[0]))
+                        )
                         && expression.type == 'a'
                     )
-                    && 
-                    pattern.children[0].equals(expression.children[0])
-                    &&
-                    pattern.children.length == expression.children.length
+                    && pattern.children[0].equals(expression.children[0])
+                    && pattern.children.length == expression.children.length
                 )
                 || 
                 (
-                    (pattern.type == 'bi' && expression.type == 'bi')
-                    &&
-                    pattern.symbol.equals(expression.symbol)
+                    (   pattern.type == 'bi' 
+                        && expression.type == 'bi'
+                    )
+                    && pattern.symbol.equals(expression.symbol)
                 )
             ) {
             return CASE_SIMPLIFICATION;
@@ -466,6 +468,13 @@ class Constraint {
         } else {
             return CASE_FAILURE;
         }
+    }
+
+    /**
+     * Calls `getCase` again, in case pattern or expression have changes
+     */
+    reEvalCase() {
+        this.case = this.getCase(this.pattern, this.expression);
     }
 }
 
@@ -760,6 +769,8 @@ function instantiate(substitutions, patterns) {
             pattern.replaceWith(
                 applyInstantiation(substitution, pattern)
             );
+            // Re-evaluate case
+            patterns.contents[j].reEvalCase();
         }
     }
 }
@@ -898,6 +909,22 @@ function makeImitationExpression(variables, expr) {
         imitationExpr: imitationExpr,
         tempVars: tempVars,
     };
+}
+
+// FIXME: DELETE LATER
+function debug_print_contraint(c) {
+    console.log(
+        '( ' + c.pattern.simpleEncode() + ', ' + c.expression.simpleEncode() + ' ):' + c.case
+    );
+}
+function debug_print_contraintList(cl) {
+    console.log(
+        '{ ' + 
+            cl.contents.map((c) =>
+                '( ' + c.pattern.simpleEncode() + ', ' + c.expression.simpleEncode() + ' ):' + c.case
+            ).join(', ') 
+        + ' }'
+    )
 }
 
 /**
@@ -1056,6 +1083,7 @@ class MatchingChallenge {
                     )
                 );
                 instantiate(const_sub, temp_mc_A.challengeList);
+                temp_mc_A.solutions.add(...const_sub.contents);
                 var solutions_A = temp_mc_A.getSolutions();
 
                 // Subcase B, the function may be a projection function
@@ -1065,16 +1093,17 @@ class MatchingChallenge {
                 var new_vars = pattern_children.slice(2).map(() => temp_challengeList.nextNewVariable());
                 var solutions_B = new ConstraintList();
                 for (let i = 2; i < pattern_children.length; i++) {
-                    let temp_mc = this.clone();
+                    let temp_mc_B = this.clone();
                     let proj_sub = new ConstraintList(
                         new Constraint(
                             head,
                             makeProjectionExpression(new_vars, new_vars[i - 2])
                         )
                     );
-                    instantiate(proj_sub, temp_mc.challengeList);
-                    let temp_solutions = temp_mc.solutions;
-                    solutions_B.add(...temp_solutions.contents);
+                    instantiate(proj_sub, temp_mc_B.challengeList);
+                    temp_mc_B.solutions.add(...proj_sub.contents);
+                    temp_mc_B.getSolutions();
+                    solutions_B.add(...temp_mc_B.solutions.contents);
                 }
 
                 // Subcase C, the function may be more complex
@@ -1082,24 +1111,33 @@ class MatchingChallenge {
                 var expression = current_constraint.expression;
                 if (expression.type == 'a') {
                     let temp_mc_C = this.clone();
-                    let {imitation_expr, temp_metavars} = makeImitationExpression(new_vars, expression);
+                    let {
+                        imitationExpr: imitation_expr, 
+                        tempVars: temp_metavars
+                    } = makeImitationExpression(new_vars, expression);
                     let imitation_sub = new ConstraintList(
                         new Constraint(
-                            head,
+                            current_constraint.pattern.children[1],
                             imitation_expr
                         )
                     )
                     instantiate(imitation_sub, temp_mc_C.challengeList);
+                    temp_mc_C.solutions.add(...imitation_sub.contents);
                     solutions_C = temp_mc_C.getSolutions();
                     // Remove any temporary metavariables from the solutions, after making substitutions
                     for (let i = 0; i < temp_metavars.length; i++) {
                         let metavar = temp_metavars[i];
                         let metavar_sub = solutions_C.firstSatisfying(c => c.pattern.equals(metavar));
                         if (metavar_sub != null) {
-                            instantiate(
-                                new ConstraintList(metavar_sub),
-                                solutions_C
-                            )
+                            for (let i = 0; i < solutions_C.length; i++) {
+                                let solution = solutions_C.contents[i];
+                                if (!solution.pattern.equals(metavar)) {
+                                    solution.expression.replaceWith(
+                                        applyInstantiation(metavar_sub, solution.expression)
+                                    );
+                                    solution.reEvalCase();
+                                }
+                            }
                             solutions_C.remove(metavar_sub);
                         }
                     }

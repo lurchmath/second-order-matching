@@ -480,29 +480,35 @@ describe('The Constraint class', () => {
     });
 
     test('should correctly identify cases', () => {
-        var c1 = new M.Constraint(quick('a'), quick('a'));
-        expect(c1.case).toBe(M.CASES.CASE_IDENTITY);
+        var c;
 
-        var c2 = new M.Constraint(quick('_P'), quick('a'));
-        expect(c2.case).toBe(M.CASES.CASE_BINDING);
+        c = new M.Constraint(quick('a'), quick('a'));
+        expect(c.case).toBe(M.CASES.CASE_IDENTITY);
+        c = new M.Constraint(quick('neq(0,1)'), quick('neq(0,1)'));
+        expect(c.case).toBe(M.CASES.CASE_IDENTITY);
 
-        var c3 = new M.Constraint(quick('pl.us(X,Y)'), quick('pl.us(3,k)'));
-        expect(c3.case).toBe(M.CASES.CASE_SIMPLIFICATION);
+        c = new M.Constraint(quick('_P'), quick('a'));
+        expect(c.case).toBe(M.CASES.CASE_BINDING);
+
+        c = new M.Constraint(quick('pl.us(X,Y)'), quick('pl.us(3,k)'));
+        expect(c.case).toBe(M.CASES.CASE_SIMPLIFICATION);
+        c = new M.Constraint(quick('neq(0,1)'), quick('neq(0,2)'));
+        expect(c.case).toBe(M.CASES.CASE_SIMPLIFICATION);
         
-        var c4 = new M.Constraint(quick('for.all[_X,_X]'), quick('for.all[y,y]'));
-        expect(c4.case).toBe(M.CASES.CASE_SIMPLIFICATION);
+        c = new M.Constraint(quick('for.all[_X,_X]'), quick('for.all[y,y]'));
+        expect(c.case).toBe(M.CASES.CASE_SIMPLIFICATION);
 
-        var c5 = new M.Constraint(quick('_P_of_1'), quick('a'));
-        expect(c5.case).toBe(M.CASES.CASE_EFA);
+        c = new M.Constraint(quick('_P_of_1'), quick('a'));
+        expect(c.case).toBe(M.CASES.CASE_EFA);
 
-        var c6 = new M.Constraint(quick('k'), quick('p'));
-        expect(c6.case).toBe(M.CASES.CASE_FAILURE);
+        c = new M.Constraint(quick('k'), quick('p'));
+        expect(c.case).toBe(M.CASES.CASE_FAILURE);
 
-        var c7 = new M.Constraint(quick('pl.us(X,Y)'), quick('mi.nus(3,k)'));
-        expect(c7.case).toBe(M.CASES.CASE_FAILURE);
+        c = new M.Constraint(quick('pl.us(X,Y)'), quick('mi.nus(3,k)'));
+        expect(c.case).toBe(M.CASES.CASE_FAILURE);
 
-        var c8 = new M.Constraint(quick('for.all[_X,_X]'), quick('there.exists[y,y]'));
-        expect(c8.case).toBe(M.CASES.CASE_FAILURE);
+        c = new M.Constraint(quick('for.all[_X,_X]'), quick('there.exists[y,y]'));
+        expect(c.case).toBe(M.CASES.CASE_FAILURE);
     });
 
     test('should make copies correctly', () => {
@@ -1266,7 +1272,7 @@ describe('The MatchingChallenge class (basic functionality)', () => {
 
 describe('The MatchingChallenge class (solving)', () => {
     const CToString = (c) => {
-        return '( ' + c.pattern.simpleEncode() + ', ' + c.expression.simpleEncode() + ' )';
+        return '( ' + c.pattern.simpleEncode() + ', ' + c.expression.simpleEncode() + ' ):' + c.case;
     };
     const CLToString = (cl) => {
         if (cl === null) { return null; }
@@ -1301,7 +1307,7 @@ describe('The MatchingChallenge class (solving)', () => {
         return new M.MatchingChallenge(...constraints);
     }
 
-    test('should correctly solve example challenges in the paper', () => {
+    test('should correctly solve example challenges from the paper', () => {
         var constraints;
         var mc;
         var sols;
@@ -1312,6 +1318,7 @@ describe('The MatchingChallenge class (solving)', () => {
         );
         mc = newMC(constraints);
         sols = mc.getSolutions();
+        expect(sols.length).toBe(2);
         expect(sols.contents[0].equals(newConstraintObject('_P', 'a'))).toBe(true);
         expect(sols.contents[1].equals(newConstraintObject('_Q', 'or(b,c)'))).toBe(true);
 
@@ -1329,7 +1336,9 @@ describe('The MatchingChallenge class (solving)', () => {
         )
         mc = newMC(constraints);
         sols = mc.getSolutions();
-        // debug_print_constraintList(sols);
+        expect(sols.length).toBe(1);
+        expect(sols.contents[0].pattern.equals(quick('_P'))).toBe(true);
+        expect(sols.contents[0].expression.equals(ef('v1', 'neq(0,v1)'))).toBe(true);
     });
 
     ////////////////////////////////////////////////////////////////////////////////
