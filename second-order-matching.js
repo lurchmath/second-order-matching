@@ -862,7 +862,7 @@ function makeProjectionExpression(variables, point) {
 
 /**
  * Takes a list of variables, denoted `v1,...,vk`, and an expression 
- * which is an application, denoted `g(e1,...,em)`. 
+ * which is denoted `g(e1,...,em)`. 
  * Returns a gEF with the meaning 
  * `λv_1,...,v_k.g(H_1(v_1,...,v_k),...,H_m(v_1,...,v_k))`
  * where each `H_i` denotes a temporary gEFA as well as a list of the
@@ -882,12 +882,20 @@ function makeImitationExpression(variables, expr) {
      * a list of metavariables named `H_1,...,H_m` where
      * `m` is the number of arguments in the function.
      */
-    function getTempVars(fn) {
+    function getTempVars(fn, type) {
         let vars = [];
-        for (let index = 1; index < fn.children.length; index++) {
-            let new_metavar = OM.var('H' + index);
-            setMetavariable(new_metavar);
-            vars.push(new_metavar);
+        if (type == 'a') {
+            for (let index = 1; index < fn.children.length; index++) {
+                let new_metavar = OM.var('H' + index);
+                setMetavariable(new_metavar);
+                vars.push(new_metavar);
+            }
+        } else if (type == 'bi') {
+            for (let index = 0; index < fn.variables.length + 1; index++) { // Plus one for the body
+                let new_metavar = OM.var('H' + index);
+                setMetavariable(new_metavar);
+                vars.push(new_metavar);
+            }
         }
         return vars;
     }
@@ -900,7 +908,7 @@ function makeImitationExpression(variables, expr) {
      * of the imitation function. This is an application of the form:
      * `head(temp_metavars[0](bound_vars),...,temp_metavars[len-1](bound_vars))`
      */
-    function createBody(head, bound_vars, temp_metavars) {
+    function createBody(head, bound_vars, temp_metavars, type) {
         let args = [];
         for (let i = 0; i < temp_metavars.length; i++) {
             let temp_metavar = temp_metavars[i];
@@ -911,17 +919,25 @@ function makeImitationExpression(variables, expr) {
                 )
             );
         }
-        return OM.app(head, ...args);
+        if (type == 'a') {
+            return OM.app(head, ...args);
+        } else if (type == 'bi') {
+            // TODO: How should this be built?
+            return OM.bin(head, ...args);
+        }
     }
 
     var imitationExpr = null;
     var tempVars = null;
 
-    if (variables.every((v) => v instanceof OM) && expr instanceof OM && expr.type == 'a') {
-        tempVars = getTempVars(expr);
+    if (variables.every((v) => v instanceof OM) && expr instanceof OM) {
+        let type = expr.type;
+        tempVars = getTempVars(expr, type);
         imitationExpr = makeGeneralExpressionFunction(
             variables,
-            createBody(expr.children[0], variables, tempVars)
+            createBody(
+                (type=='a' ? expr.children[0]: expr.symbol), variables, tempVars, type
+            )
         );
     }
 
@@ -1089,6 +1105,21 @@ class MatchingChallenge {
                 break;
             case CASE_SIMPLIFICATION:
                 this.challengeList.remove(current_constraint);
+                // Do any necessary alpha conversion before breaking into argument paits
+                if (current_constraint.pattern.type == 'bi' && current_constraint.expression.type == 'bi') {
+                    let pattern_vars = current_constraint.pattern.variables;
+                    let expression_vars = current_constraint.expression.variables;
+                    for (let i = 0; i < pattern_vars.length; i++) {
+                        let variable = pattern_vars[i];
+                        if (!isMetavariable(variable)) {
+                            current_constraint.expression = alphaConvert(
+                                current_constraint.expression,
+                                expression_vars[i],
+                                pattern_vars[i]
+                            );
+                        }
+                    }
+                }
                 var arg_pairs = breakIntoArgPairs(current_constraint);
                 this.challengeList.add(...arg_pairs);
                 this.solve();
@@ -1129,7 +1160,7 @@ class MatchingChallenge {
                 // Subcase C, the function may be more complex
                 var solutions_C = new ConstraintList();
                 var expression = current_constraint.expression;
-                if (expression.type == 'a') {
+                if (expression.type == 'a' || expression.type == 'bi') {
                     let temp_mc_C = this.clone();
                     let {
                         imitationExpr: imitation_expr, 

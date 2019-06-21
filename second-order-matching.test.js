@@ -1350,9 +1350,7 @@ describe('The MatchingChallenge class (solving)', () => {
     }
 
     test('should correctly solve example challenges from the paper', () => {
-        var constraints;
-        var mc;
-        var sols;
+        var constraints, mc, sols;
 
         // Example 1
         constraints = newConstraints(
@@ -1368,7 +1366,7 @@ describe('The MatchingChallenge class (solving)', () => {
         // Example 2
         constraints = newConstraints(
             ['multiply(plus(_X,_Y),minus(_X,_Y))', 'multiply(plus(3,k),minus(3,p))']
-        )
+        );
         mc = newMC(constraints);
         sols = mc.getSolutions();
         expect(sols.length).toBe(0);
@@ -1377,13 +1375,33 @@ describe('The MatchingChallenge class (solving)', () => {
         // Example 3
         constraints = newConstraints(
             ['and(_P_of_1,_P_of_2)', 'and(neq(0,1),neq(0,2))']
-        )
+        );
         mc = newMC(constraints);
         sols = mc.getSolutions();
         expect(sols.length).toBe(1);
         expect(sols.contents[0].pattern.equals(quick('_P'))).toBe(true);
         expect(sols.contents[0].expression.equals(ef('v1', 'neq(0,v1)'))).toBe(true);
         expect(mc.solvable).toBe(true);
+    });
+
+    test('should correctly solve challenges that contain particular problems', () => {
+        var constraints, mc, sols;
+
+        // Tests the case where we need to do alpha conversion before breaking into pairs
+        constraints = newConstraints(
+            ['for.all[x,_P]', 'for.all[r,plus(r,1)]']
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(sols.length).toBe(1);
+        
+        // Tests the case where the pattern is a gEFA and the expression is a binding
+        // constraints = newConstraints(
+        //     ['_P_of__x', 'for.all[x,sq(x)]']
+        // );
+        // mc = newMC(constraints);
+        // sols = mc.getSolutions();
+        // debug_print_constraintList(sols);
     });
 
     test.skip('should correctly solve complex challenges from the paper', () => {
@@ -1398,9 +1416,9 @@ describe('The MatchingChallenge class (solving)', () => {
             ]
         );
         mc = newMC(constraints);
-        debug_print_constraintList(mc.challengeList);
+        // debug_print_constraintList(mc.challengeList);
         mc.getSolutions();
-        debug_print_constraintList(mc.solutions);
+        // debug_print_constraintList(mc.solutions);
     });
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -1409,8 +1427,7 @@ describe('The MatchingChallenge class (solving)', () => {
     ////////////////////////////////////////////////////////////////////////////////
 
     test('should correctly solve small challenges', () => {
-        var constraints;
-        var mc;
+        var constraints, mc;
 
         // FIXME: Solutions should be ConstraintList[], each one a solution
 
