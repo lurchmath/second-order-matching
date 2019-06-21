@@ -12,7 +12,7 @@ const OM = M.OM;
 function quick(string) {
     var tree = OM.simple(string);
     if (typeof tree === 'string') {
-        throw ('Error calling quick on' + string + ' : ' + tree);
+        throw ('Error calling quick on ' + string + ' : ' + tree);
     }
     var variables = tree.descendantsSatisfying((x) => { return x.type == 'v'; });
     for (let i = 0; i < variables.length; i++) {
@@ -1276,7 +1276,7 @@ describe('The MatchingChallenge class (solving)', () => {
     };
     const CLToString = (cl) => {
         if (cl === null) { return null; }
-        return '{ ' + cl.contents.map((c) => CToString(c)).join(', ')  + ' }'
+        return '{ ' + cl.contents.map((c) => CToString(c)).join(',\n')  + ' }'
     };
     const debug_print_constraint = (c) => {
         console.log(CToString(c));
@@ -1321,6 +1321,7 @@ describe('The MatchingChallenge class (solving)', () => {
         expect(sols.length).toBe(2);
         expect(sols.contents[0].equals(newConstraintObject('_P', 'a'))).toBe(true);
         expect(sols.contents[1].equals(newConstraintObject('_Q', 'or(b,c)'))).toBe(true);
+        expect(mc.solvable).toBe(true);
 
         // Example 2
         constraints = newConstraints(
@@ -1329,6 +1330,7 @@ describe('The MatchingChallenge class (solving)', () => {
         mc = newMC(constraints);
         sols = mc.getSolutions();
         expect(sols.length).toBe(0);
+        expect(mc.solvable).toBe(false);
 
         // Example 3
         constraints = newConstraints(
@@ -1339,6 +1341,24 @@ describe('The MatchingChallenge class (solving)', () => {
         expect(sols.length).toBe(1);
         expect(sols.contents[0].pattern.equals(quick('_P'))).toBe(true);
         expect(sols.contents[0].expression.equals(ef('v1', 'neq(0,v1)'))).toBe(true);
+        expect(mc.solvable).toBe(true);
+    });
+
+    test.skip('should correctly solve complex challenges from the paper', () => {
+        var constraints;
+        var mc;
+
+        // Complex example 1
+        constraints = newConstraints(
+            [
+                'w(for.all[_x,_P],_P_of__T)', 
+                'w(for.all[r,greater.than(plus(sq(r),1),0)],greater.than(plus(sq(-9),1),0))'
+            ]
+        );
+        mc = newMC(constraints);
+        debug_print_constraintList(mc.challengeList);
+        mc.getSolutions();
+        debug_print_constraintList(mc.solutions);
     });
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -1346,9 +1366,11 @@ describe('The MatchingChallenge class (solving)', () => {
     // * correspond to the document "Tests of the Matching Algorithm"
     ////////////////////////////////////////////////////////////////////////////////
 
-    test.skip('should correctly solve small challenges', () => {
+    test('should correctly solve small challenges', () => {
         var constraints;
         var mc;
+
+        // FIXME: Solutions should be ConstraintList[], each one a solution
 
         // Test 1
         constraints = newConstraints(
@@ -1357,7 +1379,14 @@ describe('The MatchingChallenge class (solving)', () => {
         );
         mc = newMC(constraints);
         mc.getSolutions();
-        expect(mc.solutions.length).toBe(2);
+
+        // Test 2
+        constraints = newConstraints(
+            ['_P_of__x', 'equ.als(pl.us(2,3),5)'],
+            ['_P_of__y', 'equ.als(5,5)']
+        );
+        mc = newMC(constraints);
+        mc.getSolutions();
     });
 
     test.todo('should correctly solve challenges involving the equality elimination rule');
