@@ -458,6 +458,7 @@ class Constraint {
                         && expression.type == 'bi'
                     )
                     && pattern.symbol.equals(expression.symbol)
+                    && pattern.variables.length == expression.variables.length
                 )
             ) {
             return CASE_SIMPLIFICATION;
@@ -775,8 +776,6 @@ function instantiate(substitutions, patterns) {
     }
 }
 
-// TODO: Should breakIntoArgPairs also handle bindings?
-
 /**
  * Takes a constraint which should match the case where
  * the the pattern and expression are ordinary functions
@@ -799,6 +798,27 @@ function breakIntoArgPairs(constraint) {
                 )
             );
         }
+    } else if (constraint.pattern.type == 'bi' && constraint.expression.type == 'bi') {
+        let pattern_vars = constraint.pattern.variables;
+        let expression_vars = constraint.expression.variables;
+        let pattern_body = constraint.pattern.body;
+        let expression_body = constraint.expression.body;
+        // In getting the case, we checked that the length of variables was the same
+        for (let i = 0; i < pattern_vars.length; i++) {
+            arg_pairs.push(
+                new Constraint(
+                    pattern_vars[i].copy(),
+                    expression_vars[i].copy()
+                )
+            );
+        }
+        // Also push the body of each binding to arg pairs
+        arg_pairs.push(
+            new Constraint(
+                pattern_body.copy(),
+                expression_body.copy()
+            )
+        );
     }
     return arg_pairs;
 }

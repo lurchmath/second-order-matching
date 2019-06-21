@@ -482,6 +482,7 @@ describe('The Constraint class', () => {
     test('should correctly identify cases', () => {
         var c;
 
+        // Test standard cases
         c = new M.Constraint(quick('a'), quick('a'));
         expect(c.case).toBe(M.CASES.CASE_IDENTITY);
         c = new M.Constraint(quick('neq(0,1)'), quick('neq(0,1)'));
@@ -508,6 +509,25 @@ describe('The Constraint class', () => {
         expect(c.case).toBe(M.CASES.CASE_FAILURE);
 
         c = new M.Constraint(quick('for.all[_X,_X]'), quick('there.exists[y,y]'));
+        expect(c.case).toBe(M.CASES.CASE_FAILURE);
+
+        // Test bindings
+        c = new M.Constraint(
+            quick('for.all[_x,_P]'),
+            quick('for.all[r,greater.than(plus(sq(r),1),0)]')
+        );
+        expect(c.case).toBe(M.CASES.CASE_SIMPLIFICATION);
+
+        c = new M.Constraint(
+            quick('for.all[_x,_y,_P]'),
+            quick('for.all[r,s,greater.than(plus(sq(r),1),0)]')
+        );
+        expect(c.case).toBe(M.CASES.CASE_SIMPLIFICATION);
+
+        c = new M.Constraint(
+            quick('for.all[_x,_y,_P]'),
+            quick('for.all[r,greater.than(plus(sq(r),1),0)]')
+        );
         expect(c.case).toBe(M.CASES.CASE_FAILURE);
     });
 
@@ -1054,6 +1074,7 @@ describe('Instantiation', () => {
 
 describe('Constraint manipulation functions',  () => {
     test('should correctly break constraints into argument pairs', () => {
+        // Check for applications
         var constr1 = new M.Constraint(quick('and(_P,_Q)'), quick('and(a,or(b,c))'));
         expect(constr1.case).toBe(M.CASES.CASE_SIMPLIFICATION);
         var arg_pairs1 = M.breakIntoArgPairs(constr1);
@@ -1074,6 +1095,27 @@ describe('Constraint manipulation functions',  () => {
         expect(arg_pairs3[1].equals(new M.Constraint(quick('_Y'), quick('k')))).toBe(true);
         expect(arg_pairs3[2].equals(new M.Constraint(quick('_X'), quick('3')))).toBe(true);
         expect(arg_pairs3[3].equals(new M.Constraint(quick('_Y'), quick('p')))).toBe(true);
+
+        // Check for bindings
+        var constr3 = new M.Constraint(
+            quick('for.all[_x,_P]'),
+            quick('for.all[r,plus(0,1)]')
+        );
+        var arg_pairs4 = M.breakIntoArgPairs(constr3);
+        expect(arg_pairs4.length).toBe(2);
+        expect(arg_pairs4[0].equals(new M.Constraint(quick('_x'), quick('r')))).toBe(true);
+        expect(arg_pairs4[1].equals(new M.Constraint(quick('_P'), quick('plus(0,1)')))).toBe(true);
+
+        var constr4 = new M.Constraint(
+            quick('for.all[_x,_y,_z,_P]'),
+            quick('for.all[r,s,t,plus(0,1)]')
+        );
+        var arg_pairs5 = M.breakIntoArgPairs(constr4);
+        expect(arg_pairs5.length).toBe(4);
+        expect(arg_pairs5[0].equals(new M.Constraint(quick('_x'), quick('r')))).toBe(true);
+        expect(arg_pairs5[1].equals(new M.Constraint(quick('_y'), quick('s')))).toBe(true);
+        expect(arg_pairs5[2].equals(new M.Constraint(quick('_z'), quick('t')))).toBe(true);
+        expect(arg_pairs5[3].equals(new M.Constraint(quick('_P'), quick('plus(0,1)')))).toBe(true);
     });
 });
 
