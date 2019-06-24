@@ -1395,13 +1395,14 @@ describe('The MatchingChallenge class (solving)', () => {
         sols = mc.getSolutions();
         expect(sols.length).toBe(1);
         
-        // Tests the case where the pattern is a gEFA and the expression is a binding
-        // constraints = newConstraints(
-        //     ['_P_of__x', 'for.all[x,sq(x)]']
-        // );
-        // mc = newMC(constraints);
-        // sols = mc.getSolutions();
-        // debug_print_constraintList(sols);
+        //Tests the case where the pattern is a gEFA and the expression is a binding
+        constraints = newConstraints(
+            ['_P_of__t', 'for.all[k,gte(sq(k),0)]'],
+            ['exi.sts[x,_P_of_x]', 'exi.sts[x,for.all[k,gte(sq(k),x)]]']
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        debug_print_constraintList(sols);
     });
 
     test.skip('should correctly solve complex challenges from the paper', () => {

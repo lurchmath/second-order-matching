@@ -858,8 +858,6 @@ function makeProjectionExpression(variables, point) {
     return null;
 }
 
-// TODO: Should makeImitationExpression also handle bindings?
-
 /**
  * Takes a list of variables, denoted `v1,...,vk`, and an expression 
  * which is denoted `g(e1,...,em)`. 
@@ -891,11 +889,10 @@ function makeImitationExpression(variables, expr) {
                 vars.push(new_metavar);
             }
         } else if (type == 'bi') {
-            for (let index = 0; index < fn.variables.length + 1; index++) { // Plus one for the body
-                let new_metavar = OM.var('H' + index);
-                setMetavariable(new_metavar);
-                vars.push(new_metavar);
-            }
+            // Just a single metavar for the body
+            let new_metavar = OM.var('H' + 1);
+            setMetavariable(new_metavar);
+            vars.push(new_metavar);
         }
         return vars;
     }
@@ -908,7 +905,7 @@ function makeImitationExpression(variables, expr) {
      * of the imitation function. This is an application of the form:
      * `head(temp_metavars[0](bound_vars),...,temp_metavars[len-1](bound_vars))`
      */
-    function createBody(head, bound_vars, temp_metavars, type) {
+    function createBody(head, bound_vars, temp_metavars, type, binding_variables) {
         let args = [];
         for (let i = 0; i < temp_metavars.length; i++) {
             let temp_metavar = temp_metavars[i];
@@ -922,8 +919,7 @@ function makeImitationExpression(variables, expr) {
         if (type == 'a') {
             return OM.app(head, ...args);
         } else if (type == 'bi') {
-            // TODO: How should this be built?
-            return OM.bin(head, ...args);
+            return OM.bin(head, ...binding_variables, ...args);
         }
     }
 
@@ -936,7 +932,7 @@ function makeImitationExpression(variables, expr) {
         imitationExpr = makeGeneralExpressionFunction(
             variables,
             createBody(
-                (type=='a' ? expr.children[0]: expr.symbol), variables, tempVars, type
+                (type=='a' ? expr.children[0]: expr.symbol), variables, tempVars, type, (type=='bi' ? expr.variables : null)
             )
         );
     }
