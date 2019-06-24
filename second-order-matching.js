@@ -978,7 +978,7 @@ class MatchingChallenge {
      */
     constructor(...constraints) {
         this.challengeList = new ConstraintList();
-        this.solutions = new ConstraintList();
+        this.solutions = [ ];//new ConstraintList();
         this.solvable = undefined;
 
         for (let i = 0; i < constraints.length; i++) {
@@ -999,7 +999,7 @@ class MatchingChallenge {
         let constraint = new Constraint(pattern, expr);
         if (this.solutions.length > 0) {
             let temp_constraint_list = new ConstraintList(constraint);
-            instantiate(this.solutions, temp_constraint_list);
+            instantiate(temp_constraint_list, this.challengeList);
             constraint = temp_constraint_list.contents[0];
             // We've altered the state of the challenge list so we no longer know if it's solvable
             this.solvable = undefined;
@@ -1024,20 +1024,12 @@ class MatchingChallenge {
      */
     clone() {
         var challengeList_copy = this.challengeList.copy();
-        var solutions_copy = this.solutions.copy();
+        var solutions_copy = this.solutions.map(sol => sol.copy());
         var result = new MatchingChallenge();
         result.challengeList = challengeList_copy;
         result.solutions = solutions_copy;
         result.solvable = this.solvable;
         return result;
-        // Will there ever be a situation in which we want a clone and the solutions
-        // have not yet been applied to the challenges list?
-        // If so, do the following after copying solutions:
-        // result.addConstraints(
-        //     ...challengeList_copy.contents.map(
-        //         (c) => [c.pattern, c.expression]
-        //     ) 
-        // );
     }
 
     /**
@@ -1046,14 +1038,14 @@ class MatchingChallenge {
      * This function will call `getSolutions` in that case.
      */
     isSolvable() {
-        //
+        return this.getSolutions().length > 0;
     }
 
     /**
      * @returns `this.solutions.length` for convenience
      */
     numSolutions() {
-        //
+        return this.getSolutions().length;
     }
 
     /**
@@ -1061,7 +1053,7 @@ class MatchingChallenge {
      * @returns `this.solutions`
      */
     getSolutions() {
-        if(this.solvable === undefined) {
+        if (this.solvable === undefined) {
             this.solve();
         }
         return this.solutions;
@@ -1072,6 +1064,10 @@ class MatchingChallenge {
      * Main implementation of the overall algorithm described in the corresponding paper.
      */
     solve() {
+        // If this is a top-level call, create a brand-new solution we will evolve with recursion.
+        if (this.solutions.length == 0) {
+            this.solutions.push( new ConstraintList() );
+        }
         // Success case occurs when the challenge list is empty
         if (this.challengeList.length == 0) {
             this.solvable = true;
@@ -1082,7 +1078,7 @@ class MatchingChallenge {
         // For whichever case the current constraint has, do action described in paper
         switch (current_constraint.case) {
             case CASE_FAILURE:
-                this.solutions.empty();
+                this.solutions = [ ];
                 this.solvable = false;
                 break;
             case CASE_IDENTITY:
@@ -1091,7 +1087,7 @@ class MatchingChallenge {
                 break;
             case CASE_BINDING:
                 this.challengeList.remove(current_constraint);
-                this.solutions.add(current_constraint);
+                this.solutions[0].add(current_constraint);
                 // Apply metavariable substitution to constraints
                 instantiate(
                     new ConstraintList(current_constraint), 
@@ -1130,7 +1126,7 @@ class MatchingChallenge {
                     )
                 );
                 instantiate(const_sub, temp_mc_A.challengeList);
-                temp_mc_A.solutions.add(...const_sub.contents);
+                temp_mc_A.solutions[0].add(...const_sub.contents);
                 var solutions_A = temp_mc_A.getSolutions();
 
                 // Subcase B, the function may be a projection function
@@ -1138,7 +1134,7 @@ class MatchingChallenge {
                 var pattern_children = current_constraint.pattern.children;
                 var head = pattern_children[1];
                 var new_vars = pattern_children.slice(2).map(() => temp_challengeList.nextNewVariable());
-                var solutions_B = new ConstraintList();
+                var solutions_B = [ ];
                 for (let i = 2; i < pattern_children.length; i++) {
                     let temp_mc_B = this.clone();
                     let proj_sub = new ConstraintList(
@@ -1148,13 +1144,12 @@ class MatchingChallenge {
                         )
                     );
                     instantiate(proj_sub, temp_mc_B.challengeList);
-                    temp_mc_B.solutions.add(...proj_sub.contents);
-                    temp_mc_B.getSolutions();
-                    solutions_B.add(...temp_mc_B.solutions.contents);
+                    temp_mc_B.solutions[0].add(...proj_sub.contents);
+                    solutions_B = solutions_B.concat( temp_mc_B.getSolutions() );
                 }
 
                 // Subcase C, the function may be more complex
-                var solutions_C = new ConstraintList();
+                var solutions_C = [ ];
                 var expression = current_constraint.expression;
                 if (expression.type == 'a' || expression.type == 'bi') {
                     let temp_mc_C = this.clone();
@@ -1169,33 +1164,31 @@ class MatchingChallenge {
                         )
                     )
                     instantiate(imitation_sub, temp_mc_C.challengeList);
-                    temp_mc_C.solutions.add(...imitation_sub.contents);
+                    temp_mc_C.solutions[0].add(...imitation_sub.contents);
                     solutions_C = temp_mc_C.getSolutions();
                     // Remove any temporary metavariables from the solutions, after making substitutions
-                    for (let i = 0; i < temp_metavars.length; i++) {
-                        let metavar = temp_metavars[i];
-                        let metavar_sub = solutions_C.firstSatisfying(c => c.pattern.equals(metavar));
-                        if (metavar_sub != null) {
-                            for (let i = 0; i < solutions_C.length; i++) {
-                                let solution = solutions_C.contents[i];
-                                if (!solution.pattern.equals(metavar)) {
-                                    solution.expression.replaceWith(
-                                        applyInstantiation(metavar_sub, solution.expression)
+                    debug_print_contraintList(solutions_C[0]);
+                    solutions_C.forEach( sol => {
+                        for (let i = 0; i < temp_metavars.length; i++) {
+                            let metavar = temp_metavars[i];
+                            let metavar_sub = sol.firstSatisfying(c => c.pattern.equals(metavar));
+                            if (metavar_sub != null) {
+                                sol.remove(metavar_sub);
+                                for (let i = 0; i < sol.length; i++) {
+                                    let constraint = sol.contents[i];
+                                    constraint.expression.replaceWith(
+                                        applyInstantiation(metavar_sub, constraint.expression)
                                     );
-                                    solution.reEvalCase();
+                                    constraint.reEvalCase();
                                 }
                             }
-                            solutions_C.remove(metavar_sub);
                         }
-                    }
+                    } );
                 }
 
                 // After all subcases are handled, return and record results
-                if (solutions_A.length != 0 || solutions_B.length != 0 || solutions_C.length != 0) {
-                    this.solvable = true;
-                    this.challengeList.empty();
-                    this.solutions.add(...solutions_A.contents, ...solutions_B.contents, ...solutions_C.contents);
-                }
+                this.solutions = solutions_A.concat( solutions_B, solutions_C );
+                this.solvable = this.solutions.length > 0;
                 return;
         }
     }
