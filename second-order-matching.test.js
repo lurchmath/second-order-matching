@@ -73,7 +73,7 @@ function efa(func, params) {
     return M.makeGeneralExpressionFunctionApplication(func, params);
 }
 
-describe('Metavariables', () => {
+describe.skip('Metavariables', () => {
     test('should reliably mark metavariables', () => {
         // Check that functions work correctly
         var x = OM.var('x');
@@ -94,7 +94,7 @@ describe('Metavariables', () => {
     });
 });
 
-describe('Generalized Expression Functions', () => {
+describe.skip('Generalized Expression Functions', () => {
     test('should reliably make general expression functions', () => {
         var v1 = OM.var('v1');
         var v2 = OM.var('v2');
@@ -181,7 +181,7 @@ describe('Generalized Expression Functions', () => {
     });
 });
 
-describe('Expression manipluation', () => {
+describe.skip('Expression manipluation', () => {
     test('should get new variables relative to expressions', () => {
         var e1 = OM.simple('v1');
         var e2 = OM.simple('f.a[v1,x0,x1,x2]')
@@ -461,7 +461,7 @@ describe('Expression manipluation', () => {
     });
 });
 
-describe('The Constraint class', () => {
+describe.skip('The Constraint class', () => {
     test('should construct new instances correctly', () => {
         var p1 = quick('_f(_x)');
         var e1 = quick('a(b)');
@@ -595,7 +595,7 @@ describe('The Constraint class', () => {
     });
 });
 
-describe('The ConstraintList class', () => {
+describe.skip('The ConstraintList class', () => {
     test('should construct instances with right new variable lists', () => {
         var con1 = new M.Constraint(quick('and(_A,_B)'), quick('and(x,y)'));
         var con2 = new M.Constraint(quick('plus(_x,_x)'), quick('HELLO'));
@@ -936,7 +936,7 @@ describe('The ConstraintList class', () => {
     });
 });
 
-describe('Instantiation', () => {
+describe.skip('Instantiation', () => {
     test('should correctly apply a single instantiation', () => {
         // Test the simplest case of insantiating a metavariable
         var sub1 = new M.Constraint(quick('_P'), quick('a'));
@@ -1072,7 +1072,7 @@ describe('Instantiation', () => {
     });
 });
 
-describe('Constraint manipulation functions',  () => {
+describe.skip('Constraint manipulation functions',  () => {
     test('should correctly break constraints into argument pairs', () => {
         // Check for applications
         var constr1 = new M.Constraint(quick('and(_P,_Q)'), quick('and(a,or(b,c))'));
@@ -1314,7 +1314,7 @@ describe.skip('The MatchingChallenge class (basic functionality)', () => {
 
 describe('The MatchingChallenge class (solving)', () => {
     const CToString = (c) => {
-        return '( ' + c.pattern.simpleEncode() + ', ' + c.expression.simpleEncode() + ' ):' + c.case;
+        return '( ' + c.pattern.simpleEncode() + ', ' + c.expression.simpleEncode() + ' )';
     };
     const CLToString = (cl) => {
         if (cl === null) { return null; }
@@ -1327,7 +1327,7 @@ describe('The MatchingChallenge class (solving)', () => {
         console.log(CLToString(cl));
     }
     const DEBUG_PRINT_SOLS = (sol) => {
-        console.log('[' + sol.map(s => CLToString(s)).join(',\n') + ']');
+        console.log('[\n' + sol.map(s => CLToString(s)).join(',\n\n') + '\n]');
     }
 
     const newConstraintObject = (pattern_string, expression_string) => {
@@ -1352,6 +1352,16 @@ describe('The MatchingChallenge class (solving)', () => {
         return new M.MatchingChallenge(...constraints);
     }
 
+    /**
+     * Helper to use notation similar to test paper.
+     * Takes a string like `'v.f(1,2)'`, splits it
+     * on the first `.`, and makes a corresponding gEF.
+     * @param {string} s
+     */
+    const lambdaString = (s) => {
+        let [v, body] = s.split(/\.(.+)/);
+        return ('SecondOrderMatching.gEF[' + v + "," + body + ']');
+    }
 
     const newSolutions = (...solutions) => {
         let new_solutions = [];
@@ -1370,6 +1380,9 @@ describe('The MatchingChallenge class (solving)', () => {
         return new_solutions;
     }
     const checkSolutions = (actual_solutions, expected_solutions) => {
+        if (actual_solutions.length != expected_solutions.length) {
+            return false;
+        }
         actual_solutions.forEach(actual_solution => {
             let match = false;
             expected_solutions.forEach(expected_solution => {
@@ -1419,7 +1432,7 @@ describe('The MatchingChallenge class (solving)', () => {
         DEBUG_PRINT_SOLS(sols)
     });
 
-    test.skip('should correctly solve challenges that contain particular problems', () => {
+    test('should correctly solve challenges that contain particular problems', () => {
         var constraints, mc, sols;
 
         // Tests the case where we need to do alpha conversion before breaking into pairs
@@ -1427,8 +1440,7 @@ describe('The MatchingChallenge class (solving)', () => {
             ['for.all[x,_P]', 'for.all[r,plus(r,1)]']
         );
         mc = newMC(constraints);
-        sols = mc.getSolutions();
-        DEBUG_PRINT_SOLS(sols)
+        // sols = mc.getSolutions();
         
         //Tests the case where the pattern is a gEFA and the expression is a binding
         constraints = newConstraints(
@@ -1461,7 +1473,7 @@ describe('The MatchingChallenge class (solving)', () => {
     // * correspond to the document "Tests of the Matching Algorithm"
     ////////////////////////////////////////////////////////////////////////////////
 
-    test('should correctly solve small challenges', () => {
+    test.skip('should correctly solve small challenges', () => {
         var constraints, mc, sols;
 
         ////////// Test 1 //////////
@@ -1476,14 +1488,14 @@ describe('The MatchingChallenge class (solving)', () => {
                 sols,
                 newSolutions(
                     [
-                        ['_P', 'SecondOrderMatching.gEF[v,v]'],
                         ['_x', 'b(2)'],
-                        ['_y', 'b(3)']
+                        ['_y', 'b(3)'],
+                        ['_P', lambdaString('v.v')]
                     ],
                     [
-                        ['_P', 'SecondOrderMatching.gEF[v,b(v)]'],
                         ['_x', '2'],
-                        ['_y', '3']
+                        ['_y', '3'],
+                        ['_P', lambdaString('v.b(v)')]
                     ]
                 )
             )
@@ -1496,7 +1508,52 @@ describe('The MatchingChallenge class (solving)', () => {
         );
         mc = newMC(constraints);
         sols = mc.getSolutions();
-        // DEBUG_PRINT_SOLS(sols)
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_x', 'pl.us(2,3)'],
+                        ['_y', '5'],
+                        ['_P', lambdaString('v.equ.als(v,5)')]
+                    ],
+                    [
+                        ['_x', 'equ.als(pl.us(2,3),5)'],
+                        ['_y', 'equ.als(5,5)'],
+                        ['_P', lambdaString('v.v')]
+                    ]
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 3 //////////
+        constraints = newConstraints(
+            ['_P_of__x', 'A(1,2,3)'],
+            ['_P_of__y', 'A(2,1,3)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_x', 'A(1,2,3)'],  
+                        ['_y', 'A(2,1,3)'],
+                        ['_P', lambdaString('v.v')],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 4 //////////
+        constraints = newConstraints(
+            ['_P_of__x', 'A(1,2,3)'],
+            ['_P_of__x', 'A(2,1,3)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(sols.length).toBe(0);
 
         ////////// Test 5 //////////
         constraints = newConstraints(
@@ -1505,7 +1562,110 @@ describe('The MatchingChallenge class (solving)', () => {
         );
         mc = newMC(constraints);
         sols = mc.getSolutions();
-        // DEBUG_PRINT_SOLS(sols);
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_x', 'f'],
+                        ['_y', 'f'],
+                        ['_P', lambdaString('v.v(1,2)')]
+                    ],
+                    [
+                        ['_x', '1'],
+                        ['_y', '1'],
+                        ['_P', lambdaString('v.f(v,2)')]
+                    ],
+                    [
+                        ['_x', '2'],
+                        ['_y', '2'],
+                        ['_P', lambdaString('v.f(1,v)')]
+                    ],
+                    [
+                        ['_x', 'f(1,2)'],
+                        ['_y', 'f(1,2)'],
+                        ['_P', lambdaString('v.v')]
+                    ],
+                    [
+                        ['_P', lambdaString('v.f(1,2)')]
+                    ]
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 6 //////////
+        constraints = newConstraints(
+            ['_P_of__x', 'g(k,e(2))'], 
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        DEBUG_PRINT_SOLS(sols)
+        console.log(sols.length)
+        /**
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_x', 'g(k,e(2))'],
+                        ['_P', lambdaString('v.v')],
+                    ],
+                    [
+                        ['_x', 'g'],
+                        ['_P', lambdaString('v.v(k,e(2))')],
+                    ],
+                    [
+                        ['_x', 'k'],
+                        ['_P', lambdaString('v.g(v,e(2))')],
+                    ],
+                    [
+                        ['_x', 'e(2)'],
+                        ['_P', lambdaString('v.g(k,v)')],
+                    ],
+                    [
+                        ['_x', 'e'],
+                        ['_P', lambdaString('v.g(k,v(2))')],
+                    ],
+                    [
+                        ['_x', '2'],
+                        ['_P', lambdaString('v.g(k,e(v))')],
+                    ],
+                    [
+                        ['_P', lambdaString('v.g(k,e(2))')],
+                    ],
+                )
+            )
+        ).toBe(true);
+        */
+
+        ////////// Test 7 //////////
+
+        ////////// Test 8 //////////
+
+        ////////// Test 9 //////////
+
+        ////////// Test 10 //////////
+        constraints = newConstraints(
+            ['_P_of__a', 'eq(3,3)'],
+            ['_Q_of__b', 'gt(5,4)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        // DEBUG_PRINT_SOLS(sols)
+        // expect(
+        //     checkSolutions(
+        //         sols,
+        //         newSolutions(
+        //             [
+        //                 ['_a', ''],
+        //                 ['_b', ''],
+        //                 ['_P', lambdaString('')],
+        //                 ['_Q', lambdaString('')],
+        //             ],
+        //         )
+        //     )
+        // ).toBe(true);
+
     });
 
     test.todo('should correctly solve challenges involving the equality elimination rule');
