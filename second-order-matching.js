@@ -413,12 +413,16 @@ class Constraint {
     }
 
     /**
-     * Returns true if and only if constraints are structurally equal as pairs.
-     * Ignores any OpenMath attributes.
      * @param {Constraint} other - another Constraint
+     * @returns `true` if patterns and expressions are structurally equal 
+     * OR alpha equivalent, `false` otherwise.
      */
     equals(other) {
-        return this.pattern.equals(other.pattern, false) && this.expression.equals(other.expression, false);
+        return (
+            (this.pattern.equals(other.pattern) || alphaEquivalent(this.pattern, other.pattern))
+            &&
+            (this.expression.equals(other.expression) || alphaEquivalent(this.expression, other.expression))
+        );
     }
 
     /**
@@ -515,24 +519,16 @@ class ConstraintList {
      * Creates an array from arguments. 
      * Also computes the first variable from the list `v0, v1, v2,...` such that neither it nor 
      * any variable after it in that list appears in any of the constraints. 
-     * Call this `vn`. See `nextNewVariable` for the use.
+     * Call this `vN`. See `nextNewVariable` for the use.
      * @param ...constraints - an arbitrary number of Constraints (can be zero)
      */
     constructor(...constraints) {
-        this.contents = constraints;
+        this.contents = [];
         this.nextNewVariableIndex = 0;
 
-        for (let i = 0; i < this.contents.length; i++) {
-            var constraint = this.contents[i];
-            var p_vars = getVariablesIn(constraint.pattern);
-            for (let j = 0; j < p_vars.length; j++) {
-                this.nextNewVariableIndex = checkVariable(p_vars[j], this.nextNewVariableIndex);
-            }
-            var e_vars = getVariablesIn(constraint.expression);
-            for (let k = 0; k < e_vars.length; k++) {
-                this.nextNewVariableIndex = checkVariable(e_vars[k], this.nextNewVariableIndex);
-            }
-        }
+        constraints.forEach(constraint => {
+            this.add(constraint);
+        });
     }
 
     /**
@@ -543,7 +539,7 @@ class ConstraintList {
     }
 
     /**
-     * @returns a new variable starting at `vn` (see constructor for definition of `vn`).
+     * @returns a new variable starting at `vN` (see constructor for definition of `vN`).
      */
     nextNewVariable() {
         return OM.simple('v' + this.nextNewVariableIndex++);
@@ -575,13 +571,22 @@ class ConstraintList {
      * @returns the new contents
      */
     add(...constraints) {
-        for (let i = 0; i < constraints.length; i++) {
-            var constraint = constraints[i];
-            var index = this.indexAtWhich((c) => { return c.equals(constraint); });
-            if (index == -1) {
-                this.contents.push(constraint.copy());
+        constraints.forEach(constraint => {
+            // Don't add if it's already in the list
+            if (this.indexAtWhich((c) => c.equals(constraint)) == -1) {
+                // Set the next new var index
+                var p_vars = getVariablesIn(constraint.pattern);
+                for (let j = 0; j < p_vars.length; j++) {
+                    this.nextNewVariableIndex = checkVariable(p_vars[j], this.nextNewVariableIndex);
+                }
+                var e_vars = getVariablesIn(constraint.expression);
+                for (let k = 0; k < e_vars.length; k++) {
+                    this.nextNewVariableIndex = checkVariable(e_vars[k], this.nextNewVariableIndex);
+                }
+                // Add the constraint
+                this.contents.push(constraint);
             }
-        }
+        });
         return this.contents;
     }
 
@@ -859,9 +864,11 @@ function makeProjectionExpression(variables, point) {
 }
 
 /**
- * Takes a list of variables, denoted `v1,...,vk`, and an expression 
- * which is denoted `g(e1,...,em)`. 
- * Returns a gEF with the meaning 
+ * Takes a list of variables, denoted `v1,...,vk`, an expression 
+ * which is denoted `g(e1,...,em)`, and a list of temporary
+ * metavariables.
+ * 
+ * For an application, returns a gEF with the meaning 
  * `λv_1,...,v_k.g(H_1(v_1,...,v_k),...,H_m(v_1,...,v_k))`
  * where each `H_i` denotes a temporary gEFA as well as a list of the
  * newly created temporary metavariables `[H_1,...,H_m]`.
@@ -871,37 +878,36 @@ function makeProjectionExpression(variables, point) {
  * replaced by a temporary gEFA.
  * @param {OM} variables - a list of OM variables
  * @param {OM} expr - an OM application
- * @returns an object with two properties as described above: 
- * `imitationExpr` and `tempVars`.
+ * @returns a gEF which is the imitation expression described above
  */
-function makeImitationExpression(variables, expr) {
+function makeImitationExpression(variables, expr, temp_metavars) {
     /**
      * Helper function which takes a function and returns
      * a list of metavariables named `H_1,...,H_m` where
      * `m` is the number of arguments in the function.
      */
-    function getTempVars(fn, type) {
-        let vars = [];
-        if (type == 'a') {
-            for (let index = 1; index < fn.children.length; index++) {
-                let new_metavar = OM.var('H' + index);
-                setMetavariable(new_metavar);
-                vars.push(new_metavar);
-            }
-        } else if (type == 'bi') {
-            // Just a single metavar for the body
-            let new_metavar = OM.var('H' + 1);
-            setMetavariable(new_metavar);
-            vars.push(new_metavar);
-        }
-        return vars;
-    }
+    // function getTempVars(fn, type) {
+    //     let vars = [];
+    //     if (type == 'a') {
+    //         for (let index = 1; index < fn.children.length; index++) {
+    //             let new_metavar = OM.var('H' + index);
+    //             setMetavariable(new_metavar);
+    //             vars.push(new_metavar);
+    //         }
+    //     } else if (type == 'bi') {
+    //         // Just a single metavar for the body
+    //         let new_metavar = OM.var('H' + 1);
+    //         setMetavariable(new_metavar);
+    //         vars.push(new_metavar);
+    //     }
+    //     return vars;
+    // }
 
     /**
      * Helper function which takes a head of a function,
      * a list of bound variables (i.e. the variables argument) of the 
-     * parent function, and a list of temporary metavariables (created
-     * by `getTempVars`). Returns an expression which will become the body
+     * parent function, and a list of temporary metavariables. 
+     * Returns an expression which will become the body
      * of the imitation function. This is an application of the form:
      * `head(temp_metavars[0](bound_vars),...,temp_metavars[len-1](bound_vars))`
      */
@@ -924,23 +930,22 @@ function makeImitationExpression(variables, expr) {
     }
 
     var imitationExpr = null;
-    var tempVars = null;
 
     if (variables.every((v) => v instanceof OM) && expr instanceof OM) {
         let type = expr.type;
-        tempVars = getTempVars(expr, type);
         imitationExpr = makeGeneralExpressionFunction(
             variables,
             createBody(
-                (type=='a' ? expr.children[0]: expr.symbol), variables, tempVars, type, (type=='bi' ? expr.variables : null)
+                (type=='a' ? expr.children[0]: expr.symbol), 
+                variables, 
+                temp_metavars, 
+                type,
+                (type=='bi' ? expr.variables : null)
             )
         );
     }
 
-    return {
-        imitationExpr: imitationExpr,
-        tempVars: tempVars,
-    };
+    return imitationExpr;
 }
 
 // FIXME: DELETE LATER
@@ -1153,21 +1158,37 @@ class MatchingChallenge {
                 var expression = current_constraint.expression;
                 if (expression.type == 'a' || expression.type == 'bi') {
                     let temp_mc_C = this.clone();
-                    let {
-                        imitationExpr: imitation_expr, 
-                        tempVars: temp_metavars
-                    } = makeImitationExpression(new_vars, expression);
+
+                    // Get the temporary metavariables
+                    let temp_metavars = [];
+                    if (expression.type == 'a') {
+                        temp_metavars = expression.children.slice(1).map(() => {
+                            let new_var = temp_mc_C.challengeList.nextNewVariable();
+                            setMetavariable(new_var);
+                            return new_var;
+                        });
+                    } else {
+                        let new_var = temp_mc_C.challengeList.nextNewVariable();
+                        setMetavariable(new_var);
+                        temp_metavars.push(new_var);
+                    }
+
+                    // Get the imitation expression
+                    let imitation_expr = makeImitationExpression(new_vars, expression, temp_metavars);
+
+                    // Create a substitution from the imitation expression
                     let imitation_sub = new ConstraintList(
                         new Constraint(
                             current_constraint.pattern.children[1],
                             imitation_expr
                         )
-                    )
+                    );
+
                     instantiate(imitation_sub, temp_mc_C.challengeList);
                     temp_mc_C.solutions[0].add(...imitation_sub.contents);
                     solutions_C = temp_mc_C.getSolutions();
+
                     // Remove any temporary metavariables from the solutions, after making substitutions
-                    debug_print_contraintList(solutions_C[0]);
                     solutions_C.forEach( sol => {
                         for (let i = 0; i < temp_metavars.length; i++) {
                             let metavar = temp_metavars[i];

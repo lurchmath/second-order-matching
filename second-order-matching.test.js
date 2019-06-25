@@ -1119,7 +1119,7 @@ describe('Constraint manipulation functions',  () => {
     });
 });
 
-describe('Expression Function Creators', () => {
+describe.skip('Expression Function Creators', () => {
     test('should correctly create constant functions', () => {
         var e1 = quick('pl.us(41,1)');
         var nv1 = quick('v1');
@@ -1320,13 +1320,13 @@ describe('The MatchingChallenge class (solving)', () => {
         if (cl === null) { return null; }
         return '{ ' + cl.contents.map((c) => CToString(c)).join(',\n')  + ' }'
     };
-    const debug_print_constraint = (c) => {
+    const DEBUG_PRINT_CONSTRAINT = (c) => {
         console.log(CToString(c));
     }
-    const debug_print_constraintList = (cl) => {
+    const DEBUG_PRINT_CONSTRAINTLIST = (cl) => {
         console.log(CLToString(cl));
     }
-    const debug_print_sols = (sol) => {
+    const DEBUG_PRINT_SOLS = (sol) => {
         console.log('[' + sol.map(s => CLToString(s)).join(',\n') + ']');
     }
 
@@ -1352,6 +1352,36 @@ describe('The MatchingChallenge class (solving)', () => {
         return new M.MatchingChallenge(...constraints);
     }
 
+
+    const newSolutions = (...solutions) => {
+        let new_solutions = [];
+        solutions.forEach(solution => {
+            new_solutions.push(
+                new M.ConstraintList(
+                    ...solution.map((pair) => {
+                        return (new M.Constraint(
+                            quick(pair[0]),
+                            quick(pair[1])
+                        ))
+                    })
+                )
+            );
+        });
+        return new_solutions;
+    }
+    const checkSolutions = (actual_solutions, expected_solutions) => {
+        actual_solutions.forEach(actual_solution => {
+            let match = false;
+            expected_solutions.forEach(expected_solution => {
+                if (actual_solution.equals(expected_solution)) {
+                    match = true;
+                }
+            });
+            if (!match) return false;
+        });
+        return true;
+    }
+
     test.skip('should correctly solve example challenges from the paper', () => {
         var constraints, mc, sols;
 
@@ -1361,10 +1391,11 @@ describe('The MatchingChallenge class (solving)', () => {
         );
         mc = newMC(constraints);
         sols = mc.getSolutions();
-        expect(sols.length).toBe(2);
-        expect(sols.contents[0].equals(newConstraintObject('_P', 'a'))).toBe(true);
-        expect(sols.contents[1].equals(newConstraintObject('_Q', 'or(b,c)'))).toBe(true);
+        expect(sols.length).toBe(1);
+        expect(sols[0].contents[0].equals(newConstraintObject('_P', 'a'))).toBe(true);
+        expect(sols[0].contents[1].equals(newConstraintObject('_Q', 'or(b,c)'))).toBe(true);
         expect(mc.solvable).toBe(true);
+        DEBUG_PRINT_SOLS(sols)
 
         // Example 2
         constraints = newConstraints(
@@ -1382,12 +1413,13 @@ describe('The MatchingChallenge class (solving)', () => {
         mc = newMC(constraints);
         sols = mc.getSolutions();
         expect(sols.length).toBe(1);
-        expect(sols.contents[0].pattern.equals(quick('_P'))).toBe(true);
-        expect(sols.contents[0].expression.equals(ef('v1', 'neq(0,v1)'))).toBe(true);
+        expect(sols[0].contents[0].pattern.equals(quick('_P'))).toBe(true);
+        expect(sols[0].contents[0].expression.equals(ef('v1', 'neq(0,v1)'))).toBe(true);
         expect(mc.solvable).toBe(true);
+        DEBUG_PRINT_SOLS(sols)
     });
 
-    test('should correctly solve challenges that contain particular problems', () => {
+    test.skip('should correctly solve challenges that contain particular problems', () => {
         var constraints, mc, sols;
 
         // Tests the case where we need to do alpha conversion before breaking into pairs
@@ -1396,7 +1428,7 @@ describe('The MatchingChallenge class (solving)', () => {
         );
         mc = newMC(constraints);
         sols = mc.getSolutions();
-        debug_print_sols(sols)
+        DEBUG_PRINT_SOLS(sols)
         
         //Tests the case where the pattern is a gEFA and the expression is a binding
         constraints = newConstraints(
@@ -1405,7 +1437,7 @@ describe('The MatchingChallenge class (solving)', () => {
         );
         mc = newMC(constraints);
         sols = mc.getSolutions();
-        debug_print_sols(sols);
+        DEBUG_PRINT_SOLS(sols);
     });
 
     test.skip('should correctly solve complex challenges from the paper', () => {
@@ -1420,9 +1452,8 @@ describe('The MatchingChallenge class (solving)', () => {
             ]
         );
         mc = newMC(constraints);
-        // debug_print_constraintList(mc.challengeList);
         mc.getSolutions();
-        debug_print_sols(mc.solutions);
+        DEBUG_PRINT_SOLS(mc.solutions);
     });
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -1430,28 +1461,51 @@ describe('The MatchingChallenge class (solving)', () => {
     // * correspond to the document "Tests of the Matching Algorithm"
     ////////////////////////////////////////////////////////////////////////////////
 
-    test.skip('should correctly solve small challenges', () => {
-        var constraints, mc;
+    test('should correctly solve small challenges', () => {
+        var constraints, mc, sols;
 
-        // FIXME: Solutions should be ConstraintList[], each one a solution
-
-        // Test 1
+        ////////// Test 1 //////////
         constraints = newConstraints(
             ['_P_of__x', 'b(2)'],
             ['_P_of__y', 'b(3)']
         );
         mc = newMC(constraints);
-        mc.getSolutions();
-        debug_print_sols(mc.solutions)
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_P', 'SecondOrderMatching.gEF[v,v]'],
+                        ['_x', 'b(2)'],
+                        ['_y', 'b(3)']
+                    ],
+                    [
+                        ['_P', 'SecondOrderMatching.gEF[v,b(v)]'],
+                        ['_x', '2'],
+                        ['_y', '3']
+                    ]
+                )
+            )
+        ).toBe(true);
 
-        // Test 2
+        ////////// Test 2 //////////
         constraints = newConstraints(
             ['_P_of__x', 'equ.als(pl.us(2,3),5)'],
             ['_P_of__y', 'equ.als(5,5)']
         );
         mc = newMC(constraints);
-        mc.getSolutions();
-        debug_print_sols(mc.solutions)
+        sols = mc.getSolutions();
+        // DEBUG_PRINT_SOLS(sols)
+
+        ////////// Test 5 //////////
+        constraints = newConstraints(
+            ['_P_of__x', 'f(1,2)'],
+            ['_P_of__y', 'f(1,2)']
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        // DEBUG_PRINT_SOLS(sols);
     });
 
     test.todo('should correctly solve challenges involving the equality elimination rule');
