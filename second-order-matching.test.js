@@ -1395,6 +1395,86 @@ describe('The MatchingChallenge class (solving)', () => {
         return true;
     }
 
+    test('(test for checkSolutions helper function)', () => {
+        // Test empty case
+        expect(
+            checkSolutions([], [])
+        ).toBe(true);
+
+        // Test cases where length is different
+        expect(
+            checkSolutions(
+                newSolutions(
+                    [
+                        ['_x', 'a'],
+                    ],
+                ),
+                newSolutions(
+                    [
+                        ['_x', 'a'],
+                    ],
+                    [
+                        ['_y', 'b'],
+                    ],
+                )
+            )
+        ).toBe(false);
+
+        // Test simple correct case
+        expect(
+            checkSolutions(
+                newSolutions(
+                    [
+                        ['_x', 'a'],
+                    ],
+                ),
+                newSolutions(
+                    [
+                        ['_x', 'a'],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        // Test alpha equivalent cases
+        expect(
+            checkSolutions(
+                newSolutions(
+                    [
+                        ['_x', 'for.all[v,v]'],
+                    ],
+                ),
+                newSolutions(
+                    [
+                        ['_x', 'for.all[m,m]'],
+                    ],
+                )
+            )
+        ).toBe(true);
+        
+        // Test different orderings case
+        expect(
+            checkSolutions(
+                newSolutions(
+                    [
+                        ['_x', 'a'],
+                    ],
+                    [
+                        ['_y', 'b'],
+                    ],
+                ),
+                newSolutions(
+                    [
+                        ['_y', 'b'],
+                    ],
+                    [
+                        ['_x', 'a'],
+                    ],
+                )
+            )
+        ).toBe(true);
+    });
+
     test.skip('should correctly solve example challenges from the paper', () => {
         var constraints, mc, sols;
 
@@ -1425,7 +1505,7 @@ describe('The MatchingChallenge class (solving)', () => {
         DEBUG_PRINT_SOLS(sols)
     });
 
-    test('should correctly solve challenges that contain particular problems', () => {
+    test.skip('should correctly solve challenges that contain particular problems', () => {
         var constraints, mc, sols;
 
         // Tests the case where we need to do alpha conversion before breaking into pairs
@@ -1448,8 +1528,7 @@ describe('The MatchingChallenge class (solving)', () => {
             ['_P_of_2', 'f(a)'],
         );
         mc = newMC(constraints);
-        sols = mc.getSolutions();
-        DEBUG_PRINT_SOLS(sols)
+        // sols = mc.getSolutions();
     });
 
     test.skip('should correctly solve complex challenges from the paper', () => {
@@ -1473,7 +1552,7 @@ describe('The MatchingChallenge class (solving)', () => {
     // * correspond to the document "Tests of the Matching Algorithm"
     ////////////////////////////////////////////////////////////////////////////////
 
-    test.skip('should correctly solve small challenges', () => {
+    test('should correctly solve small challenges', () => {
         var constraints, mc, sols;
 
         ////////// Test 1 //////////
@@ -1599,9 +1678,6 @@ describe('The MatchingChallenge class (solving)', () => {
         );
         mc = newMC(constraints);
         sols = mc.getSolutions();
-        DEBUG_PRINT_SOLS(sols)
-        console.log(sols.length)
-        /**
         expect(
             checkSolutions(
                 sols,
@@ -1636,13 +1712,85 @@ describe('The MatchingChallenge class (solving)', () => {
                 )
             )
         ).toBe(true);
-        */
 
         ////////// Test 7 //////////
+        constraints = newConstraints(
+            ['_P_of__x', 'f(a,a)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_x', 'f(a,a)'],
+                        ['_P', lambdaString('v.v')],
+                    ],
+                    [
+                        ['_x', 'f'],
+                        ['_P', lambdaString('v.v(a,a)')],
+                    ],
+                    [
+                        ['_x', 'a'],
+                        ['_P', lambdaString('v.f(a,v)')],
+                    ],
+                    [
+                        ['_x', 'a'],
+                        ['_P', lambdaString('v.f(v,a)')],
+                    ],
+                    [
+                        ['_x', 'a'],
+                        ['_P', lambdaString('v.f(v,v)')],
+                    ],
+                    [
+                        ['_P', lambdaString('v.f(a,a)')],
+                    ],
+                )
+            )
+        ).toBe(true);
 
         ////////// Test 8 //////////
+        constraints = newConstraints(
+            ['_P_of__x', 'f(a,a)'],
+            ['_x', 'b'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_x', 'b'],
+                        ['_P', lambdaString('v.f(a,a)')],
+                    ],
+                )
+            )
+        ).toBe(true);
 
         ////////// Test 9 //////////
+        constraints = newConstraints(
+            ['_P_of__x', 'f(a,a)'],
+            ['_x', 'f'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_x', 'f'],
+                        ['_P', lambdaString('v.v(a,a)')],
+                    ],
+                    [
+                        ['_x', 'f'],
+                        ['_P', lambdaString('v.f(a,a)')],
+                    ],
+                )
+            )
+        ).toBe(true);
 
         ////////// Test 10 //////////
         constraints = newConstraints(
@@ -1651,21 +1799,187 @@ describe('The MatchingChallenge class (solving)', () => {
         );
         mc = newMC(constraints);
         sols = mc.getSolutions();
-        // DEBUG_PRINT_SOLS(sols)
-        // expect(
-        //     checkSolutions(
-        //         sols,
-        //         newSolutions(
-        //             [
-        //                 ['_a', ''],
-        //                 ['_b', ''],
-        //                 ['_P', lambdaString('')],
-        //                 ['_Q', lambdaString('')],
-        //             ],
-        //         )
-        //     )
-        // ).toBe(true);
-
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    // Row 1
+                    [
+                        ['_a', 'eq(3,3)'],
+                        ['_P', lambdaString('v.v')],
+                        ['_b', 'gt(5,4)'],
+                        ['_Q', lambdaString('v.v')],
+                    ],
+                    [
+                        ['_a', 'eq'],
+                        ['_P', lambdaString('v.v(3,3)')],
+                        ['_b', 'gt(5,4)'],
+                        ['_Q', lambdaString('v.v')],
+                    ],
+                    [
+                        ['_a', '3'],
+                        ['_P', lambdaString('v.eq(v,v)')],
+                        ['_b', 'gt(5,4)'],
+                        ['_Q', lambdaString('v.v')],
+                    ],
+                    [
+                        ['_a', '3'],
+                        ['_P', lambdaString('v.eq(v,3)')],
+                        ['_b', 'gt(5,4)'],
+                        ['_Q', lambdaString('v.v')],
+                    ],
+                    [
+                        ['_a', '3'],
+                        ['_P', lambdaString('v.eq(3,v)')],
+                        ['_b', 'gt(5,4)'],
+                        ['_Q', lambdaString('v.v')],
+                    ],
+                    [
+                        ['_P', lambdaString('v.eq(3,3)')],
+                        ['_b', 'gt(5,4)'],
+                        ['_Q', lambdaString('v.v')],
+                    ],
+                    // Row 2
+                    [
+                        ['_a', 'eq(3,3)'],
+                        ['_P', lambdaString('v.v')],
+                        ['_b', 'gt'],
+                        ['_Q', lambdaString('v.v(5,4)')],
+                    ],
+                    [
+                        ['_a', 'eq'],
+                        ['_P', lambdaString('v.v(3,3)')],
+                        ['_b', 'gt'],
+                        ['_Q', lambdaString('v.v(5,4)')],
+                    ],
+                    [
+                        ['_a', '3'],
+                        ['_P', lambdaString('v.eq(v,v)')],
+                        ['_b', 'gt'],
+                        ['_Q', lambdaString('v.v(5,4)')],
+                    ],
+                    [
+                        ['_a', '3'],
+                        ['_P', lambdaString('v.eq(v,3)')],
+                        ['_b', 'gt'],
+                        ['_Q', lambdaString('v.v(5,4)')],
+                    ],
+                    [
+                        ['_a', '3'],
+                        ['_P', lambdaString('v.eq(3,v)')],
+                        ['_b', 'gt'],
+                        ['_Q', lambdaString('v.v(5,4)')],
+                    ],
+                    [
+                        ['_P', lambdaString('v.eq(3,3)')],
+                        ['_b', 'gt'],
+                        ['_Q', lambdaString('v.v(5,4)')],
+                    ],
+                    // Row 3
+                    [
+                        ['_a', 'eq(3,3)'],
+                        ['_P', lambdaString('v.v')],
+                        ['_b', '5'],
+                        ['_Q', lambdaString('v.gt(v,4)')],
+                    ],
+                    [
+                        ['_a', 'eq'],
+                        ['_P', lambdaString('v.v(3,3)')],
+                        ['_b', '5'],
+                        ['_Q', lambdaString('v.gt(v,4)')],
+                    ],
+                    [
+                        ['_a', '3'],
+                        ['_P', lambdaString('v.eq(v,v)')],
+                        ['_b', '5'],
+                        ['_Q', lambdaString('v.gt(v,4)')],
+                    ],
+                    [
+                        ['_a', '3'],
+                        ['_P', lambdaString('v.eq(v,3)')],
+                        ['_b', '5'],
+                        ['_Q', lambdaString('v.gt(v,4)')],
+                    ],
+                    [
+                        ['_a', '3'],
+                        ['_P', lambdaString('v.eq(3,v)')],
+                        ['_b', '5'],
+                        ['_Q', lambdaString('v.gt(v,4)')],
+                    ],
+                    [
+                        ['_P', lambdaString('v.eq(3,3)')],
+                        ['_b', '5'],
+                        ['_Q', lambdaString('v.gt(v,4)')],
+                    ],
+                    // Row 4
+                    [
+                        ['_a', 'eq(3,3)'],
+                        ['_P', lambdaString('v.v')],
+                        ['_b', '4'],
+                        ['_Q', lambdaString('v.gt(5,v)')],
+                    ],
+                    [
+                        ['_a', 'eq'],
+                        ['_P', lambdaString('v.v(3,3)')],
+                        ['_b', '4'],
+                        ['_Q', lambdaString('v.gt(5,v)')],
+                    ],
+                    [
+                        ['_a', '3'],
+                        ['_P', lambdaString('v.eq(v,v)')],
+                        ['_b', '4'],
+                        ['_Q', lambdaString('v.gt(5,v)')],
+                    ],
+                    [
+                        ['_a', '3'],
+                        ['_P', lambdaString('v.eq(v,3)')],
+                        ['_b', '4'],
+                        ['_Q', lambdaString('v.gt(5,v)')],
+                    ],
+                    [
+                        ['_a', '3'],
+                        ['_P', lambdaString('v.eq(3,v)')],
+                        ['_b', '4'],
+                        ['_Q', lambdaString('v.gt(5,v)')],
+                    ],
+                    [
+                        ['_P', lambdaString('v.eq(3,3)')],
+                        ['_b', '4'],
+                        ['_Q', lambdaString('v.gt(5,v)')],
+                    ],
+                    // Row 5
+                    [
+                        ['_a', 'eq(3,3)'],
+                        ['_P', lambdaString('v.v')],
+                        ['_Q', lambdaString('v.gt(5,4)')],
+                    ],
+                    [
+                        ['_a', 'eq'],
+                        ['_P', lambdaString('v.v(3,3)')],
+                        ['_Q', lambdaString('v.gt(5,4)')],
+                    ],
+                    [
+                        ['_a', '3'],
+                        ['_P', lambdaString('v.eq(v,v)')],
+                        ['_Q', lambdaString('v.gt(5,4)')],
+                    ],
+                    [
+                        ['_a', '3'],
+                        ['_P', lambdaString('v.eq(v,3)')],
+                        ['_Q', lambdaString('v.gt(5,4)')],
+                    ],
+                    [
+                        ['_a', '3'],
+                        ['_P', lambdaString('v.eq(3,v)')],
+                        ['_Q', lambdaString('v.gt(5,4)')],
+                    ],
+                    [
+                        ['_P', lambdaString('v.eq(3,3)')],
+                        ['_Q', lambdaString('v.gt(5,4)')],
+                    ],
+                )
+            )
+        ).toBe(true);
     });
 
     test.todo('should correctly solve challenges involving the equality elimination rule');
