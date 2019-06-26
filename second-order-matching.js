@@ -159,7 +159,7 @@ function applyGeneralExpressionFunctionApplication(gEFA) {
  */
 function getNewVariableRelativeTo(expr /*, expr2, ... */) {
     let all_vars = getVariablesIn(expr);
-    for (let i = 1; i < arguments.length; i++) {
+    for (let i = 0; i < arguments.length; i++) {
         all_vars.push(...getVariablesIn(arguments[i]));
     }
     let index = 0;
