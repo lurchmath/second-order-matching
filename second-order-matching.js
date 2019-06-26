@@ -949,12 +949,12 @@ function makeImitationExpression(variables, expr, temp_metavars) {
 }
 
 // FIXME: DELETE LATER
-function debug_print_contraint(c) {
+function DEBUG_PRINT_CONTRAINT(c) {
     console.log(
         '( ' + c.pattern.simpleEncode() + ', ' + c.expression.simpleEncode() + ' ):' + c.case
     );
 }
-function debug_print_contraintList(cl) {
+function DEBUG_PRINT_CONTRAINTLIST(cl) {
     console.log(
         '{ ' + 
             cl.contents.map((c) =>
@@ -1127,7 +1127,7 @@ class MatchingChallenge {
                 var const_sub = new ConstraintList(
                     new Constraint(
                         current_constraint.pattern.children[1],
-                        makeConstantExpression(this.challengeList.nextNewVariable(), current_constraint.expression)
+                        makeConstantExpression(temp_mc_A.challengeList.nextNewVariable(), current_constraint.expression)
                     )
                 );
                 instantiate(const_sub, temp_mc_A.challengeList);
@@ -1135,13 +1135,11 @@ class MatchingChallenge {
                 var solutions_A = temp_mc_A.getSolutions();
 
                 // Subcase B, the function may be a projection function
-                var temp_challengeList = this.challengeList.copy();
-                var pattern_children = current_constraint.pattern.children;
-                var head = pattern_children[1];
-                var new_vars = pattern_children.slice(2).map(() => temp_challengeList.nextNewVariable());
-                var solutions_B = [ ];
-                for (let i = 2; i < pattern_children.length; i++) {
+                var solutions_B = [];
+                var head = current_constraint.pattern.children[1];
+                for (let i = 2; i < current_constraint.pattern.children.length; i++) {
                     let temp_mc_B = this.clone();
+                    let new_vars = current_constraint.pattern.children.slice(2).map(()=>temp_mc_B.challengeList.nextNewVariable());
                     let proj_sub = new ConstraintList(
                         new Constraint(
                             head,
@@ -1158,6 +1156,8 @@ class MatchingChallenge {
                 var expression = current_constraint.expression;
                 if (expression.type == 'a' || expression.type == 'bi') {
                     let temp_mc_C = this.clone();
+
+                    let new_vars = current_constraint.pattern.children.slice(2).map(()=>temp_mc_C.challengeList.nextNewVariable());
 
                     // Get the temporary metavariables
                     let temp_metavars = [];
