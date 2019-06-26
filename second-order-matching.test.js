@@ -1982,15 +1982,209 @@ describe('The MatchingChallenge class (solving)', () => {
         ).toBe(true);
     });
 
-    test.todo('should correctly solve challenges involving the equality elimination rule');
+    test('should correctly solve challenges involving the equality elimination rule', () => {
+        var constraints, mc, sols;
 
-    test.todo('should correctly solve challenges involving the universal elimination rule');
+        ////////// Test 11 //////////
+        constraints = newConstraints(
+            ['eq(_a,_b)', 'eq(t,1)'],
+            ['_P_of__a', 'gt(t,0)'],
+            ['_P_of__b', 'gt(1,0)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_a', 't'],
+                        ['_b', '1'],
+                        ['_P', lambdaString('v.gt(v,0)')],
+                    ],
+                )
+            )
+        ).toBe(true);
 
-    test.todo('should correctly solve challenges involving the universal introduction rule');
+        ////////// Test 12 //////////
+        constraints = newConstraints(
+            ['eq(_a,_b)', 'eq(t,1)'],
+            ['_P_of__a', 'gt(1,0)'],
+            ['_P_of__b', 'gt(t,0)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(sols.length).toBe(0);
 
-    test.todo('should correctly solve challenges involving the existential introduction rule');
+        ////////// Test 13 //////////
+        constraints = newConstraints(
+            ['eq(_a,_b)', 'eq(t,1)'],
+            ['_P_of__a', 'eq(plus(t,1),2)'],
+            ['_P_of__b', 'eq(plus(1,1),2)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_a', 't'],
+                        ['_b', '1'],
+                        ['_P', lambdaString('v.eq(plus(v,1),2)')],
+                    ],
+                )
+            )
+        ).toBe(true);
 
-    test.todo('should correctly solve challenges involving the existential elimination rule');
+        ////////// Test 14 //////////
+        constraints = newConstraints(
+            ['eq(_a,_b)', 'eq(t,1)'],
+            ['_P_of__a', 'eq(plus(1,1),2)'],
+            ['_P_of__b', 'eq(plus(t,1),2)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(sols.length).toBe(0);
 
-    test.todo('should correctly solve challenges involving induction of the natural numbers');
+        ////////// Test 15 //////////
+        constraints = newConstraints(
+            ['eq(_a,_b)', 'eq(1,2)'],
+            ['_P_of__a', 'eq(plus(1,1),2)'],
+            ['_P_of__b', 'eq(plus(2,2),2)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_a', '1'],
+                        ['_b', '2'],
+                        ['_P', lambdaString('v.eq(plus(v,v),2)')],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 16 //////////
+        constraints = newConstraints(
+            ['eq(_a,_b)', 'eq(1,2)'],
+            ['_P_of__a', 'eq(plus(1,1),2)'],
+            ['_P_of__b', 'eq(plus(2,1),2)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_a', '1'],
+                        ['_b', '2'],
+                        ['_P', lambdaString('v.eq(plus(v,1),2)')],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 17 //////////
+        constraints = newConstraints(
+            ['eq(_a,_b)', 'eq(1,2)'],
+            ['_P_of__a', 'eq(plus(1,1),2)'],
+            ['_P_of__b', 'eq(plus(1,2),2)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_a', '1'],
+                        ['_b', '2'],
+                        ['_P', lambdaString('v.eq(plus(1,v),2)')],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 18 //////////
+        constraints = newConstraints(
+            ['eq(_a,_b)', 'eq(1,2)'],
+            ['_P_of__a', 'eq(plus(1,1),2)'],
+            ['_P_of__b', 'eq(plus(1,1),2)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_a', '1'],
+                        ['_b', '2'],
+                        ['_P', lambdaString('v.eq(plus(1,1),2)')],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 19 //////////
+        constraints = newConstraints(
+            ['eq(_a,_b)', 'eq(1,2)'],
+            ['_P_of__a', 'eq(plus(1,1),2)'],
+            ['_P_of__b', 'eq(plus(2,2),1)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(sols.length).toBe(0);
+
+        ////////// Test 20 //////////
+        constraints = newConstraints(
+            ['eq(_a,_b)', 'eq(1,2)'],
+            ['_P_of__a', 'eq(plus(1,1),2)'],
+            ['_P_of__b', 'eq(plus(1,1),1)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(sols.length).toBe(0);
+
+        ////////// Test 21 //////////
+        constraints = newConstraints(
+            ['eq(_a,_b)', 'eq(x,y)'],
+            ['_P_of__a', 'exi.sts[y,neq(y,x)]'],
+            ['_P_of__b', 'exi.sts[y,neq(y,y)]'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(sols.length).toBe(0);
+
+    });
+
+    test.skip('should correctly solve challenges involving the universal elimination rule', () => {
+        var constraints, mc, sols;
+        ////////// Test N //////////
+    });
+
+    test.skip('should correctly solve challenges involving the universal introduction rule', () => {
+        var constraints, mc, sols;
+        ////////// Test N //////////
+    });
+
+    test.skip('should correctly solve challenges involving the existential introduction rule', () => {
+        var constraints, mc, sols;
+        ////////// Test N //////////
+    });
+
+    test.skip('should correctly solve challenges involving the existential elimination rule', () => {
+        var constraints, mc, sols;
+        ////////// Test N //////////
+    });
+
+    test.skip('should correctly solve challenges involving induction of the natural numbers', () => {
+        var constraints, mc, sols;
+        ////////// Test N //////////
+    });
 });
