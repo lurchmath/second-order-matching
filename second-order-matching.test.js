@@ -2160,31 +2160,38 @@ describe('The MatchingChallenge class (solving)', () => {
         mc = newMC(constraints);
         sols = mc.getSolutions();
         expect(sols.length).toBe(0);
+        DEBUG_PRINT_SOLS(sols)
 
     });
 
     test.skip('should correctly solve challenges involving the universal elimination rule', () => {
         var constraints, mc, sols;
-        ////////// Test N //////////
+
+        ////////// Test 22 //////////
     });
 
     test.skip('should correctly solve challenges involving the universal introduction rule', () => {
         var constraints, mc, sols;
-        ////////// Test N //////////
+
+        ////////// Test 35 //////////
     });
 
     test.skip('should correctly solve challenges involving the existential introduction rule', () => {
         var constraints, mc, sols;
-        ////////// Test N //////////
-    });
 
-    test.skip('should correctly solve challenges involving the existential elimination rule', () => {
-        var constraints, mc, sols;
-        ////////// Test N //////////
+        ////////// Test 50 //////////
     });
 
     test.skip('should correctly solve challenges involving induction of the natural numbers', () => {
         var constraints, mc, sols;
-        ////////// Test N //////////
+
+        ////////// Test 56 //////////
     });
+
+    test.skip('should correctly solve challenges involving the existential elimination rule', () => {
+        var constraints, mc, sols;
+
+        ////////// Test 64 //////////
+    });
+
 });
