@@ -449,11 +449,9 @@ class Constraint {
                         (
                             pattern.type == 'a' 
                             && !(isGeneralExpressionFunctionApplication(pattern))
-                            && !(isMetavariable(pattern.children[0]))
                         )
                         && expression.type == 'a'
                     )
-                    && pattern.children[0].equals(expression.children[0])
                     && pattern.children.length == expression.children.length
                 )
                 || 
@@ -795,7 +793,7 @@ function breakIntoArgPairs(constraint) {
         let pattern_children = constraint.pattern.children;
         let expression_children = constraint.expression.children;
         // In getting the case, we checked that the length of children was the same
-        for (let i = 1; i < pattern_children.length; i++) {
+        for (let i = 0; i < pattern_children.length; i++) {
             arg_pairs.push(
                 new Constraint(
                     pattern_children[i].copy(), 
@@ -923,7 +921,7 @@ function makeImitationExpression(variables, expr, temp_metavars) {
             );
         }
         if (type == 'a') {
-            return OM.app(head, ...args);
+            return OM.app(...args);
         } else if (type == 'bi') {
             return OM.bin(head, ...binding_variables, ...args);
         }
@@ -1122,17 +1120,21 @@ class MatchingChallenge {
                 this.solve();
                 break;
             case CASE_EFA:
+                var expression = current_constraint.expression;
                 // Subcase A, the function may be a constant function
-                var temp_mc_A = this.clone();
-                var const_sub = new ConstraintList(
-                    new Constraint(
-                        current_constraint.pattern.children[1],
-                        makeConstantExpression(temp_mc_A.challengeList.nextNewVariable(), current_constraint.expression)
-                    )
-                );
-                instantiate(const_sub, temp_mc_A.challengeList);
-                temp_mc_A.solutions[0].add(...const_sub.contents);
-                var solutions_A = temp_mc_A.getSolutions();
+                var solutions_A = [];
+                if (expression.type != 'a' && expression.type != 'bi') {
+                    var temp_mc_A = this.clone();
+                    var const_sub = new ConstraintList(
+                        new Constraint(
+                            current_constraint.pattern.children[1],
+                            makeConstantExpression(temp_mc_A.challengeList.nextNewVariable(), current_constraint.expression)
+                        )
+                    );
+                    instantiate(const_sub, temp_mc_A.challengeList);
+                    temp_mc_A.solutions[0].add(...const_sub.contents);
+                    solutions_A = temp_mc_A.getSolutions();
+                }
 
                 // Subcase B, the function may be a projection function
                 var solutions_B = [];
@@ -1153,7 +1155,6 @@ class MatchingChallenge {
 
                 // Subcase C, the function may be more complex
                 var solutions_C = [ ];
-                var expression = current_constraint.expression;
                 if (expression.type == 'a' || expression.type == 'bi') {
                     let temp_mc_C = this.clone();
 
@@ -1162,7 +1163,7 @@ class MatchingChallenge {
                     // Get the temporary metavariables
                     let temp_metavars = [];
                     if (expression.type == 'a') {
-                        temp_metavars = expression.children.slice(1).map(() => {
+                        temp_metavars = expression.children.map(() => {
                             let new_var = temp_mc_C.challengeList.nextNewVariable();
                             setMetavariable(new_var);
                             return new_var;
