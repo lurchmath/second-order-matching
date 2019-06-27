@@ -1383,15 +1383,14 @@ describe('The MatchingChallenge class (solving)', () => {
         if (actual_solutions.length != expected_solutions.length) {
             return false;
         }
-        actual_solutions.forEach(actual_solution => {
-            let match = false;
-            expected_solutions.forEach(expected_solution => {
-                if (actual_solution.equals(expected_solution)) {
-                    match = true;
-                }
-            });
-            if (!match) return false;
-        });
+
+        for (let i = 0; i < actual_solutions.length; i++) {
+            const actual_solution = actual_solutions[i];
+            if (!expected_solutions.some(expected_solution =>
+                actual_solution.length == expected_solution.length
+             && actual_solution.equals(expected_solution)
+            )) return false;
+        }
         return true;
     }
 
@@ -1505,32 +1504,6 @@ describe('The MatchingChallenge class (solving)', () => {
         DEBUG_PRINT_SOLS(sols)
     });
 
-    test.skip('should correctly solve challenges that contain particular problems', () => {
-        var constraints, mc, sols;
-
-        // Tests the case where we need to do alpha conversion before breaking into pairs
-        constraints = newConstraints(
-            ['for.all[x,_P]', 'for.all[r,plus(r,1)]']
-        );
-        mc = newMC(constraints);
-        // sols = mc.getSolutions();
-        
-        // Tests the case where the pattern is a gEFA and the expression is a binding
-        constraints = newConstraints(
-            ['_P_of__t', 'for.all[k,gte(sq(k),0)]'],
-            ['exi.sts[x,_P_of_x]', 'exi.sts[x,for.all[k,gte(sq(k),x)]]']
-        );
-        mc = newMC(constraints);
-        // sols = mc.getSolutions();
-
-        // Tests the case where identical solutions are being outputted
-        constraints = newConstraints(
-            ['_P_of_2', 'f(a)'],
-        );
-        mc = newMC(constraints);
-        // sols = mc.getSolutions();
-    });
-
     test.skip('should correctly solve complex challenges from the paper', () => {
         var constraints;
         var mc;
@@ -1545,6 +1518,63 @@ describe('The MatchingChallenge class (solving)', () => {
         mc = newMC(constraints);
         mc.getSolutions();
         DEBUG_PRINT_SOLS(mc.solutions);
+    });
+
+    test.skip('should correctly solve challenges that contain particular problems', () => {
+        var constraints, mc, sols;
+
+        constraints = newConstraints(
+            ['for.all[_x,_P_of__x]', 'for.all[x,exi.sts[y,lt(x,y)]]'],
+            ['_P_of__t', 'exi.sts[y,lt(y,y)]'],
+        );
+        mc = newMC(constraints);
+        var subs = newSolutions(
+            [
+                ['_x', 'x'],
+                ['_t', 'y'],
+                ['_P', lambdaString('v.exi.sts[y,lt(v,y)]')],
+            ],
+        )[0];
+        M.instantiate(subs, mc.challengeList);
+        // DEBUG_PRINT_CONSTRAINTLIST(mc.challengeList)
+
+        // Tests the case where too few solutions are being outputted
+        constraints = newConstraints(
+            ['for.all[_x,_P_of__x]', 'for.all[x,R(x,x)]'],
+            ['_P_of__t', 'R(x,x)'],
+        );
+        mc = newMC(constraints);
+        // sols = mc.getSolutions();
+
+        // Tests the case where too many solutions are being outputted
+        constraints = newConstraints(
+            ['for.all[_x,_P_of__x]', 'for.all[x,R(x,x)]'],
+            ['_P_of__t', 'R(3,x)'],
+        );
+        mc = newMC(constraints);
+        // sols = mc.getSolutions();
+
+        // Tests the case where we need to do alpha conversion before breaking into pairs
+        constraints = newConstraints(
+            ['for.all[x,_P]', 'for.all[r,plus(r,1)]']
+        );
+        mc = newMC(constraints);
+        // sols = mc.getSolutions();
+
+        // Tests the case where the pattern is a gEFA and the expression is a binding
+        constraints = newConstraints(
+            ['_P_of__t', 'for.all[k,gte(sq(k),0)]'],
+            ['exi.sts[x,_P_of_x]', 'exi.sts[x,for.all[k,gte(sq(k),x)]]']
+        );
+        mc = newMC(constraints);
+        // sols = mc.getSolutions();
+
+        // Tests the case where identical solutions are being outputted
+        constraints = newConstraints(
+            ['_P_of_2', 'f(a)'],
+        );
+        mc = newMC(constraints);
+        // sols = mc.getSolutions();
     });
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -2160,38 +2190,374 @@ describe('The MatchingChallenge class (solving)', () => {
         mc = newMC(constraints);
         sols = mc.getSolutions();
         expect(sols.length).toBe(0);
-        DEBUG_PRINT_SOLS(sols)
 
     });
 
-    test.skip('should correctly solve challenges involving the universal elimination rule', () => {
+    test('should correctly solve challenges involving the universal elimination rule', () => {
         var constraints, mc, sols;
 
         ////////// Test 22 //////////
+        constraints = newConstraints(
+            ['for.all[_x,_P_of__x]', 'for.all[x,gte(x,0)]'],
+            ['_P_of__t', 'gte(7,0)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_x', 'x'],
+                        ['_t', '7'],
+                        ['_P', lambdaString('v.gte(v,0)')],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 23 //////////
+        constraints = newConstraints(
+            ['for.all[_x,_P_of__x]', 'for.all[x,gte(x,0)]'],
+            ['_P_of__t', 'gte(7,7)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(sols.length).toBe(0);
+
+        ////////// Test 24 //////////
+        constraints = newConstraints(
+            ['for.all[_x,_P_of__x]', 'for.all[x,Q]'],
+            ['_P_of__t', 'Q'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_x', 'x'],
+                        ['_P', lambdaString('v.Q')],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 25 //////////
+        constraints = newConstraints(
+            ['for.all[_x,_P_of__x]', 'for.all[s,eq(sq(s),s)]'],  
+            ['_P_of__t', 'eq(sq(1),1)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_x', 's'],
+                        ['_P', lambdaString('v.eq(sq(v),v)')],
+                        ['_t', '1'],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 26 //////////
+        constraints = newConstraints(
+            ['for.all[_x,_P_of__x]', 'for.all[x,R(x,y)]'],
+            ['_P_of__t', 'R(x,3)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(sols.length).toBe(0);
+
+        ////////// Test 27 //////////
+        constraints = newConstraints(
+            ['for.all[_x,_P_of__x]', 'for.all[x,R(x,y)]'],
+            ['_P_of__t', 'R(3,y)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_x', 'x'],
+                        ['_P', lambdaString('v.R(v,y)')],
+                        ['_t', '3'],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 28 //////////
+        constraints = newConstraints(
+            ['for.all[_x,_P_of__x]', 'for.all[x,R(x,x)]'],
+            ['_P_of__t', 'R(3,3)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_x', 'x'],
+                        ['_P', lambdaString('v.R(v,v)')],
+                        ['_t', '3'],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 29 //////////
+        constraints = newConstraints(
+            ['for.all[_x,_P_of__x]', 'for.all[x,R(x,x)]'],
+            ['_P_of__t', 'R(3,x)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(sols.length).toBe(0);
+
+        ////////// Test 30 //////////
+        constraints = newConstraints(
+            ['for.all[_x,_P_of__x]', 'for.all[x,R(x,x)]'],
+            ['_P_of__t', 'R(x,3)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(sols.length).toBe(0);
+
+        ////////// Test 31 //////////
+        constraints = newConstraints(
+            ['for.all[_x,_P_of__x]', 'for.all[x,R(x,x)]'],
+            ['_P_of__t', 'R(x,x)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_x', 'x'],   
+                        ['_P', lambdaString('v.R(v,v)')],
+                        ['_t', 'x'],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 32 //////////
+        constraints = newConstraints(
+            ['for.all[_x,_P_of__x]', 'for.all[s,eq(plus(s,s),r)]'],
+            ['_P_of__t', 'eq(plus(t,s),r)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(sols.length).toBe(0);
+
+        ////////// Test 33 //////////
+        constraints = newConstraints(
+            ['for.all[_x,_P_of__x]', 'for.all[x,eq(x,x)]'],
+            ['_P_of__t', 'eq(iff(P,Q),iff(P,Q))'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_x', 'x'],
+                        ['_P', lambdaString('v.eq(v,v)')],
+                        ['_t', 'iff(P,Q)'],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 34 //////////
+        constraints = newConstraints(
+            ['for.all[_x,_P_of__x]', 'for.all[x,exi.sts[y,lt(x,y)]]'],
+            ['_P_of__t', 'exi.sts[y,lt(y,y)]'],
+        );
+        mc = newMC(constraints);
+        var subs = newSolutions(
+            [
+                ['_x', 'x'],
+                ['_P', lambdaString('v.exi.sts[y,lt(v,y)]')],
+                ['_t', 'y'],
+            ],
+        )[0];
+        M.instantiate(subs, mc.challengeList);
+        sols = mc.getSolutions();
+        expect(sols.length).toBe(0);
+
     });
 
-    test.skip('should correctly solve challenges involving the universal introduction rule', () => {
+    test('should correctly solve challenges involving the universal introduction rule', () => {
         var constraints, mc, sols;
 
         ////////// Test 35 //////////
+        constraints = newConstraints(
+            ['Sub.proof[_x,_P_of__x]', 'Sub.proof[a,r(a,a)]'],
+            ['for.all[_x,_P_of__x]', 'for.all[b,r(b,b)]'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        DEBUG_PRINT_SOLS(sols)
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_P', lambdaString('v.r(v,v)')],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 36 //////////
+        constraints = newConstraints(
+            ['Sub.proof[x,_P_of_x]', 'Sub.proof[a,r(a,a)]'],
+            ['for.all[y,_P_of_y]', 'for.all[b,r(b,b)]'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        DEBUG_PRINT_SOLS(sols)
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_x', 'a'],
+                        ['_P', lambdaString('v.r(v,v)')],
+                        ['_y', 'b'],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 37 //////////
+        constraints = newConstraints(
+            ['Sub.proof[_x,_P_of__x]', 'Sub.proof[a,gt(a,3)]'],
+            ['for.all[_y,_P_of__y]', 'for.all[a,gt(a,3)]'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_x', 'a'],   
+                        ['_P', lambdaString('v.gt(v,3)')],
+                        ['_y', 'a'],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 38 //////////
+        constraints = newConstraints(
+            ['Sub.proof[_x,_P_of__x]', 'Sub.proof[a,gt(a,3)]'],
+            ['for.all[_y,_P_of__y]', 'for.all[x,gt(x,3)]'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_x', 'a'],
+                        ['_P', lambdaString('v.gt(v,3)')],
+                        ['_y', 'x'],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 39 //////////
+        constraints = newConstraints(
+            ['Sub.proof[_x,_P_of__x]', 'Sub.proof[T,R(T,T)]'],
+            ['for.all[_y,_P_of__y]', 'for.all[T,R(T,T)]'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_x', 'T'],
+                        ['_P', lambdaString('v.R(v,v)')],
+                        ['_y', 'T'],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 40 //////////
+        constraints = newConstraints(
+            ['Sub.proof[_x,_P_of__x]', 'Sub.proof[T,R(T,T)]'],
+            ['for.all[_y,_P_of__y]', 'for.all[x,R(T,x)]'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(sols.length).toBe(0);
+
+        ////////// Test 41 //////////
+        ////////// Test 42 //////////
+        ////////// Test 43 //////////
+        ////////// Test 44 //////////
+        ////////// Test 45 //////////
+        ////////// Test 46 //////////
+        ////////// Test 47 //////////
+        ////////// Test 48 //////////
+        ////////// Test 49 //////////
     });
 
     test.skip('should correctly solve challenges involving the existential introduction rule', () => {
         var constraints, mc, sols;
 
         ////////// Test 50 //////////
+        ////////// Test 51 //////////
+        ////////// Test 52 //////////
+        ////////// Test 53 //////////
+        ////////// Test 54 //////////
+        ////////// Test 55 //////////
     });
 
     test.skip('should correctly solve challenges involving induction of the natural numbers', () => {
         var constraints, mc, sols;
 
         ////////// Test 56 //////////
+        ////////// Test 57 //////////
+        ////////// Test 58 //////////
+        ////////// Test 59 //////////
+        ////////// Test 60 //////////
+        ////////// Test 61 //////////
+        ////////// Test 62 //////////
+        ////////// Test 63 //////////
     });
 
     test.skip('should correctly solve challenges involving the existential elimination rule', () => {
         var constraints, mc, sols;
 
         ////////// Test 64 //////////
+        ////////// Test 65 //////////
+        ////////// Test 66 //////////
+        ////////// Test 67 //////////
+        ////////// Test 68 //////////
+        ////////// Test 69 //////////
+        ////////// Test 70 //////////
+        ////////// Test 71 //////////
+        ////////// Test 72 //////////
     });
 
 });

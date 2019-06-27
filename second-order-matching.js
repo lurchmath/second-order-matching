@@ -734,8 +734,7 @@ class ConstraintList {
                 binding.descendantsSatisfying(isMetavariable).forEach(innerMV => {
                     if (innerMV.isFree(binding)) { 
                         binding.variables.forEach(outerMV => {
-                            if (isMetavariable(outerMV)
-                                && !this.bindingConstraints.find(existing =>
+                            if (!this.bindingConstraints.find(existing =>
                                     existing.outer.equals(outerMV) && existing.inner.equals(innerMV))
                                 ) {
                                 this.bindingConstraints.push({ inner: innerMV, outer: outerMV });
@@ -1063,36 +1062,12 @@ class MatchingChallenge {
                 // console.log('Outer lookup: ' + solution.lookup(binding_constraint.outer).simpleEncode())
                 // console.groupEnd()
                 return !solution.lookup(binding_constraint.inner).occursFree(
-                    solution.lookup(binding_constraint.outer)
+                    isMetavariable(binding_constraint.outer) ? solution.lookup(binding_constraint.outer) : binding_constraint.outer
                 )
             })
         );
     }
 
-    /**
-     * Tests whether all solutions in the list satisfy binding constraints
-     */
-    // allSolutionsSatisfyBindingConstraints() {
-    //     console.group("ALL SOLUTIONS: CHECKING BINDING CONSTRAINTS")
-    //     console.log(this.challengeList.bindingConstraints.map(bc =>
-    //         'inner: ' + bc.inner.simpleEncode() + ', outer: ' + bc.outer.simpleEncode())
-    //     )
-    //     this.solutions.map(DEBUG_PRINT_CONTRAINTLIST)
-    //     for (let i = 0; i < this.solutions.length; i++) {
-    //         const solution = this.solutions[i];
-    //         if (!this.challengeList.bindingConstraints.every(binding_constraint => {
-    //             console.log('Inner lookup: ' + solution.lookup(binding_constraint.inner).simpleEncode())
-    //             console.log('Outer lookup: ' + solution.lookup(binding_constraint.outer).simpleEncode())
-    //             console.groupEnd()
-    //                 return !solution.lookup(binding_constraint.inner).occursFree(
-    //                     solution.lookup(binding_constraint.outer)
-    //                 );
-    //         })) {
-    //             return false;
-    //         }
-    //     }
-    //     return true;
-    // }
 
     /**
      * Adds a solution, and checks that it passes `satisfiesBindingConstraints`. 
