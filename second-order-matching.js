@@ -701,7 +701,7 @@ class ConstraintList {
                 return constraint.expression;
             }
         }
-        return OM.err(OM.sym('error', 'SecondOrderMatching'));
+        return null;
     }
 
     /**
@@ -1052,18 +1052,18 @@ class MatchingChallenge {
     }
 
     solutionSatisfiesBindingConstraints(solution) {
-        // console.group("CHECKING BINDING CONSTRAINTS")
-        // console.log(this.challengeList.bindingConstraints.map(bc => 
-            // 'inner: ' + bc.inner.simpleEncode() + ', outer: ' + bc.outer.simpleEncode())
-        // )
+        // console.log(this.challengeList.bindingConstraints.map(bc =>
+        //     'inner: ' + bc.inner.simpleEncode() + ', outer: ' + bc.outer.simpleEncode())
+        // );
         return (
             this.challengeList.bindingConstraints.every(binding_constraint => {
-                // console.log('Inner lookup: ' +  solution.lookup(binding_constraint.inner).simpleEncode())
-                // console.log('Outer lookup: ' + solution.lookup(binding_constraint.outer).simpleEncode())
-                // console.groupEnd()
-                return !solution.lookup(binding_constraint.inner).occursFree(
-                    isMetavariable(binding_constraint.outer) ? solution.lookup(binding_constraint.outer) : binding_constraint.outer
-                )
+                const inner = solution.lookup(binding_constraint.inner);
+                // console.log('Inner lookup: ' + ( inner ? inner.simpleEncode() : "NULL" ) );
+                if (!inner) return true; // metavariable not instantiated yet; can't violate any constraints
+                const outer = isMetavariable(binding_constraint.outer) ? solution.lookup(binding_constraint.outer) : binding_constraint.outer;
+                // console.log('Outer lookup: ' + ( outer ? outer.simpleEncode() : "NULL" ) );
+                if (!outer) return true; // metavariable not instantiated yet; can't violate any constraints
+                return !inner.occursFree(outer);
             })
         );
     }
@@ -1080,6 +1080,14 @@ class MatchingChallenge {
         if (this.satisfiesBindingConstraints()) {
             return true;
         } else {
+            // console.log( 'dropping a solution because it failed the binding constraints:' );
+            // console.log( '[\n' + this.solutions.map( solution =>
+            //     '{ ' + solution.contents.map( constraint =>
+            //         `( ${constraint.pattern.simpleEncode()}, ${constraint.expression.simpleEncode()} )` )
+            //     .join( ',\n' ) + ' }' ).join( ',\n\n' ) + '\n]' );
+            // console.log( 'those constraints were:' );
+            // console.log( this.challengeList.bindingConstraints.map( constraint =>
+            //     `${constraint.inner.simpleEncode()} in ${constraint.outer.simpleEncode()}` ).join( ',\n' ) );
             this.solutions = [];
             this.solvable = false;
             return this.solvable;
