@@ -523,6 +523,7 @@ class ConstraintList {
     constructor(...constraints) {
         this.contents = [];
         this.nextNewVariableIndex = 0;
+        this.bindingConstraints = [];
 
         constraints.forEach(constraint => {
             this.add(constraint);
@@ -549,6 +550,7 @@ class ConstraintList {
     copy() {
         var contents_copy = this.contents.map(c => c.copy());
         var result = new ConstraintList(...contents_copy);
+        result.bindingConstraints = this.bindingConstraints.map(bc => {return {inner: bc.inner.copy(), outer: bc.outer.copy()}})
         result.nextNewVariableIndex = this.nextNewVariableIndex;
         return result;
     }
@@ -585,6 +587,7 @@ class ConstraintList {
                 this.contents.push(constraint);
             }
         });
+        this.computeBindingConstraints();
         return this.contents;
     }
 
@@ -698,7 +701,7 @@ class ConstraintList {
                 return constraint.expression;
             }
         }
-        return null;
+        return OM.err(OM.sym('error', 'SecondOrderMatching'));
     }
 
     /**
@@ -719,6 +722,30 @@ class ConstraintList {
         }
         return true;
     }
+
+    /**
+     * Extracts from each pattern a list of metavariable pairs (m1,m2). 
+     * Such a pair means the restriction that a solution S cannot have S(m1) appearing free in S(m2).
+     * Pairs are represented by an object with `inner: m1` and `outer m2` properties.
+     */
+    computeBindingConstraints() {
+        this.contents.forEach(constraint =>
+            constraint.pattern.descendantsSatisfying(d => d.type == 'bi').forEach(binding =>
+                binding.descendantsSatisfying(isMetavariable).forEach(innerMV => {
+                    if (innerMV.isFree(binding)) { 
+                        binding.variables.forEach(outerMV => {
+                            if (isMetavariable(outerMV)
+                                && !this.bindingConstraints.find(existing =>
+                                    existing.outer.equals(outerMV) && existing.inner.equals(innerMV))
+                                ) {
+                                this.bindingConstraints.push({ inner: innerMV, outer: outerMV });
+                            }
+                        });
+                    } 
+                })
+            )
+        );
+    }
 }
 
 /**
@@ -730,30 +757,10 @@ class ConstraintList {
  */
 function applyInstantiation(substitution, pattern) {
     var result = pattern.copy();
-    if (isMetavariable(result) && substitution.pattern.equals(result)) {
-        return substitution.expression.copy();
-    } else if (result.type == 'a') {
-        // Apply this instantiation for each part of the application
-        for (let i = 0; i < result.children.length; i++) {
-            let ch = result.children[i];
-            ch.replaceWith(applyInstantiation(substitution, ch));
-        }
-        // If the above created a gEFA which can be applied, apply it
-        if (canApplyGeneralExpressionFunctionApplication(result)) {
-            return applyGeneralExpressionFunctionApplication(result);
-        }
-    } else if (result.type == 'bi') {
-        // Apply this instantiation to the body first to avoid a naive substitution of metavariables
-        result.body.replaceWith(applyInstantiation(substitution, result.body));
-        // Any remaining free variable which matches the substitution pattern is okay to replace
-        let vars = getVariablesIn(result);
-        for (let i = 0; i < vars.length; i++) {
-            let variable = vars[i];
-            if (substitution.pattern.equals(variable) && result.occursFree(variable)) {
-                replaceWithoutCapture(result, variable, substitution.expression);
-            }
-        }
-    }
+    replaceWithoutCapture(result, substitution.pattern, substitution.expression);
+    result.descendantsSatisfying(canApplyGeneralExpressionFunctionApplication).forEach(x =>
+        x.replaceWith(applyGeneralExpressionFunctionApplication(x))
+    );
     return result;
 }
 
@@ -770,9 +777,7 @@ function instantiate(substitutions, patterns) {
         var substitution = substitutions.contents[i];
         for (let j = 0; j < patterns.length; j++) {
             var pattern = patterns.contents[j].pattern;
-            pattern.replaceWith(
-                applyInstantiation(substitution, pattern)
-            );
+            patterns.contents[j].pattern = applyInstantiation(substitution, pattern);
             // Re-evaluate case
             patterns.contents[j].reEvalCase();
         }
@@ -1036,6 +1041,77 @@ class MatchingChallenge {
     }
 
     /**
+     * Tests whether a currently-in-progress solution satisfies all 
+     * the challenge's already-computed binding constraints.
+     */
+    satisfiesBindingConstraints() {
+        // console.group("CHECKING BINDING CONSTRAINTS")
+        // console.log(this.challengeList.bindingConstraints.map(bc => 
+            // 'inner: ' + bc.inner.simpleEncode() + ', outer: ' + bc.outer.simpleEncode())
+        // )
+        return this.solutionSatisfiesBindingConstraints(this.solutions[0]);
+    }
+
+    solutionSatisfiesBindingConstraints(solution) {
+        // console.group("CHECKING BINDING CONSTRAINTS")
+        // console.log(this.challengeList.bindingConstraints.map(bc => 
+            // 'inner: ' + bc.inner.simpleEncode() + ', outer: ' + bc.outer.simpleEncode())
+        // )
+        return (
+            this.challengeList.bindingConstraints.every(binding_constraint => {
+                // console.log('Inner lookup: ' +  solution.lookup(binding_constraint.inner).simpleEncode())
+                // console.log('Outer lookup: ' + solution.lookup(binding_constraint.outer).simpleEncode())
+                // console.groupEnd()
+                return !solution.lookup(binding_constraint.inner).occursFree(
+                    solution.lookup(binding_constraint.outer)
+                )
+            })
+        );
+    }
+
+    /**
+     * Tests whether all solutions in the list satisfy binding constraints
+     */
+    // allSolutionsSatisfyBindingConstraints() {
+    //     console.group("ALL SOLUTIONS: CHECKING BINDING CONSTRAINTS")
+    //     console.log(this.challengeList.bindingConstraints.map(bc =>
+    //         'inner: ' + bc.inner.simpleEncode() + ', outer: ' + bc.outer.simpleEncode())
+    //     )
+    //     this.solutions.map(DEBUG_PRINT_CONTRAINTLIST)
+    //     for (let i = 0; i < this.solutions.length; i++) {
+    //         const solution = this.solutions[i];
+    //         if (!this.challengeList.bindingConstraints.every(binding_constraint => {
+    //             console.log('Inner lookup: ' + solution.lookup(binding_constraint.inner).simpleEncode())
+    //             console.log('Outer lookup: ' + solution.lookup(binding_constraint.outer).simpleEncode())
+    //             console.groupEnd()
+    //                 return !solution.lookup(binding_constraint.inner).occursFree(
+    //                     solution.lookup(binding_constraint.outer)
+    //                 );
+    //         })) {
+    //             return false;
+    //         }
+    //     }
+    //     return true;
+    // }
+
+    /**
+     * Adds a solution, and checks that it passes `satisfiesBindingConstraints`. 
+     * If it does not, empties the solutions list and sets variables in order to end the search.
+     * @param {Constraint} constriant - either a Constraint, or an OM (meta)variable
+     */
+    addSolutionAndCheckBindingConstraints(constriant) {
+        instantiate(new ConstraintList(constriant), this.challengeList);
+        this.solutions[0].add(constriant);
+        if (this.satisfiesBindingConstraints()) {
+            return true;
+        } else {
+            this.solutions = [];
+            this.solvable = false;
+            return this.solvable;
+        }
+    }
+
+    /**
      * @returns `this.solvable` if it is defined. 
      * If it is undefined, then `getSolutions` has not been called.
      * This function will call `getSolutions` in that case.
@@ -1090,12 +1166,13 @@ class MatchingChallenge {
                 break;
             case CASE_BINDING:
                 this.challengeList.remove(current_constraint);
-                this.solutions[0].add(current_constraint);
-                // Apply metavariable substitution to constraints
-                instantiate(
-                    new ConstraintList(current_constraint), 
-                    this.challengeList
-                );
+                // this.solutions[0].add(current_constraint);
+                // // Apply metavariable substitution to constraints
+                // instantiate(
+                //     new ConstraintList(current_constraint), 
+                //     this.challengeList
+                // );
+                if(!this.addSolutionAndCheckBindingConstraints(current_constraint)) break;
                 this.solve();
                 break;
             case CASE_SIMPLIFICATION:
@@ -1124,15 +1201,20 @@ class MatchingChallenge {
                 // Subcase A, the function may be a constant function
                 var solutions_A = [];
                 if (expression.type != 'a' && expression.type != 'bi') {
-                    var temp_mc_A = this.clone();
-                    var const_sub = new ConstraintList(
-                        new Constraint(
-                            current_constraint.pattern.children[1],
-                            makeConstantExpression(temp_mc_A.challengeList.nextNewVariable(), current_constraint.expression)
-                        )
+                    let temp_mc_A = this.clone();
+                    // var const_sub = new ConstraintList(
+                    //     new Constraint(
+                    //         current_constraint.pattern.children[1],
+                    //         makeConstantExpression(temp_mc_A.challengeList.nextNewVariable(), current_constraint.expression)
+                    //     )
+                    // );
+                    // instantiate(const_sub, temp_mc_A.challengeList);
+                    // temp_mc_A.solutions[0].add(...const_sub.contents);
+                    let const_sub = new Constraint(
+                        current_constraint.pattern.children[1],
+                        makeConstantExpression(temp_mc_A.challengeList.nextNewVariable(), current_constraint.expression)
                     );
-                    instantiate(const_sub, temp_mc_A.challengeList);
-                    temp_mc_A.solutions[0].add(...const_sub.contents);
+                    if(!temp_mc_A.addSolutionAndCheckBindingConstraints(const_sub)) break;
                     solutions_A = temp_mc_A.getSolutions();
                 }
 
@@ -1142,14 +1224,19 @@ class MatchingChallenge {
                 for (let i = 2; i < current_constraint.pattern.children.length; i++) {
                     let temp_mc_B = this.clone();
                     let new_vars = current_constraint.pattern.children.slice(2).map(()=>temp_mc_B.challengeList.nextNewVariable());
-                    let proj_sub = new ConstraintList(
-                        new Constraint(
-                            head,
-                            makeProjectionExpression(new_vars, new_vars[i - 2])
-                        )
+                    // let proj_sub = new ConstraintList(
+                    //     new Constraint(
+                    //         head,
+                    //         makeProjectionExpression(new_vars, new_vars[i - 2])
+                    //     )
+                    // );
+                    // instantiate(proj_sub, temp_mc_B.challengeList);
+                    // temp_mc_B.solutions[0].add(...proj_sub.contents);
+                    let proj_sub = new Constraint(
+                        head,
+                        makeProjectionExpression(new_vars, new_vars[i - 2])
                     );
-                    instantiate(proj_sub, temp_mc_B.challengeList);
-                    temp_mc_B.solutions[0].add(...proj_sub.contents);
+                    if (!temp_mc_B.addSolutionAndCheckBindingConstraints(proj_sub)) break;
                     solutions_B = solutions_B.concat( temp_mc_B.getSolutions() );
                 }
 
@@ -1178,15 +1265,19 @@ class MatchingChallenge {
                     let imitation_expr = makeImitationExpression(new_vars, expression, temp_metavars);
 
                     // Create a substitution from the imitation expression
-                    let imitation_sub = new ConstraintList(
-                        new Constraint(
+                    // let imitation_sub = new ConstraintList(
+                    //     new Constraint(
+                    //         current_constraint.pattern.children[1],
+                    //         imitation_expr
+                    //     )
+                    // );
+                    // instantiate(imitation_sub, temp_mc_C.challengeList);
+                    // temp_mc_C.solutions[0].add(...imitation_sub.contents);
+                    let imitation_sub = new Constraint(
                             current_constraint.pattern.children[1],
                             imitation_expr
-                        )
                     );
-
-                    instantiate(imitation_sub, temp_mc_C.challengeList);
-                    temp_mc_C.solutions[0].add(...imitation_sub.contents);
+                    if(!temp_mc_C.addSolutionAndCheckBindingConstraints(imitation_sub)) break;
                     solutions_C = temp_mc_C.getSolutions();
 
                     // Remove any temporary metavariables from the solutions, after making substitutions
@@ -1206,6 +1297,9 @@ class MatchingChallenge {
                             }
                         }
                     } );
+                    
+                    // After making temporary metavar substitutions, do a final check for satisfy binding constraints
+                    solutions_C = solutions_C.filter(sol => this.solutionSatisfiesBindingConstraints(sol));
                 }
 
                 // After all subcases are handled, return and record results
