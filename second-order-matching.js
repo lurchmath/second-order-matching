@@ -208,20 +208,32 @@ function alphaConvert(binding, which_var, replace_var) {
  * Manipulates the expression in place in order to replace all occurences
  * of the variable with the expression in such a way that variable capture
  * will not occur.
- * @param {OM} expr - an OM expression 
+ *
+ * Because this function will be called whenever a metavariable's instantiation
+ * is discovered by the solve() routine in MatchingChallenge, it must guarantee
+ * that NO occurrences of the variable remain after the function is complete.
+ *
+ * Note that this function addresses only variable capture that would occur
+ * from a binding expression inside expr; it does not address any binders that
+ * may sit in a parent above expr.
+ *
+ * @param {OM} expr - an OM expression
  * @param {OM} variable - an OM variable
  * @param {OM} replacement - an OM expression
  */
 function replaceWithoutCapture(expr, variable, replacement) {
-    if (!(expr instanceof OM) 
-        || !(variable instanceof OM) 
+    if (!(expr instanceof OM)
+        || !(variable instanceof OM)
         || !(replacement instanceof OM)) {
         throw 'all arguments must be instances of OMNode';
     }
-
     if (expr.type != 'bi') {
+        // Case 1: expr is a variable that we must replace, so do it
         if (expr.type == 'v' && expr.equals(variable)) {
             expr.replaceWith(replacement.copy());
+        // Case 2: expr is any other non-binding, so recur on its
+        // children (of which there may be none, meaning this is some
+        // type of atomic other than a variable, which is fine; do nothing)
         } else {
             var children = expr.children;
             for (let i = 0; i < children.length; i++) {
@@ -230,18 +242,40 @@ function replaceWithoutCapture(expr, variable, replacement) {
             }
         }
     } else {
-        var bound_vars = expr.variables;
-        for (let i = 0; i < bound_vars.length; i++) {
-            var bound_var = bound_vars[i];
-            // variable capture will occur in the following case
-            if (expr.body.occursFree(variable) && replacement.occursFree(bound_var)) { 
-                // FIXME: this doesn't seem like the best way to get new variables, but works for now.
-                //      need some way of generating global new variables  
-                //      E.g. a class called new variable stream
-                expr.replaceWith(alphaConvert(expr, bound_var, getNewVariableRelativeTo(expr)));
+        const varidx = expr.variables.map( v => v.name ).indexOf(variable.name);
+        if (varidx > -1) {
+            // Case 3: expr is a binding and it binds the variable to be replaced,
+            // but the replacement is a non-variable.  This is illegal, because
+            // OpenMath bound variable positions can be occupied only by variables.
+            if (replacement.type != 'v') {
+                throw 'Cannot replace a bound variable with a non-varible';
+            // Case 4: expr is a binding and it binds the variable to be replaced,
+            // and the replacement is also a variable.  We can go ahead and replace
+            // as requested, knowing that this is just a special case of alpha
+            // conversion.
+            } else {
+                expr.variables[varidx].replaceWith(replacement.copy());
+                replaceWithoutCapture(expr.body, variable, replacement);
             }
+        } else {
+            // Case 5: expr is a binding and it does not bind the variable to be replaced,
+            // but the replacement may include capture, so we prevent that.
+            // If any bound var would capture the replacement, apply alpha conversion
+            // so that the bound var in question becomes an entirely new bound var.
+            if (expr.body.occursFree(variable)) {
+                expr.variables.forEach(bound_var => {
+                    if (replacement.occursFree(bound_var)) {
+                        // FIXME: this doesn't seem like the best way to get new variables, but works for now.
+                        //      need some way of generating global new variables
+                        //      E.g. a class called new variable stream
+                        expr.replaceWith(alphaConvert(expr, bound_var, getNewVariableRelativeTo(expr)));
+                    }
+                } );
+            }
+            // now after any needed alpha conversions have made it safe,
+            // we can actually do the replacement in the body.
+            replaceWithoutCapture(expr.body, variable, replacement);
         }
-        replaceWithoutCapture(expr.body, variable, replacement);
     }
 }
 

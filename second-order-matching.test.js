@@ -181,7 +181,7 @@ describe.skip('Generalized Expression Functions', () => {
     });
 });
 
-describe.skip('Expression manipluation', () => {
+describe('Expression manipluation', () => {
     test('should get new variables relative to expressions', () => {
         var e1 = OM.simple('v1');
         var e2 = OM.simple('f.a[v1,x0,x1,x2]')
@@ -325,6 +325,13 @@ describe.skip('Expression manipluation', () => {
         expect(gef1.equals(expected9)).toBe(true);
         M.replaceWithoutCapture(gef1, OM.var('v3'), OM.var('x0'));
         expect(gef1.equals(expected10)).toBe(true);
+
+        var bind3 = OM.simple('for.all[x,P(x,y)]');
+        M.replaceWithoutCapture(bind3, OM.var('x'), OM.var('z'));
+        expect(bind3.equals(OM.simple('for.all[z,P(z,y)]'))).toBe(true);
+        var bind3 = OM.simple('for.all[a,b,c,R(f(a),g(b),h(c))]');
+        M.replaceWithoutCapture(bind3, OM.var('b'), OM.var('B'));
+        expect(bind3.equals(OM.simple('for.all[a,B,c,R(f(a),g(B),h(c))]'))).toBe(true);
     });
 
     test('should implement alpha equivalence for expressions', () => {
