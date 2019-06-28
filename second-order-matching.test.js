@@ -181,7 +181,7 @@ describe.skip('Generalized Expression Functions', () => {
     });
 });
 
-describe.skip('Expression manipluation', () => {
+describe('Expression manipluation', () => {
     test('should get new variables relative to expressions', () => {
         var e1 = OM.simple('v1');
         var e2 = OM.simple('f.a[v1,x0,x1,x2]')
@@ -325,6 +325,13 @@ describe.skip('Expression manipluation', () => {
         expect(gef1.equals(expected9)).toBe(true);
         M.replaceWithoutCapture(gef1, OM.var('v3'), OM.var('x0'));
         expect(gef1.equals(expected10)).toBe(true);
+
+        var bind3 = OM.simple('for.all[x,P(x,y)]');
+        M.replaceWithoutCapture(bind3, OM.var('x'), OM.var('z'));
+        expect(bind3.equals(OM.simple('for.all[z,P(z,y)]'))).toBe(true);
+        var bind3 = OM.simple('for.all[a,b,c,R(f(a),g(b),h(c))]');
+        M.replaceWithoutCapture(bind3, OM.var('b'), OM.var('B'));
+        expect(bind3.equals(OM.simple('for.all[a,B,c,R(f(a),g(B),h(c))]'))).toBe(true);
     });
 
     test('should implement alpha equivalence for expressions', () => {
@@ -1381,6 +1388,10 @@ describe('The MatchingChallenge class (solving)', () => {
     }
     const checkSolutions = (actual_solutions, expected_solutions) => {
         if (actual_solutions.length != expected_solutions.length) {
+            // console.log( `expected sols:` );
+            // DEBUG_PRINT_SOLS(expected_solutions);
+            // console.log( `actual sols (different length!):` );
+            // DEBUG_PRINT_SOLS(actual_solutions);
             return false;
         }
 
@@ -1388,8 +1399,13 @@ describe('The MatchingChallenge class (solving)', () => {
             const actual_solution = actual_solutions[i];
             if (!expected_solutions.some(expected_solution =>
                 actual_solution.length == expected_solution.length
-             && actual_solution.equals(expected_solution)
-            )) return false;
+             && actual_solution.equals(expected_solution) )) {
+                // console.log( 'missing this expected solution:' );
+                // DEBUG_PRINT_CONSTRAINTLIST(expected_solution);
+                // console.log( 'got only these:' );
+                // DEBUG_PRINT_SOLS(actual_solutions);
+                return false;
+            }
         }
         return true;
     }
@@ -2409,7 +2425,25 @@ describe('The MatchingChallenge class (solving)', () => {
         );
         mc = newMC(constraints);
         sols = mc.getSolutions();
-        DEBUG_PRINT_SOLS(sols)
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_x', 'a'],
+                        ['_P', lambdaString('v.r(v,v)')],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 35 variant //////////
+        constraints = newConstraints(
+            ['Sub.proof[x,_P_of_x]', 'Sub.proof[a,r(a,a)]'],
+            ['for.all[x,_P_of_x]', 'for.all[b,r(b,b)]'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
         expect(
             checkSolutions(
                 sols,
@@ -2423,12 +2457,11 @@ describe('The MatchingChallenge class (solving)', () => {
 
         ////////// Test 36 //////////
         constraints = newConstraints(
-            ['Sub.proof[x,_P_of_x]', 'Sub.proof[a,r(a,a)]'],
-            ['for.all[y,_P_of_y]', 'for.all[b,r(b,b)]'],
+            ['Sub.proof[_x,_P_of__x]', 'Sub.proof[a,r(a,a)]'],
+            ['for.all[_y,_P_of__y]', 'for.all[b,r(b,b)]'],
         );
         mc = newMC(constraints);
         sols = mc.getSolutions();
-        DEBUG_PRINT_SOLS(sols)
         expect(
             checkSolutions(
                 sols,
@@ -2437,6 +2470,24 @@ describe('The MatchingChallenge class (solving)', () => {
                         ['_x', 'a'],
                         ['_P', lambdaString('v.r(v,v)')],
                         ['_y', 'b'],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        ////////// Test 36 variant //////////
+        constraints = newConstraints(
+            ['Sub.proof[x,_P_of_x]', 'Sub.proof[a,r(a,a)]'],
+            ['for.all[y,_P_of_y]', 'for.all[b,r(b,b)]'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_P', lambdaString('v.r(v,v)')],
                     ],
                 )
             )
@@ -2454,7 +2505,7 @@ describe('The MatchingChallenge class (solving)', () => {
                 sols,
                 newSolutions(
                     [
-                        ['_x', 'a'],   
+                        ['_x', 'a'],
                         ['_P', lambdaString('v.gt(v,3)')],
                         ['_y', 'a'],
                     ],
