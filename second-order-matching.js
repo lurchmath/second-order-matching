@@ -1198,13 +1198,20 @@ class MatchingChallenge {
                 if (current_constraint.pattern.type == 'bi' && current_constraint.expression.type == 'bi') {
                     let pattern_vars = current_constraint.pattern.variables;
                     let expression_vars = current_constraint.expression.variables;
+                    // Get case checks number of arguments
                     for (let i = 0; i < pattern_vars.length; i++) {
                         let variable = pattern_vars[i];
                         if (!isMetavariable(variable)) {
+                            var new_var = this.challengeList.nextNewVariable();
                             current_constraint.expression = alphaConvert(
                                 current_constraint.expression,
                                 expression_vars[i],
-                                pattern_vars[i]
+                                new_var
+                            );
+                            current_constraint.pattern = alphaConvert(
+                                current_constraint.pattern,
+                                pattern_vars[i],
+                                new_var
                             );
                         }
                     }
