@@ -1521,19 +1521,31 @@ describe('The MatchingChallenge class (solving)', () => {
     });
 
     test('should correctly solve complex challenges from the paper', () => {
-        var constraints;
-        var mc;
+        var constraints, mc, sols;
 
         // Complex example 1
         constraints = newConstraints(
-            [
-                'w(for.all[_x,_P],_P_of__T)', 
-                'w(for.all[r,gt(plus(sq(r),1),0)],gt(plus(sq(-9),1),0))'
-            ]
+            // [
+                // 'w(for.all[_x,_P],_P_of__T)', 
+                // 'w(for.all[r,gt(plus(sq(r),1),0)],gt(plus(sq(-9),1),0))'
+            // ]
+            ['for.all[_x,_P_of__x]', 'for.all[r,gt(plus(sq(r),1),0)]'],
+            ['_P_of__T', 'gt(plus(sq(-9),1),0)']
         );
         mc = newMC(constraints);
-        mc.getSolutions();
-        DEBUG_PRINT_SOLS(mc.solutions);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_T', '-9'],
+                        ['_x', 'r'],
+                        ['_P', lambdaString('v.gt(plus(sq(v),1),0)')],
+                    ],
+                )
+            )
+        ).toBe(true);
     });
 
     test.skip('should correctly solve challenges that contain particular problems', () => {

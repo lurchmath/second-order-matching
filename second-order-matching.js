@@ -1184,11 +1184,11 @@ class MatchingChallenge {
             case CASE_BINDING:
                 this.challengeList.remove(current_constraint);
                 // this.solutions[0].add(current_constraint);
-                // // Apply metavariable substitution to constraints
                 // instantiate(
-                //     new ConstraintList(current_constraint), 
-                //     this.challengeList
-                // );
+                    //     new ConstraintList(current_constraint), 
+                    //     this.challengeList
+                    // );
+                // Apply metavariable substitution to constraints
                 if(!this.addSolutionAndCheckBindingConstraints(current_constraint)) break;
                 this.solve();
                 break;
