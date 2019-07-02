@@ -1068,7 +1068,7 @@ describe('Instantiation', () => {
     });
 });
 
-describe.skip('Constraint manipulation functions',  () => {
+describe('Constraint manipulation functions',  () => {
     test('should correctly break constraints into argument pairs', () => {
         // Check for applications
         var constr1 = new M.Constraint(quick('and(_P,_Q)'), quick('and(a,or(b,c))'));
@@ -1115,7 +1115,7 @@ describe.skip('Constraint manipulation functions',  () => {
     });
 });
 
-describe.skip('Expression Function Creators', () => {
+describe('Expression Function Creators', () => {
     test('should correctly create constant functions', () => {
         var e1 = quick('pl.us(41,1)');
         var nv1 = quick('v1');
