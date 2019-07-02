@@ -938,7 +938,7 @@ describe('The ConstraintList class', () => {
     });
 });
 
-describe.skip('Instantiation', () => {
+describe('Instantiation', () => {
     test('should correctly apply a single instantiation', () => {
         // Test the simplest case of insantiating a metavariable
         var sub1 = new M.Constraint(quick('_P'), quick('a'));
@@ -977,16 +977,10 @@ describe.skip('Instantiation', () => {
         expect(p4.equals(p4copy)).toBe(true);
 
         // Test the case where the pattern is a binding
-        var p5 = quick('for.all[x,gr.th(sq.uare(x),0)]');
-        var p5copy = p5.copy();
-        var sub5 = new M.Constraint(quick('x'), quick('3'));
-        expect(M.applyInstantiation(sub5, p5).equals(p5copy)).toBe(true);
-        expect(p5.equals(p5copy)).toBe(true);
-
         var p6 = quick('for.all[y,gr.th(sq.uare(x),y)]');
         var p6copy = p6.copy();
-        var sub6 = new M.Constraint(quick('x'), quick('3'));
-        expect(M.applyInstantiation(sub6, p6).equals(quick('for.all[y,gr.th(sq.uare(3),y)]'))).toBe(true);
+        var sub6 = new M.Constraint(quick('x'), quick('a'));
+        expect(M.applyInstantiation(sub6, p6).equals(quick('for.all[y,gr.th(sq.uare(a),y)]'))).toBe(true);
         expect(p6.equals(p6copy)).toBe(true);
 
         // Test the case where replacement can cause variable capture
