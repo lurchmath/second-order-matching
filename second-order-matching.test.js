@@ -1070,48 +1070,44 @@ describe('Instantiation', () => {
 
 describe('Constraint manipulation functions',  () => {
     test('should correctly break constraints into argument pairs', () => {
-        // Check for applications
-        var constr1 = new M.Constraint(quick('and(_P,_Q)'), quick('and(a,or(b,c))'));
-        expect(constr1.case).toBe(M.CASES.CASE_SIMPLIFICATION);
-        var arg_pairs1 = M.breakIntoArgPairs(constr1);
-        expect(arg_pairs1.length).toBe(2);
-        expect(arg_pairs1[0].equals(new M.Constraint(quick('_P'), quick('a')))).toBe(true);
-        expect(arg_pairs1[1].equals(new M.Constraint(quick('_Q'), quick('or(b,c)')))).toBe(true);
+        var constr, arg_pairs;
 
-        var constr2 = new M.Constraint(
+        // Check for applications
+        constr = new M.Constraint(quick('and(_P,_Q)'), quick('and(a,or(b,c))'));
+        expect(constr.case).toBe(M.CASES.CASE_SIMPLIFICATION);
+        arg_pairs = M.breakIntoArgPairs(constr);
+        expect(arg_pairs.length).toBe(3);
+        expect(arg_pairs[0].equals(new M.Constraint(quick('and'), quick('and')))).toBe(true);
+        expect(arg_pairs[1].equals(new M.Constraint(quick('_P'), quick('a')))).toBe(true);
+        expect(arg_pairs[2].equals(new M.Constraint(quick('_Q'), quick('or(b,c)')))).toBe(true);
+
+        constr = new M.Constraint(
             quick('times(plus(_X,_Y),minus(_X,_Y))'),
             quick('times(plus(3,k),minus(3,p))')
         );
-        var arg_pairs2 = M.breakIntoArgPairs(constr2);
-        expect(arg_pairs2.length).toBe(2);
-        var arg_pairs3 = arg_pairs2.map(arg => M.breakIntoArgPairs(arg))
-        arg_pairs3 = [].concat.apply([], arg_pairs3);
-        expect(arg_pairs3.length).toBe(4);
-        expect(arg_pairs3[0].equals(new M.Constraint(quick('_X'), quick('3')))).toBe(true);
-        expect(arg_pairs3[1].equals(new M.Constraint(quick('_Y'), quick('k')))).toBe(true);
-        expect(arg_pairs3[2].equals(new M.Constraint(quick('_X'), quick('3')))).toBe(true);
-        expect(arg_pairs3[3].equals(new M.Constraint(quick('_Y'), quick('p')))).toBe(true);
+        arg_pairs = M.breakIntoArgPairs(constr);
+        expect(arg_pairs.length).toBe(3);
 
         // Check for bindings
-        var constr3 = new M.Constraint(
+        constr = new M.Constraint(
             quick('for.all[_x,_P]'),
             quick('for.all[r,plus(0,1)]')
         );
-        var arg_pairs4 = M.breakIntoArgPairs(constr3);
-        expect(arg_pairs4.length).toBe(2);
-        expect(arg_pairs4[0].equals(new M.Constraint(quick('_x'), quick('r')))).toBe(true);
-        expect(arg_pairs4[1].equals(new M.Constraint(quick('_P'), quick('plus(0,1)')))).toBe(true);
+        arg_pairs = M.breakIntoArgPairs(constr);
+        expect(arg_pairs.length).toBe(2);
+        expect(arg_pairs[0].equals(new M.Constraint(quick('_x'), quick('r')))).toBe(true);
+        expect(arg_pairs[1].equals(new M.Constraint(quick('_P'), quick('plus(0,1)')))).toBe(true);
 
-        var constr4 = new M.Constraint(
+        constr = new M.Constraint(
             quick('for.all[_x,_y,_z,_P]'),
             quick('for.all[r,s,t,plus(0,1)]')
         );
-        var arg_pairs5 = M.breakIntoArgPairs(constr4);
-        expect(arg_pairs5.length).toBe(4);
-        expect(arg_pairs5[0].equals(new M.Constraint(quick('_x'), quick('r')))).toBe(true);
-        expect(arg_pairs5[1].equals(new M.Constraint(quick('_y'), quick('s')))).toBe(true);
-        expect(arg_pairs5[2].equals(new M.Constraint(quick('_z'), quick('t')))).toBe(true);
-        expect(arg_pairs5[3].equals(new M.Constraint(quick('_P'), quick('plus(0,1)')))).toBe(true);
+        arg_pairs = M.breakIntoArgPairs(constr);
+        expect(arg_pairs.length).toBe(4);
+        expect(arg_pairs[0].equals(new M.Constraint(quick('_x'), quick('r')))).toBe(true);
+        expect(arg_pairs[1].equals(new M.Constraint(quick('_y'), quick('s')))).toBe(true);
+        expect(arg_pairs[2].equals(new M.Constraint(quick('_z'), quick('t')))).toBe(true);
+        expect(arg_pairs[3].equals(new M.Constraint(quick('_P'), quick('plus(0,1)')))).toBe(true);
     });
 });
 
@@ -1160,51 +1156,45 @@ describe('Expression Function Creators', () => {
     });
 
     test('should correctly create imitations', () => {
-        var vars1 = [quick('v1')];
-        var expr1 = quick('not.eq(0,1)');
-        var imit1 = M.makeImitationExpression(vars1, expr1);
-        expect(imit1.imitationExpr.equals(ef('v1', 'not.eq(_H1_of_v1,_H2_of_v1)'))).toBe(true);
-        expect(imit1.tempVars.length).toBe(2);
-        expect(imit1.tempVars[0].equals(quick('_H1'))).toBe(true);
-        expect(imit1.tempVars[1].equals(quick('_H2'))).toBe(true);
-
-        var vars2 = [quick('v1'), quick('v2'), quick('v3'), quick('v4')];
-        var expr2 = quick('pl.us(a,b,c,d)');
-        var imit2 = M.makeImitationExpression(vars2, expr2);
-        expect(imit2.imitationExpr.variables.length).toBe(4);
-        expect(imit2.imitationExpr.body.children[0].equals(quick('pl.us'))).toBe(true);
-        expect(imit2.tempVars.length).toBe(4);
-        expect(imit2.tempVars[0].equals(quick('_H1'))).toBe(true);
-        expect(imit2.tempVars[3].equals(quick('_H4'))).toBe(true);
+        var vars, expr, temps, imit;
+        vars = [quick('v1'), quick('v2'), quick('v3')];
+        expr = quick('neq(0,1)');
+        temps = [quick('_H1'), quick('_H2'), quick('_H3')];
+        imit = M.makeImitationExpression(vars, expr, temps);
+        expect(imit.equals(
+            quick('SecondOrderMatching.gEF[v1,v2,v3,SecondOrderMatching.gEFA(_H1,v1,v2,v3)(SecondOrderMatching.gEFA(_H2,v1,v2,v3),SecondOrderMatching.gEFA(_H3,v1,v2,v3))]'))
+        ).toBe(true);
     });
 });
 
-describe.skip('The MatchingChallenge class (basic functionality)', () => {
+describe('The MatchingChallenge class (basic functionality)', () => {
     test('should correctly create instances of a matching challenge', () => {
+        var mc;
+
         // Test creating an empty instance
-        var mc1 = new M.MatchingChallenge()
-        expect(mc1).toBeInstanceOf(M.MatchingChallenge);
-        expect(mc1.challengeList.length).toBe(0);
-        expect(mc1.solutions.length).toBe(0);
-        expect(mc1.solvable).toBeUndefined();
+        mc = new M.MatchingChallenge()
+        expect(mc).toBeInstanceOf(M.MatchingChallenge);
+        expect(mc.challengeList.length).toBe(0);
+        expect(mc.solutions.length).toBe(0);
+        expect(mc.solvable).toBeUndefined();
         
         // Test calling constructor with args
-        var mc2 = new M.MatchingChallenge([quick('_X'), quick('a')]);
-        expect(mc2).toBeInstanceOf(M.MatchingChallenge);
-        expect(mc2.challengeList.length).toBe(1);
-        expect(mc2.solutions.length).toBe(0);
-        expect(mc2.solvable).toBeUndefined();
+        mc = new M.MatchingChallenge([quick('_X'), quick('a')]);
+        expect(mc).toBeInstanceOf(M.MatchingChallenge);
+        expect(mc.challengeList.length).toBe(1);
+        expect(mc.solutions.length).toBe(0);
+        expect(mc.solvable).toBeUndefined();
 
         var constraints = [
             [quick('_X'), quick('a')],
             [quick('_Y'), quick('b')],
             [quick('_Z'), quick('c')]
         ];
-        var mc3 = new M.MatchingChallenge(...constraints);
-        expect(mc3).toBeInstanceOf(M.MatchingChallenge);
-        expect(mc3.challengeList.length).toBe(3);
-        expect(mc3.solutions.length).toBe(0);
-        expect(mc3.solvable).toBeUndefined();
+        mc = new M.MatchingChallenge(...constraints);
+        expect(mc).toBeInstanceOf(M.MatchingChallenge);
+        expect(mc.challengeList.length).toBe(3);
+        expect(mc.solutions.length).toBe(0);
+        expect(mc.solvable).toBeUndefined();
     });
 
     test('should correctly add a single constraint when there are no solutions', () => {
@@ -1246,37 +1236,20 @@ describe.skip('The MatchingChallenge class (basic functionality)', () => {
         expect(mc2.challengeList.length).toBe(5);
     });
 
-    test('should correctly add a single constraint when there are solutions', () => {
-        var mc1 = new M.MatchingChallenge();
-        var sub1 = new M.Constraint(quick('_P'), quick('a'));
-        var sub2 = new M.Constraint(quick('_Q'), quick('l.or(b,c)'));
-        var SL1 = new M.ConstraintList(sub1, sub2);
-        mc1.solutions = SL1;
-        mc1.addConstraint(quick('l.and(_P,_Q)'), quick('l.and(a,l.or(b,c))'));
-        expect(mc1.challengeList.contents[0].pattern.equals(
-            mc1.challengeList.contents[0].expression
-        )).toBe(true);
-    });
-
-    test('should correctly add multiple constraints when there are solutions', () => {
-        var mc1 = new M.MatchingChallenge();
-        var sub1 = new M.Constraint(quick('_P'), quick('a'));
-        var sub2 = new M.Constraint(quick('_Q'), quick('l.or(b,c)'));
-        var SL1 = new M.ConstraintList(sub1, sub2);
-        mc1.solutions = SL1;
-        mc1.addConstraints([quick('l.and(_P,_Q)'), quick('l.and(a,l.or(b,c))')]);
-        expect(mc1.challengeList.contents[0].pattern.equals(
-            mc1.challengeList.contents[0].expression
-        )).toBe(true);
-    });
-
     test('should correctly create clones of itself', () => {
+        var mc, mc_clone;
+
         // Test cloning empty challenge
-        var mc1 = new M.MatchingChallenge();
-        var mc1clone = mc1.clone();
-        expect(mc1.challengeList.equals(mc1clone.challengeList)).toBe(true);
-        expect(mc1.solutions.equals(mc1clone.solutions)).toBe(true);
-        expect(mc1.solvable).toEqual(mc1clone.solvable);
+        mc = new M.MatchingChallenge();
+        mc_clone = mc.clone();
+        expect(mc.challengeList.equals(mc_clone.challengeList)).toBe(true);
+        expect(mc.solutions.length == mc_clone.solutions.length).toBe(true);
+        expect(mc.solvable).toEqual(mc_clone.solvable);
+        for (let i = 0; i < mc.solutions.length; i++) {
+            let original_sol = mc.solutions[i];
+            let clones_sol = mc_clone.solutions[i];
+            expect(original_sol.equals(clones_sol)).toBe(true);
+        }
 
         // Test cloning with some constraints
         var constraints = [
@@ -1284,28 +1257,52 @@ describe.skip('The MatchingChallenge class (basic functionality)', () => {
             [quick('_Y'), quick('b')],
             [quick('_Z'), quick('c')]
         ];
-        var mc2 = new M.MatchingChallenge(...constraints);
-        var mc2clone = mc2.clone();
-        expect(mc2.challengeList.equals(mc2clone.challengeList)).toBe(true);
-        expect(mc2.solutions.equals(mc2clone.solutions)).toBe(true);
-        expect(mc2.solvable).toEqual(mc2clone.solvable);
+        mc = new M.MatchingChallenge(...constraints);
+        mc_clone = mc.clone();
+        expect(mc.challengeList.equals(mc_clone.challengeList)).toBe(true);
+        expect(mc.solutions.length == mc_clone.solutions.length).toBe(true);
+        expect(mc.solvable).toEqual(mc_clone.solvable);
+        for (let i = 0; i < mc.solutions.length; i++) {
+            let original_sol = mc.solutions[i];
+            let clones_sol = mc_clone.solutions[i];
+            expect(original_sol.equals(clones_sol)).toBe(true);
+        }
 
         // Test cloning with some constraints and solutions
-        var mc3 = new M.MatchingChallenge();
+        mc = new M.MatchingChallenge();
         var sub1 = new M.Constraint(quick('_P'), quick('a'));
         var sub2 = new M.Constraint(quick('_Q'), quick('l.or(b,c)'));
-        var SL1 = new M.ConstraintList(sub1, sub2);
-        mc3.solutions = SL1;
-        mc3.addConstraints([quick('l.and(_P,_Q)'), quick('l.and(a,l.or(b,c))')]);
-        var mc3clone = mc3.clone();
-        expect(mc3.challengeList.equals(mc3clone.challengeList)).toBe(true);
-        expect(mc3.solutions.equals(mc3clone.solutions)).toBe(true);
-        expect(mc3.solvable).toEqual(mc3clone.solvable);
+        var SL1 = [new M.ConstraintList(sub1, sub2)];
+        mc.solutions = SL1;
+        mc.addConstraints([quick('l.and(_P,_Q)'), quick('l.and(a,l.or(b,c))')]);
+        mc_clone = mc.clone();
+        expect(mc.challengeList.equals(mc_clone.challengeList)).toBe(true);
+        expect(mc.solutions.length == mc_clone.solutions.length).toBe(true);
+        expect(mc.solvable).toEqual(mc_clone.solvable);
+        for (let i = 0; i < mc.solutions.length; i++) {
+            let original_sol = mc.solutions[i];
+            let clones_sol = mc_clone.solutions[i];
+            expect(original_sol.equals(clones_sol)).toBe(true);
+        }
     });
 
-    test.todo('should correctly identify solvability');
+    test('should correctly identify solvability', () => {
+        var constraints, mc;
 
-    test.todo('should correctly return the number of solutions');
+        // This is solvable (by hand)
+        constraints = [[quick('and(_P,_Q)'), quick('and(a,or(b,c))')]];
+        mc = new M.MatchingChallenge(...constraints);
+        expect(mc.isSolvable()).toBe(true);
+    });
+
+    test('should correctly return the number of solutions', () => {
+        var constraints, mc;
+
+        // This is solvable (by hand) and has 1 solution
+        constraints = [[quick('and(_P,_Q)'), quick('and(a,or(b,c))')]];
+        mc = new M.MatchingChallenge(...constraints);
+        expect(mc.numSolutions()).toBe(1);
+    });
 });
 
 describe('The MatchingChallenge class (solving)', () => {
