@@ -3051,4 +3051,49 @@ describe('The MatchingChallenge class (solving)', () => {
         expect(sols.length).toBe(0);
     });
 
+    test.skip('[SKIP AND LATER DELETE] the speed of iterative vs recursive solve', () => {
+        var constraints, mc, sols;
+
+        /**
+         * This challenge is designed to take a long time to solve,
+         * in order to test the speed of the iterative and recursive solve functions.
+         */
+        constraints = newConstraints(
+            ['_P_of__a', 'a(1)'],
+            ['_Q_of__b', 'b(2)'],
+            ['_R_of__c', 'c(3)'],
+            ['_S_of__d', 'd(4)'],
+            ['_T_of_x', 'e(5,6)'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        console.log(sols.length)
+
+        /**
+         * ===== RESULTS =====
+         * 
+         * Iterative solve:
+         *      18988ms
+         *      20911ms
+         *      17558ms
+         *      17535ms
+         *      17478ms
+         *      --avg--
+         *      18494ms (~18.5s)
+         * 
+         * Recursive solve:
+         *      18439ms
+         *      21035ms
+         *      23081ms
+         *      18913ms
+         *      22126ms
+         *      --avg--
+         *      20718ms (~20.7s)
+         * 
+         * Iterative solve is roughly two seconds faster in this test, 
+         * but only about a second faster in other tests.
+         * There are probably other optimisations to be made to `solve()`
+         * that would cause a greater speedup than switching to a partly iterative implementation.
+         */
+    });
 });
