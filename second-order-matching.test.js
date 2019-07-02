@@ -1388,10 +1388,6 @@ describe('The MatchingChallenge class (solving)', () => {
     }
     const checkSolutions = (actual_solutions, expected_solutions) => {
         if (actual_solutions.length != expected_solutions.length) {
-            // console.log( `expected sols:` );
-            // DEBUG_PRINT_SOLS(expected_solutions);
-            // console.log( `actual sols (different length!):` );
-            // DEBUG_PRINT_SOLS(actual_solutions);
             return false;
         }
 
@@ -1400,10 +1396,6 @@ describe('The MatchingChallenge class (solving)', () => {
             if (!expected_solutions.some(expected_solution =>
                 actual_solution.length == expected_solution.length
              && actual_solution.equals(expected_solution) )) {
-                // console.log( 'missing this expected solution:' );
-                // DEBUG_PRINT_CONSTRAINTLIST(expected_solution);
-                // console.log( 'got only these:' );
-                // DEBUG_PRINT_SOLS(actual_solutions);
                 return false;
             }
         }
