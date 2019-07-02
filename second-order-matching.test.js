@@ -1482,7 +1482,7 @@ describe('The MatchingChallenge class (solving)', () => {
         ).toBe(true);
     });
 
-    test.skip('should correctly solve example challenges from the paper', () => {
+    test('should correctly solve example challenges from the paper', () => {
         var constraints, mc, sols;
 
         // Example 1
@@ -1491,7 +1491,17 @@ describe('The MatchingChallenge class (solving)', () => {
         );
         mc = newMC(constraints);
         sols = mc.getSolutions();
-        DEBUG_PRINT_SOLS(sols)
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_P', 'a'],
+                        ['_Q', 'or(b,c)'],
+                    ],
+                )
+            )
+        ).toBe(true);
 
         // Example 2
         constraints = newConstraints(
@@ -1500,7 +1510,6 @@ describe('The MatchingChallenge class (solving)', () => {
         mc = newMC(constraints);
         sols = mc.getSolutions();
         expect(sols.length).toBe(0);
-        expect(mc.solvable).toBe(false);
 
         // Example 3
         constraints = newConstraints(
@@ -1508,8 +1517,16 @@ describe('The MatchingChallenge class (solving)', () => {
         );
         mc = newMC(constraints);
         sols = mc.getSolutions();
-        expect(sols.length).toBe(1);
-        DEBUG_PRINT_SOLS(sols)
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                        ['_P', lambdaString('v.neq(0,v)')],
+                    ],
+                )
+            )
+        ).toBe(true);
     });
 
     test('should correctly solve complex challenges from the paper', () => {
@@ -1538,63 +1555,6 @@ describe('The MatchingChallenge class (solving)', () => {
                 )
             )
         ).toBe(true);
-    });
-
-    test.skip('should correctly solve challenges that contain particular problems', () => {
-        var constraints, mc, sols;
-
-        constraints = newConstraints(
-            ['for.all[_x,_P_of__x]', 'for.all[x,exi.sts[y,lt(x,y)]]'],
-            ['_P_of__t', 'exi.sts[y,lt(y,y)]'],
-        );
-        mc = newMC(constraints);
-        var subs = newSolutions(
-            [
-                ['_x', 'x'],
-                ['_t', 'y'],
-                ['_P', lambdaString('v.exi.sts[y,lt(v,y)]')],
-            ],
-        )[0];
-        M.instantiate(subs, mc.challengeList);
-        // DEBUG_PRINT_CONSTRAINTLIST(mc.challengeList)
-
-        // Tests the case where too few solutions are being outputted
-        constraints = newConstraints(
-            ['for.all[_x,_P_of__x]', 'for.all[x,R(x,x)]'],
-            ['_P_of__t', 'R(x,x)'],
-        );
-        mc = newMC(constraints);
-        // sols = mc.getSolutions();
-
-        // Tests the case where too many solutions are being outputted
-        constraints = newConstraints(
-            ['for.all[_x,_P_of__x]', 'for.all[x,R(x,x)]'],
-            ['_P_of__t', 'R(3,x)'],
-        );
-        mc = newMC(constraints);
-        // sols = mc.getSolutions();
-
-        // Tests the case where we need to do alpha conversion before breaking into pairs
-        constraints = newConstraints(
-            ['for.all[x,_P]', 'for.all[r,plus(r,1)]']
-        );
-        mc = newMC(constraints);
-        // sols = mc.getSolutions();
-
-        // Tests the case where the pattern is a gEFA and the expression is a binding
-        constraints = newConstraints(
-            ['_P_of__t', 'for.all[k,gte(sq(k),0)]'],
-            ['exi.sts[x,_P_of_x]', 'exi.sts[x,for.all[k,gte(sq(k),x)]]']
-        );
-        mc = newMC(constraints);
-        // sols = mc.getSolutions();
-
-        // Tests the case where identical solutions are being outputted
-        constraints = newConstraints(
-            ['_P_of_2', 'f(a)'],
-        );
-        mc = newMC(constraints);
-        // sols = mc.getSolutions();
     });
 
     ////////////////////////////////////////////////////////////////////////////////
