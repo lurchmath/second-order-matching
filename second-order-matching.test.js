@@ -1532,12 +1532,10 @@ describe('The MatchingChallenge class (solving)', () => {
     test('should correctly solve complex challenges from the paper', () => {
         var constraints, mc, sols;
 
-        // Complex example 1
+        // These come from section 6 of the summary paper
+
+        // Example 1
         constraints = newConstraints(
-            // [
-                // 'w(for.all[_x,_P],_P_of__T)', 
-                // 'w(for.all[r,gt(plus(sq(r),1),0)],gt(plus(sq(-9),1),0))'
-            // ]
             ['for.all[_x,_P_of__x]', 'for.all[r,gt(plus(sq(r),1),0)]'],
             ['_P_of__T', 'gt(plus(sq(-9),1),0)']
         );
@@ -1555,6 +1553,34 @@ describe('The MatchingChallenge class (solving)', () => {
                 )
             )
         ).toBe(true);
+
+        // Example 2
+        constraints = newConstraints(
+            ['w(w(_X,_P_of__X),for.all[x,_P_of_x])', 
+             'w(w(k,lt(plus(k,1),5)),for.all[s,lt(plus(s,1),5)])'],
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(
+            checkSolutions(
+                sols,
+                newSolutions(
+                    [
+                       ['_X', 'k'], 
+                       ['_P', lambdaString('v.lt(plus(v,1),5)')],
+                    ],
+                )
+            )
+        ).toBe(true);
+
+        // Example 3
+        constraints = newConstraints(
+            ['w(exi.sts[x,_P_of_x],for.all[y,implies(_P_of_y,_Q)],_Q)',
+             'w(exi.sts[x,eq(cubed(x),-1)],for.all[x,implies(eq(cubed(x),-1),lt(x,5))],lt(x,5))']
+        );
+        mc = newMC(constraints);
+        sols = mc.getSolutions();
+        expect(sols.length).toBe(0);
     });
 
     ////////////////////////////////////////////////////////////////////////////////
