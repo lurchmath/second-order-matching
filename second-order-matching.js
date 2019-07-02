@@ -985,20 +985,20 @@ function makeImitationExpression(variables, expr, temp_metavars) {
 }
 
 // FIXME: DELETE LATER
-function DEBUG_PRINT_CONTRAINT(c) {
-    console.log(
-        '( ' + c.pattern.simpleEncode() + ', ' + c.expression.simpleEncode() + ' ):' + c.case
-    );
-}
-function DEBUG_PRINT_CONTRAINTLIST(cl) {
-    console.log(
-        '{ ' + 
-            cl.contents.map((c) =>
-                '( ' + c.pattern.simpleEncode() + ', ' + c.expression.simpleEncode() + ' ):' + c.case
-            ).join(', ') 
-        + ' }'
-    )
-}
+// function DEBUG_PRINT_CONTRAINT(c) {
+//     console.log(
+//         '( ' + c.pattern.simpleEncode() + ', ' + c.expression.simpleEncode() + ' ):' + c.case
+//     );
+// }
+// function DEBUG_PRINT_CONTRAINTLIST(cl) {
+//     console.log(
+//         '{ ' + 
+//             cl.contents.map((c) =>
+//                 '( ' + c.pattern.simpleEncode() + ', ' + c.expression.simpleEncode() + ' ):' + c.case
+//             ).join(', ') 
+//         + ' }'
+//     )
+// }
 
 /**
  * Represents a matching challenge. 
@@ -1078,17 +1078,10 @@ class MatchingChallenge {
      * the challenge's already-computed binding constraints.
      */
     satisfiesBindingConstraints() {
-        // console.group("CHECKING BINDING CONSTRAINTS")
-        // console.log(this.challengeList.bindingConstraints.map(bc => 
-            // 'inner: ' + bc.inner.simpleEncode() + ', outer: ' + bc.outer.simpleEncode())
-        // )
         return this.solutionSatisfiesBindingConstraints(this.solutions[0]);
     }
 
     solutionSatisfiesBindingConstraints(solution) {
-        // console.log(this.challengeList.bindingConstraints.map(bc =>
-        //     'inner: ' + bc.inner.simpleEncode() + ', outer: ' + bc.outer.simpleEncode())
-        // );
         return (
             this.challengeList.bindingConstraints.every(binding_constraint => {
                 const inner = solution.lookup(binding_constraint.inner);
@@ -1114,14 +1107,6 @@ class MatchingChallenge {
         if (this.satisfiesBindingConstraints()) {
             return true;
         } else {
-            // console.log( 'dropping a solution because it failed the binding constraints:' );
-            // console.log( '[\n' + this.solutions.map( solution =>
-            //     '{ ' + solution.contents.map( constraint =>
-            //         `( ${constraint.pattern.simpleEncode()}, ${constraint.expression.simpleEncode()} )` )
-            //     .join( ',\n' ) + ' }' ).join( ',\n\n' ) + '\n]' );
-            // console.log( 'those constraints were:' );
-            // console.log( this.challengeList.bindingConstraints.map( constraint =>
-            //     `${constraint.inner.simpleEncode()} in ${constraint.outer.simpleEncode()}` ).join( ',\n' ) );
             this.solutions = [];
             this.solvable = false;
             return this.solvable;
@@ -1138,7 +1123,8 @@ class MatchingChallenge {
     }
 
     /**
-     * @returns `this.solutions.length` for convenience
+     * @returns `this.solutions.length` by calling `getSolutions`, 
+     * hence it solves if `getSolutions` has not been called.
      */
     numSolutions() {
         return this.getSolutions().length;
@@ -1183,11 +1169,6 @@ class MatchingChallenge {
                 break;
             case CASE_BINDING:
                 this.challengeList.remove(current_constraint);
-                // this.solutions[0].add(current_constraint);
-                // instantiate(
-                    //     new ConstraintList(current_constraint), 
-                    //     this.challengeList
-                    // );
                 // Apply metavariable substitution to constraints
                 if(!this.addSolutionAndCheckBindingConstraints(current_constraint)) break;
                 this.solve();
@@ -1226,14 +1207,6 @@ class MatchingChallenge {
                 var solutions_A = [];
                 if (expression.type != 'a' && expression.type != 'bi') {
                     let temp_mc_A = this.clone();
-                    // var const_sub = new ConstraintList(
-                    //     new Constraint(
-                    //         current_constraint.pattern.children[1],
-                    //         makeConstantExpression(temp_mc_A.challengeList.nextNewVariable(), current_constraint.expression)
-                    //     )
-                    // );
-                    // instantiate(const_sub, temp_mc_A.challengeList);
-                    // temp_mc_A.solutions[0].add(...const_sub.contents);
                     let const_sub = new Constraint(
                         current_constraint.pattern.children[1],
                         makeConstantExpression(temp_mc_A.challengeList.nextNewVariable(), current_constraint.expression)
@@ -1248,14 +1221,6 @@ class MatchingChallenge {
                 for (let i = 2; i < current_constraint.pattern.children.length; i++) {
                     let temp_mc_B = this.clone();
                     let new_vars = current_constraint.pattern.children.slice(2).map(()=>temp_mc_B.challengeList.nextNewVariable());
-                    // let proj_sub = new ConstraintList(
-                    //     new Constraint(
-                    //         head,
-                    //         makeProjectionExpression(new_vars, new_vars[i - 2])
-                    //     )
-                    // );
-                    // instantiate(proj_sub, temp_mc_B.challengeList);
-                    // temp_mc_B.solutions[0].add(...proj_sub.contents);
                     let proj_sub = new Constraint(
                         head,
                         makeProjectionExpression(new_vars, new_vars[i - 2])
@@ -1288,15 +1253,6 @@ class MatchingChallenge {
                     // Get the imitation expression
                     let imitation_expr = makeImitationExpression(new_vars, expression, temp_metavars);
 
-                    // Create a substitution from the imitation expression
-                    // let imitation_sub = new ConstraintList(
-                    //     new Constraint(
-                    //         current_constraint.pattern.children[1],
-                    //         imitation_expr
-                    //     )
-                    // );
-                    // instantiate(imitation_sub, temp_mc_C.challengeList);
-                    // temp_mc_C.solutions[0].add(...imitation_sub.contents);
                     let imitation_sub = new Constraint(
                             current_constraint.pattern.children[1],
                             imitation_expr
