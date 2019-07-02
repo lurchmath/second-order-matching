@@ -73,7 +73,7 @@ function efa(func, params) {
     return M.makeGeneralExpressionFunctionApplication(func, params);
 }
 
-describe.skip('Metavariables', () => {
+describe('Metavariables', () => {
     test('should reliably mark metavariables', () => {
         // Check that functions work correctly
         var x = OM.var('x');
@@ -94,7 +94,7 @@ describe.skip('Metavariables', () => {
     });
 });
 
-describe.skip('Generalized Expression Functions', () => {
+describe('Generalized Expression Functions', () => {
     test('should reliably make general expression functions', () => {
         var v1 = OM.var('v1');
         var v2 = OM.var('v2');
@@ -181,7 +181,7 @@ describe.skip('Generalized Expression Functions', () => {
     });
 });
 
-describe.skip('Expression manipluation', () => {
+describe('Expression manipluation', () => {
     test('should get new variables relative to expressions', () => {
         var e1 = OM.simple('v1');
         var e2 = OM.simple('f.a[v1,x0,x1,x2]')
@@ -468,7 +468,7 @@ describe.skip('Expression manipluation', () => {
     });
 });
 
-describe.skip('The Constraint class', () => {
+describe('The Constraint class', () => {
     test('should construct new instances correctly', () => {
         var p1 = quick('_f(_x)');
         var e1 = quick('a(b)');
@@ -502,7 +502,6 @@ describe.skip('The Constraint class', () => {
         expect(c.case).toBe(M.CASES.CASE_SIMPLIFICATION);
         c = new M.Constraint(quick('neq(0,1)'), quick('neq(0,2)'));
         expect(c.case).toBe(M.CASES.CASE_SIMPLIFICATION);
-        
         c = new M.Constraint(quick('for.all[_X,_X]'), quick('for.all[y,y]'));
         expect(c.case).toBe(M.CASES.CASE_SIMPLIFICATION);
 
@@ -511,10 +510,6 @@ describe.skip('The Constraint class', () => {
 
         c = new M.Constraint(quick('k'), quick('p'));
         expect(c.case).toBe(M.CASES.CASE_FAILURE);
-
-        c = new M.Constraint(quick('pl.us(X,Y)'), quick('mi.nus(3,k)'));
-        expect(c.case).toBe(M.CASES.CASE_FAILURE);
-
         c = new M.Constraint(quick('for.all[_X,_X]'), quick('there.exists[y,y]'));
         expect(c.case).toBe(M.CASES.CASE_FAILURE);
 
@@ -602,7 +597,7 @@ describe.skip('The Constraint class', () => {
     });
 });
 
-describe.skip('The ConstraintList class', () => {
+describe('The ConstraintList class', () => {
     test('should construct instances with right new variable lists', () => {
         var con1 = new M.Constraint(quick('and(_A,_B)'), quick('and(x,y)'));
         var con2 = new M.Constraint(quick('plus(_x,_x)'), quick('HELLO'));
