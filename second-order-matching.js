@@ -918,28 +918,6 @@ function makeProjectionExpression(variables, point) {
  */
 function makeImitationExpression(variables, expr, temp_metavars) {
     /**
-     * Helper function which takes a function and returns
-     * a list of metavariables named `H_1,...,H_m` where
-     * `m` is the number of arguments in the function.
-     */
-    // function getTempVars(fn, type) {
-    //     let vars = [];
-    //     if (type == 'a') {
-    //         for (let index = 1; index < fn.children.length; index++) {
-    //             let new_metavar = OM.var('H' + index);
-    //             setMetavariable(new_metavar);
-    //             vars.push(new_metavar);
-    //         }
-    //     } else if (type == 'bi') {
-    //         // Just a single metavar for the body
-    //         let new_metavar = OM.var('H' + 1);
-    //         setMetavariable(new_metavar);
-    //         vars.push(new_metavar);
-    //     }
-    //     return vars;
-    // }
-
-    /**
      * Helper function which takes a head of a function,
      * a list of bound variables (i.e. the variables argument) of the 
      * parent function, and a list of temporary metavariables. 
@@ -1572,7 +1550,10 @@ class MatchingChallenge {
                         // After all subcases are handled, return and record results
                         mc.solutions = solutions_A.concat(solutions_B, solutions_C);
                         mc.solvable = mc.solutions.length > 0;
-                        yield* mc.solutions;
+                        for (let i = 0; i < mc.solutions.length; i++) {
+                            let sol = mc.solutions[i];
+                            yield sol;
+                        }
                         return;
                 }
             }
