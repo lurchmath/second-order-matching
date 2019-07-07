@@ -3067,7 +3067,7 @@ describe('The MatchingChallenge class (solving)', () => {
         );
         mc = newMC(constraints);
         sols = mc.getSolutions();
-        console.log(sols.length)
+        console.log(sols.length) // 256
 
         /**
          * ===== RESULTS =====
@@ -3097,7 +3097,7 @@ describe('The MatchingChallenge class (solving)', () => {
          */
     });
 
-    test('solve with yield', () => {
+    test.skip('solve with yield', () => {
         var constraints, mc, iterator, next;
 
         // No case 4, 1 solutions
