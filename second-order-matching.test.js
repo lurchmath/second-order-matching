@@ -1314,13 +1314,13 @@ describe('The MatchingChallenge class (solving)', () => {
         return '{ ' + cl.contents.map((c) => CToString(c)).join(',\n')  + ' }'
     };
     const DEBUG_PRINT_CONSTRAINT = (c) => {
-        console.log(CToString(c));
+        c instanceof M.Constraint ? console.log(CToString(c)) : console.log(c);
     }
     const DEBUG_PRINT_CONSTRAINTLIST = (cl) => {
-        console.log(CLToString(cl));
+        cl instanceof M.ConstraintList ? console.log(CLToString(cl)) : console.log(cl);
     }
     const DEBUG_PRINT_SOLS = (sol) => {
-        console.log('[\n' + sol.map(s => CLToString(s)).join(',\n\n') + '\n]');
+        sol instanceof Array ? console.log('[\n' + sol.map(s => CLToString(s)).join(',\n\n') + '\n]') : console.log(sol);
     }
 
     const newConstraintObject = (pattern_string, expression_string) => {
@@ -3095,5 +3095,52 @@ describe('The MatchingChallenge class (solving)', () => {
          * There are probably other optimisations to be made to `solve()`
          * that would cause a greater speedup than switching to a partly iterative implementation.
          */
+    });
+
+    test('solve with yield', () => {
+        var constraints, mc, iterator, next;
+
+        // No case 4, 1 solutions
+        constraints = newConstraints(
+            ['and(_P,_Q)', 'and(a,or(b,c))']
+        );
+        mc = newMC(constraints);
+        iterator = mc.solveGenerator();
+        next  = iterator.next();
+        while(!next.done) {
+            DEBUG_PRINT_CONSTRAINTLIST(next.value);
+            next = iterator.next();
+        }
+        DEBUG_PRINT_SOLS(mc.solutions);
+
+        // Case 4 simple, 1 solution
+        constraints = newConstraints(
+            ['and(_P_of_1,_P_of_2)', 'and(neq(0,1),neq(0,2))']
+        );
+        mc = newMC(constraints);
+        iterator = mc.solveGenerator();
+        next = iterator.next();
+        while (!next.done) {
+            DEBUG_PRINT_CONSTRAINTLIST(next.value);
+            next = iterator.next();
+        }
+        DEBUG_PRINT_SOLS(mc.solutions)
+        console.log(mc.solutions.length)
+
+        // 16 solutions
+        constraints = newConstraints(
+            ['_P_of__a', 'a(1)'],
+            ['_Q_of__b', 'b(2)'],
+        );
+        mc = newMC(constraints);
+        iterator = mc.solveGenerator();
+        var count = 0;
+        next = iterator.next();
+        while (!next.done) {
+            next = iterator.next();
+            count++;
+        }
+        console.log(count);
+        console.log(mc.solutions.length)
     });
 });
