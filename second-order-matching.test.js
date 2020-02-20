@@ -1,4 +1,4 @@
-const M = require('./second-order-matching');
+const M = require('./src/second-order-matching');
 const OM = M.OM;
 
 /**

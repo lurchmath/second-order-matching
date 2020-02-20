@@ -2,7 +2,7 @@
   "name": "second-order-matching",
   "version": "1.0.0",
   "description": "",
-  "main": "second-order-matching.js",
+  "main": "src/second-order-matching.js",
   "dependencies": {},
   "devDependencies": {
     "eslint": "^5.16.0",

@@ -14,7 +14,7 @@ const metavariableSymbol = OM.symbol('metavariable', 'SecondOrderMatching');
 const trueValue = OM.string('true');
 
 /**
- * Marks a variable as a metavariable. 
+ * Marks a variable as a metavariable.
  * Does nothing if the given input is not an OMNode of type variable or type symbol.
  * @param {OM} variable - the variable to be marked
  */
@@ -49,7 +49,7 @@ function isMetavariable(variable) {
 ////////////////////////////////////////////////////////////////////////////////
 // * The following are generalised versions expression functions.
 // * When P: E -> E, P is an expression function.
-// * This generalisation allows us to have expression functions 
+// * This generalisation allows us to have expression functions
 // * with more than one variable.
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -90,7 +90,7 @@ function isGeneralExpressionFunction(expression) {
 
 /**
  * Makes a new expression function application with the meaning
- * F(arg) where F is either a general expression function (gEF), or a 
+ * F(arg) where F is either a general expression function (gEF), or a
  * metavariable which is expected to be replaced by a gEF.
  * In the case that F is a gEF, the expression function can be applied
  * to the argument see `applyGeneralExpressionFunctionApplication`.
@@ -154,7 +154,7 @@ function applyGeneralExpressionFunctionApplication(gEFA) {
 /**
  * Helper function for other expression manipulation functions.
  * @param {OM} expr - an OM expression, more expr arguments are accepted.
- * @returns the first variable of the form xN 
+ * @returns the first variable of the form xN
  * which appears nowhere in the supplied expression(s).
  */
 function getNewVariableRelativeTo(expr /*, expr2, ... */) {
@@ -294,7 +294,7 @@ function alphaEquivalent(expr1, expr2, firstcall=true) {
     if (expr1.type != expr2.type) {
         return false;
     }
-    if (firstcall && 
+    if (firstcall &&
         (!possible_types.includes(expr1.type) || !possible_types.includes(expr2.type))) {
         return false;
     }
@@ -338,8 +338,8 @@ function alphaEquivalent(expr1, expr2, firstcall=true) {
  * and a list of expressions e_1,...,e_k and returns the beta reduction
  * of ((λv_1,...,v_k.B)(e_1,...,e_k)) which is the expression B
  * with all v_i replaced by the corresponding e_i.
- * 
- * This beta reduction is capture avoiding. 
+ *
+ * This beta reduction is capture avoiding.
  * See `replaceWithoutCapture` for details.
  * @param {OM} gEF - a general expression function with n variables
  * @param {OM[]} expr_list - a list of expressions of length n
@@ -374,18 +374,18 @@ function betaReduce(gEF, expr_list) {
 // * A (plain) expression does not contain metavariables.
 // * In some cases the pattern may not contain metavariables, but we would
 // * look to remove this constraint from any lists it appeared in.
-// * A special case of a constraint is a substitution. 
+// * A special case of a constraint is a substitution.
 // * In a substiution, the pattern is just a metavariable.
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * @constant CASE_IDENTITY represents the case in which the pattern 
+ * @constant CASE_IDENTITY represents the case in which the pattern
  * and expression are equal (and hence the pattern contains no metavariables)
  */
 const CASE_IDENTITY = 1
 
 /**
- * @constant CASE_BINDING represents the case in which the pattern is 
+ * @constant CASE_BINDING represents the case in which the pattern is
  * just a metavariable
  */
 const CASE_BINDING = 2
@@ -448,7 +448,7 @@ class Constraint {
 
     /**
      * @param {Constraint} other - another Constraint
-     * @returns `true` if patterns and expressions are structurally equal 
+     * @returns `true` if patterns and expressions are structurally equal
      * OR alpha equivalent, `false` otherwise.
      */
     equals(other) {
@@ -467,10 +467,10 @@ class Constraint {
     }
 
     /**
-     * Returns the case, as described in the corresponding paper 
+     * Returns the case, as described in the corresponding paper
      * (and briefly in the case constant declarations)
-     * @param {OM} pattern 
-     * @param {OM} expression 
+     * @param {OM} pattern
+     * @param {OM} expression
      */
     getCase(pattern, expression) {
         if (pattern.equals(expression)) {
@@ -478,19 +478,19 @@ class Constraint {
         } else if (isMetavariable(pattern)) {
             return CASE_BINDING;
         } else if (
-                (   
+                (
                     (
                         (
-                            pattern.type == 'a' 
+                            pattern.type == 'a'
                             && !(isGeneralExpressionFunctionApplication(pattern))
                         )
                         && expression.type == 'a'
                     )
                     && pattern.children.length == expression.children.length
                 )
-                || 
+                ||
                 (
-                    (   pattern.type == 'bi' 
+                    (   pattern.type == 'bi'
                         && expression.type == 'bi'
                     )
                     && pattern.symbol.equals(expression.symbol)
@@ -498,7 +498,7 @@ class Constraint {
                 )
             ) {
             return CASE_SIMPLIFICATION;
-        } else if (isGeneralExpressionFunctionApplication(pattern) 
+        } else if (isGeneralExpressionFunctionApplication(pattern)
             || isMetavariable(pattern.children[1])
             ) {
             return CASE_EFA;
@@ -516,7 +516,7 @@ class Constraint {
 }
 
 /**
- * Helper function for ConstraintList constructor. 
+ * Helper function for ConstraintList constructor.
  * Takes a variable and checks if it of the form, `vX` where `X` is some number.
  * If it is of this form, it returns X + 1 if it is greater than the given index.
  * @param {OM} variable - the variable to be checked
@@ -542,15 +542,15 @@ function getVariablesIn(expression) {
 }
 
 /**
- * Represents a list of constraints. 
- * However, most of the behaviour of this class mimics a set, 
+ * Represents a list of constraints.
+ * However, most of the behaviour of this class mimics a set,
  * except for a few cases in which we use indices.
  */
 class ConstraintList {
     /**
-     * Creates an array from arguments. 
-     * Also computes the first variable from the list `v0, v1, v2,...` such that neither it nor 
-     * any variable after it in that list appears in any of the constraints. 
+     * Creates an array from arguments.
+     * Also computes the first variable from the list `v0, v1, v2,...` such that neither it nor
+     * any variable after it in that list appears in any of the constraints.
      * Call this `vN`. See `nextNewVariable` for the use.
      * @param ...constraints - an arbitrary number of Constraints (can be zero)
      */
@@ -600,7 +600,7 @@ class ConstraintList {
     }
 
     /**
-     * Adds constraints only if they are not in the current list (as if we had a set). 
+     * Adds constraints only if they are not in the current list (as if we had a set).
      * @param ...constraints - the constraints to be added
      * @returns the new contents
      */
@@ -657,7 +657,7 @@ class ConstraintList {
     }
 
     /**
-     * @returns an array of length two containing the first two constraints satisfying the given binary predicate, 
+     * @returns an array of length two containing the first two constraints satisfying the given binary predicate,
      * or null if there is not one.
      */
     firstPairSatisfying(predicate) {
@@ -698,9 +698,9 @@ class ConstraintList {
     }
 
     /**
-     * Some constraint lists are functions from the space of metavariables to the space of expressions. 
-     * To be such a function, the constraint list must contain only constraints 
-     * whose left hand sides are metavariables (called substitutions above), 
+     * Some constraint lists are functions from the space of metavariables to the space of expressions.
+     * To be such a function, the constraint list must contain only constraints
+     * whose left hand sides are metavariables (called substitutions above),
      * and no metavariable must appear in more than one constraint.
      */
     isFunction() {
@@ -721,7 +721,7 @@ class ConstraintList {
     /**
      * If the constraint list is a function, this routine returns the expression associated with a given metavariable.
      * @param variable - a string or OM object
-     * @returns the OM object that is the expression of the constraint 
+     * @returns the OM object that is the expression of the constraint
      * with the pattern that equals the variable, null otherwise.
      */
     lookup(variable) {
@@ -730,7 +730,7 @@ class ConstraintList {
             setMetavariable(variable);
         }
         for (let i = 0; i < this.contents.length; i++) {
-            var constraint = this.contents[i]; 
+            var constraint = this.contents[i];
             if (constraint.pattern.equals(variable)) {
                 return constraint.expression;
             }
@@ -758,7 +758,7 @@ class ConstraintList {
     }
 
     /**
-     * Extracts from each pattern a list of metavariable pairs (m1,m2). 
+     * Extracts from each pattern a list of metavariable pairs (m1,m2).
      * Such a pair means the restriction that a solution S cannot have S(m1) appearing free in S(m2).
      * Pairs are represented by an object with `inner: m1` and `outer m2` properties.
      */
@@ -766,7 +766,7 @@ class ConstraintList {
         this.contents.forEach(constraint =>
             constraint.pattern.descendantsSatisfying(d => d.type == 'bi').forEach(binding =>
                 binding.descendantsSatisfying(isMetavariable).forEach(innerMV => {
-                    if (innerMV.isFree(binding)) { 
+                    if (innerMV.isFree(binding)) {
                         binding.variables.forEach(outerMV => {
                             if (!this.bindingConstraints.find(existing =>
                                     existing.outer.equals(outerMV) && existing.inner.equals(innerMV))
@@ -774,7 +774,7 @@ class ConstraintList {
                                 this.bindingConstraints.push({ inner: innerMV, outer: outerMV });
                             }
                         });
-                    } 
+                    }
                 })
             )
         );
@@ -798,9 +798,9 @@ function applyInstantiation(substitution, pattern) {
 }
 
 /**
- * Takes two ConstraintList objects, one representing a list of substitutions, 
+ * Takes two ConstraintList objects, one representing a list of substitutions,
  * the other containing the patterns that the substiutions will be applied to.
- * Each substitution is applied to the pattern satisfying the conditions described 
+ * Each substitution is applied to the pattern satisfying the conditions described
  * in the summary paper (section 3).
  * @param {ConstraintList} substitutions - a non empty constraint list satisfying isFunction()
  * @param {ConstraintList} patterns - a non empty constraint list
@@ -834,7 +834,7 @@ function breakIntoArgPairs(constraint) {
         for (let i = 0; i < pattern_children.length; i++) {
             arg_pairs.push(
                 new Constraint(
-                    pattern_children[i].copy(), 
+                    pattern_children[i].copy(),
                     expression_children[i].copy()
                 )
             );
@@ -867,7 +867,7 @@ function breakIntoArgPairs(constraint) {
 /**
  * Takes a new variable (relative to some constraint list) and an expression
  * and returns a gEF which has the meaning λv_n.expr where v_n is the new
- * variable and expr is the expression. 
+ * variable and expr is the expression.
  * I.e. creates a constant expression function.
  * @param {OM} new_variable - an OM variable
  * @param {OM} expression - an OM expression
@@ -883,7 +883,7 @@ function makeConstantExpression(new_variable, expression) {
  * Takes a list of variables v_1,...,v_k and a single variable (a point)
  * v_i and returns a gEF with the meaning λv_1,...,v_k.v_i.
  * I.e. returns a projection expression function for v_i with k arguments.
- * @param {OM[]} variables - a list of OM variables 
+ * @param {OM[]} variables - a list of OM variables
  * @param {OM} point -  a single OM variable
  */
 function makeProjectionExpression(variables, point) {
@@ -900,15 +900,15 @@ function makeProjectionExpression(variables, point) {
 }
 
 /**
- * Takes a list of variables, denoted `v1,...,vk`, an expression 
+ * Takes a list of variables, denoted `v1,...,vk`, an expression
  * which is denoted `g(e1,...,em)`, and a list of temporary
  * metavariables.
- * 
- * For an application, returns a gEF with the meaning 
+ *
+ * For an application, returns a gEF with the meaning
  * `λv_1,...,v_k.g(H_1(v_1,...,v_k),...,H_m(v_1,...,v_k))`
  * where each `H_i` denotes a temporary gEFA as well as a list of the
  * newly created temporary metavariables `[H_1,...,H_m]`.
- * 
+ *
  * I.e. it returns an 'imitation' expression function where
  * the body is the original expression with each argument
  * replaced by a temporary gEFA.
@@ -919,8 +919,8 @@ function makeProjectionExpression(variables, point) {
 function makeImitationExpression(variables, expr, temp_metavars) {
     /**
      * Helper function which takes a head of a function,
-     * a list of bound variables (i.e. the variables argument) of the 
-     * parent function, and a list of temporary metavariables. 
+     * a list of bound variables (i.e. the variables argument) of the
+     * parent function, and a list of temporary metavariables.
      * Returns an expression which will become the body
      * of the imitation function. This is an application of the form:
      * `head(temp_metavars[0](bound_vars),...,temp_metavars[len-1](bound_vars))`
@@ -950,9 +950,9 @@ function makeImitationExpression(variables, expr, temp_metavars) {
         imitationExpr = makeGeneralExpressionFunction(
             variables,
             createBody(
-                (type=='a' ? expr.children[0]: expr.symbol), 
-                variables, 
-                temp_metavars, 
+                (type=='a' ? expr.children[0]: expr.symbol),
+                variables,
+                temp_metavars,
                 type,
                 (type=='bi' ? expr.variables : null)
             )
@@ -970,18 +970,18 @@ function makeImitationExpression(variables, expr, temp_metavars) {
 // }
 // function DEBUG_PRINT_CONTRAINTLIST(cl) {
 //     console.log(
-//         '{ ' + 
+//         '{ ' +
 //             cl.contents.map((c) =>
 //                 '( ' + c.pattern.simpleEncode() + ', ' + c.expression.simpleEncode() + ' ):' + c.case
-//             ).join(', ') 
+//             ).join(', ')
 //         + ' }'
 //     )
 // }
 
 /**
- * Represents a matching challenge. 
+ * Represents a matching challenge.
  * A matching challenge is defined by two sets of constraints.
- * The first set is the challenge to be solved, 
+ * The first set is the challenge to be solved,
  * the second set contains the solutions found when solving the challenge.
  * Both sets may be empty upon construction of a matching challenge,
  * and the solution set may remain empty if the challenge has no solutions.
@@ -991,8 +991,8 @@ class MatchingChallenge {
      * Creates a new instance of MatchingChallenge by taking an arbitrary
      * number of arrays (including zero), creating constraints from them,
      * and then creating a constraints list out of them called challenge.
-     * @param {...[OM, OM]} constraints - an arbitrary number of arguments each
-     * of which is a length-2 array containing a pattern and an expression, 
+     * @param {Array} constraints - an arbitrary number of arguments each
+     * of which is a length-2 array containing a pattern and an expression,
      * i.e. containing two OM expressions.
      */
     constructor(...constraints) {
@@ -1008,8 +1008,8 @@ class MatchingChallenge {
 
     /**
      * Takes two OM expressions, creates a Constraint object from them,
-     * and adds it to `this.challengeList`. 
-     * If any solutions have been found already, 
+     * and adds it to `this.challengeList`.
+     * If any solutions have been found already,
      * they are applied to the constraint before it is added.
      * @param {OM} pattern - An OM expression
      * @param {OM} expr - An OM expression
@@ -1029,7 +1029,7 @@ class MatchingChallenge {
     /**
      * Adds an arbitrary number of constraints to the challenge,
      * each supplies by a length-2 array containing a pattern and an expression.
-     * @param  {...[OM, OM]} constraints 
+     * @param {Array} constraints 
      */
     addConstraints(...constraints) {
         for (let i = 0; i < constraints.length; i++) {
@@ -1052,7 +1052,7 @@ class MatchingChallenge {
     }
 
     /**
-     * Tests whether a currently-in-progress solution satisfies all 
+     * Tests whether a currently-in-progress solution satisfies all
      * the challenge's already-computed binding constraints.
      */
     satisfiesBindingConstraints() {
@@ -1073,7 +1073,7 @@ class MatchingChallenge {
 
 
     /**
-     * Adds a solution, and checks that it passes `satisfiesBindingConstraints`. 
+     * Adds a solution, and checks that it passes `satisfiesBindingConstraints`.
      * If it does not, empties the solutions list and sets variables in order to end the search.
      * @param {Constraint} constriant - either a Constraint, or an OM (meta)variable
      */
@@ -1090,7 +1090,7 @@ class MatchingChallenge {
     }
 
     /**
-     * @returns `this.solvable` if it is defined. 
+     * @returns `this.solvable` if it is defined.
      * If it is undefined, then `getSolutions` has not been called.
      * This function will call `getSolutions` in that case.
      */
@@ -1099,7 +1099,7 @@ class MatchingChallenge {
     }
 
     /**
-     * @returns `this.solutions.length` by calling `getSolutions`, 
+     * @returns `this.solutions.length` by calling `getSolutions`,
      * hence it solves if `getSolutions` has not been called.
      */
     numSolutions() {
@@ -1253,7 +1253,7 @@ class MatchingChallenge {
                             }
                         }
                     } );
-                    
+
                     // After making temporary metavar substitutions, do a final check for satisfy binding constraints
                     solutions_C = solutions_C.filter(sol => this.solutionSatisfiesBindingConstraints(sol));
                 }
@@ -1570,7 +1570,7 @@ class MatchingChallenge {
 
 module.exports = {
     OM,
-    setMetavariable, 
+    setMetavariable,
     clearMetavariable,
     isMetavariable,
 
