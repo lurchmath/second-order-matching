@@ -11,7 +11,8 @@
     "openmath-js": "^1.2.2"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "docs": "jsdoc src/*.js -d ./docs"
   },
   "jest": {
     "testEnvironment": "node"
