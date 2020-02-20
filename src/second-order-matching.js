@@ -1,8 +1,9 @@
+
 "use strict"
 
 // TODO: handle the case of this module running in the browser
 // Import openmath-js for testing purposes
-const OM = require('openmath-js').OM;
+export const OM = require('openmath-js').OM;
 
 ////////////////////////////////////////////////////////////////////////////////
 // * The following are functions and constants related to metavariables.
@@ -18,7 +19,7 @@ const trueValue = OM.string('true');
  * Does nothing if the given input is not an OMNode of type variable or type symbol.
  * @param {OM} variable - the variable to be marked
  */
-function setMetavariable(variable) {
+export function setMetavariable(variable) {
     if (variable instanceof OM && ['v', 'sy'].includes(variable.type)) {
         return variable.setAttribute(metavariableSymbol, trueValue.copy());
     } else return null;
@@ -28,7 +29,7 @@ function setMetavariable(variable) {
  * Removes the metavariable attribute if it is present.
  * @param {OM} metavariable - the metavariable to be unmarked
  */
-function clearMetavariable(metavariable) {
+export function clearMetavariable(metavariable) {
     return metavariable.removeAttribute(metavariableSymbol);
 }
 
@@ -36,7 +37,7 @@ function clearMetavariable(metavariable) {
  * Tests whether the given variable has the metavariable attribute.
  * @param {OM} variable - the variable to be checked
  */
-function isMetavariable(variable) {
+export function isMetavariable(variable) {
     return (
         variable instanceof OM
         && ['v', 'sy'].includes(variable.type)
@@ -62,7 +63,7 @@ const generalExpressionFunctionApplication = OM.symbol('gEFA', 'SecondOrderMatch
  * @param {OM[]} variables - a list of OM variables
  * @param {OM} body - any OM expression
  */
-function makeGeneralExpressionFunction(variables, body) {
+export function makeGeneralExpressionFunction(variables, body) {
     if (!(variables instanceof Array)) {
         variables = [variables];
     }
@@ -80,7 +81,7 @@ all elements of first argument must have type variable';
  * Tests whether an expression is a general expression function.
  * @param {OM} expression - the expression to be checked
  */
-function isGeneralExpressionFunction(expression) {
+export function isGeneralExpressionFunction(expression) {
     return (
         expression instanceof OM
         && expression.type == 'bi'
@@ -97,7 +98,7 @@ function isGeneralExpressionFunction(expression) {
  * @param {OM} func - either a gEF or something which can be instantiated as a gEF.
  * @param {OM[]} arguments - a list of OM expressions
  */
-function makeGeneralExpressionFunctionApplication(func, args) {
+export function makeGeneralExpressionFunctionApplication(func, args) {
     if (!(isGeneralExpressionFunction(func) || isMetavariable(func))) {
         throw 'When making gEFAs, the func must be either a EF or a metavariable'
     }
@@ -110,7 +111,7 @@ function makeGeneralExpressionFunctionApplication(func, args) {
 /**
  * @returns true if the supplied expression is a gEFA
  */
-function isGeneralExpressionFunctionApplication(expression) {
+export function isGeneralExpressionFunctionApplication(expression) {
     return (
         expression instanceof OM
         && expression.type === 'a'
@@ -124,7 +125,7 @@ function isGeneralExpressionFunctionApplication(expression) {
  * can be called with this gEFA as an argument.
  * @param {OM} gEFA - a general expression function application
  */
-function canApplyGeneralExpressionFunctionApplication(gEFA) {
+export function canApplyGeneralExpressionFunctionApplication(gEFA) {
     if (
         isGeneralExpressionFunctionApplication(gEFA)
         && isGeneralExpressionFunction(gEFA.children[1])
@@ -139,7 +140,7 @@ function canApplyGeneralExpressionFunctionApplication(gEFA) {
  * returns the beta reduction of the gEF and the arguments it is applied to.
  * @param {OM} gEFA - a general expression function application
  */
-function applyGeneralExpressionFunctionApplication(gEFA) {
+export function applyGeneralExpressionFunctionApplication(gEFA) {
     if (canApplyGeneralExpressionFunctionApplication(gEFA)) {
         return betaReduce(gEFA.children[1], gEFA.children.slice(2));
     }
@@ -157,7 +158,7 @@ function applyGeneralExpressionFunctionApplication(gEFA) {
  * @returns the first variable of the form xN
  * which appears nowhere in the supplied expression(s).
  */
-function getNewVariableRelativeTo(expr /*, expr2, ... */) {
+export function getNewVariableRelativeTo(expr /*, expr2, ... */) {
     let all_vars = getVariablesIn(expr);
     for (let i = 1; i < arguments.length; i++) {
         all_vars.push(...getVariablesIn(arguments[i]));
@@ -185,7 +186,7 @@ function getNewVariableRelativeTo(expr /*, expr2, ... */) {
  * @param {OM} replace_var - the replacement variable
  * @returns a copy of the alpha converted binding
  */
-function alphaConvert(binding, which_var, replace_var) {
+export function alphaConvert(binding, which_var, replace_var) {
     var result = binding.copy();
     var bound_vars = result.variables
 
@@ -221,7 +222,7 @@ function alphaConvert(binding, which_var, replace_var) {
  * @param {OM} variable - an OM variable
  * @param {OM} replacement - an OM expression
  */
-function replaceWithoutCapture(expr, variable, replacement) {
+export function replaceWithoutCapture(expr, variable, replacement) {
     if (!(expr instanceof OM)
         || !(variable instanceof OM)
         || !(replacement instanceof OM)) {
@@ -289,7 +290,7 @@ function replaceWithoutCapture(expr, variable, replacement) {
  * @param {OM} expr2 - an OM expression (must be application or binding on first call)gef
  * @returns true if the two expressions are alpha equivalent, false otherwise
  */
-function alphaEquivalent(expr1, expr2, firstcall=true) {
+export function alphaEquivalent(expr1, expr2, firstcall=true) {
     var possible_types = ['a', 'bi'];
     if (expr1.type != expr2.type) {
         return false;
@@ -345,7 +346,7 @@ function alphaEquivalent(expr1, expr2, firstcall=true) {
  * @param {OM[]} expr_list - a list of expressions of length n
  * @returns an expression manipulated as described above
  */
-function betaReduce(gEF, expr_list) {
+export function betaReduce(gEF, expr_list) {
     // Check we can actually do a beta reduction
     if (!isGeneralExpressionFunction(gEF)) {
         throw 'In beta reduction, the first argument must be a general expression function'
@@ -412,7 +413,7 @@ const CASE_FAILURE = 6
 /**
  * @constant CASES an enum-like object to easily access cases.
  */
-const CASES = {
+export const CASES = {
     CASE_IDENTITY: CASE_IDENTITY,
     CASE_BINDING: CASE_BINDING,
     CASE_SIMPLIFICATION: CASE_SIMPLIFICATION,
@@ -424,7 +425,7 @@ Object.freeze(CASES);
 /**
  * Represents a pattern-expression pair.
  */
-class Constraint {
+export class Constraint {
     /**
      * Creates a new constraint with given pattern and expression.
      * @param {OM} pattern - an OM expression which should contain a metavariable (but may not)
@@ -546,7 +547,7 @@ function getVariablesIn(expression) {
  * However, most of the behaviour of this class mimics a set,
  * except for a few cases in which we use indices.
  */
-class ConstraintList {
+export class ConstraintList {
     /**
      * Creates an array from arguments.
      * Also computes the first variable from the list `v0, v1, v2,...` such that neither it nor
@@ -788,7 +789,7 @@ class ConstraintList {
  * @param {OM} pattern - a single pattern
  * @returns a copy of the pattern with any substitutions
  */
-function applyInstantiation(substitution, pattern) {
+export function applyInstantiation(substitution, pattern) {
     var result = pattern.copy();
     replaceWithoutCapture(result, substitution.pattern, substitution.expression);
     result.descendantsSatisfying(canApplyGeneralExpressionFunctionApplication).forEach(x =>
@@ -805,7 +806,7 @@ function applyInstantiation(substitution, pattern) {
  * @param {ConstraintList} substitutions - a non empty constraint list satisfying isFunction()
  * @param {ConstraintList} patterns - a non empty constraint list
  */
-function instantiate(substitutions, patterns) {
+export function instantiate(substitutions, patterns) {
     for (let i = 0; i < substitutions.length; i++) {
         var substitution = substitutions.contents[i];
         for (let j = 0; j < patterns.length; j++) {
@@ -825,7 +826,7 @@ function instantiate(substitutions, patterns) {
  * @returns {Constraint[]} a list of constraints (but not a constraint list) which is the
  * result of 'zipping' the arguments of each function
  */
-function breakIntoArgPairs(constraint) {
+export function breakIntoArgPairs(constraint) {
     var arg_pairs = [];
     if (constraint.pattern.type == 'a' && constraint.expression.type == 'a') {
         let pattern_children = constraint.pattern.children;
@@ -872,7 +873,7 @@ function breakIntoArgPairs(constraint) {
  * @param {OM} new_variable - an OM variable
  * @param {OM} expression - an OM expression
  */
-function makeConstantExpression(new_variable, expression) {
+export function makeConstantExpression(new_variable, expression) {
     if (new_variable instanceof OM && expression instanceof OM) {
         return makeGeneralExpressionFunction(new_variable.copy(), expression.copy());
     }
@@ -886,7 +887,7 @@ function makeConstantExpression(new_variable, expression) {
  * @param {OM[]} variables - a list of OM variables
  * @param {OM} point -  a single OM variable
  */
-function makeProjectionExpression(variables, point) {
+export function makeProjectionExpression(variables, point) {
     if (variables.every((v) => v instanceof OM) && point instanceof OM) {
         if (!(variables.map((v) => v.name).includes(point.name))) {
             throw "When making a projection function, the point must occur in the list of variables"
@@ -916,7 +917,7 @@ function makeProjectionExpression(variables, point) {
  * @param {OM} expr - an OM application
  * @returns a gEF which is the imitation expression described above
  */
-function makeImitationExpression(variables, expr, temp_metavars) {
+export function makeImitationExpression(variables, expr, temp_metavars) {
     /**
      * Helper function which takes a head of a function,
      * a list of bound variables (i.e. the variables argument) of the
@@ -986,7 +987,7 @@ function makeImitationExpression(variables, expr, temp_metavars) {
  * Both sets may be empty upon construction of a matching challenge,
  * and the solution set may remain empty if the challenge has no solutions.
  */
-class MatchingChallenge {
+export class MatchingChallenge {
     /**
      * Creates a new instance of MatchingChallenge by taking an arbitrary
      * number of arrays (including zero), creating constraints from them,
@@ -1029,7 +1030,7 @@ class MatchingChallenge {
     /**
      * Adds an arbitrary number of constraints to the challenge,
      * each supplies by a length-2 array containing a pattern and an expression.
-     * @param {Array} constraints 
+     * @param {Array} constraints
      */
     addConstraints(...constraints) {
         for (let i = 0; i < constraints.length; i++) {
@@ -1567,38 +1568,3 @@ class MatchingChallenge {
         })();
     }
 }
-
-module.exports = {
-    OM,
-    setMetavariable,
-    clearMetavariable,
-    isMetavariable,
-
-    makeGeneralExpressionFunction,
-    isGeneralExpressionFunction,
-    makeGeneralExpressionFunctionApplication,
-    isGeneralExpressionFunctionApplication,
-    canApplyGeneralExpressionFunctionApplication,
-    applyGeneralExpressionFunctionApplication,
-
-    getNewVariableRelativeTo,
-    alphaConvert,
-    replaceWithoutCapture,
-    alphaEquivalent,
-    betaReduce,
-
-    CASES,
-    Constraint,
-    ConstraintList,
-
-    applyInstantiation,
-    instantiate,
-
-    breakIntoArgPairs,
-
-    makeConstantExpression,
-    makeProjectionExpression,
-    makeImitationExpression,
-
-    MatchingChallenge,
-};

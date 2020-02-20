@@ -4,11 +4,14 @@
   "description": "",
   "main": "src/second-order-matching.js",
   "dependencies": {
-    "openmath-js": "^1.2.2"
+    "openmath-js": "^1.2.3"
   },
+  "type": "module",
   "devDependencies": {
     "eslint": "^5.16.0",
+    "esm": "^3.2.25",
     "jest": "^24.9.0",
+    "jest-esm-transformer": "^1.0.0",
     "jsdoc": "^3.6.3"
   },
   "scripts": {
@@ -16,7 +19,11 @@
     "docs": "jsdoc src/*.js -d ./docs"
   },
   "jest": {
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "transform": {
+      ".js": "jest-esm-transformer"
+    },
+    "transformIgnorePatterns": []
   },
   "author": "George Tillisch and Nathan Carter",
   "license": "ISC"

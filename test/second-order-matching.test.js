@@ -1,4 +1,5 @@
-const M = require('../src/second-order-matching');
+
+import * as M from '../src/second-order-matching';
 const OM = M.OM;
 
 /**
