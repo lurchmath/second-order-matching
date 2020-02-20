@@ -1,8 +1,8 @@
-const M = require('./src/second-order-matching');
+const M = require('../src/second-order-matching');
 const OM = M.OM;
 
 /**
- * Takes strings for OM.simple, any variable begginning with an underscore 
+ * Takes strings for OM.simple, any variable begginning with an underscore
  * has the underscore removed and is flagged as a metavariable.
  * Supports symbols.
  * Supports the convention that `f_of_x` expands to `efa(quick('f'), quick('x'))`.
@@ -129,7 +129,7 @@ describe('Generalized Expression Functions', () => {
         );
 
         expect(M.isGeneralExpressionFunctionApplication(gEFA1)).toBe(true);
-        
+
         var v1 = OM.var('P');
         M.setMetavariable(v1);
         var gEFA2 = M.makeGeneralExpressionFunctionApplication(
@@ -187,7 +187,7 @@ describe('Expression manipluation', () => {
         var e2 = OM.simple('f.a[v1,x0,x1,x2]')
         var e3 = OM.simple('F(x0,x1,x2,x3,x4)');
         var e4 = M.makeGeneralExpressionFunction(
-            [OM.var('x1'), OM.var('a')], OM.simple('plus(x1,a)') 
+            [OM.var('x1'), OM.var('a')], OM.simple('plus(x1,a)')
         );
         var e5 = OM.simple('x');
 
@@ -258,7 +258,7 @@ describe('Expression manipluation', () => {
         var b1 = OM.simple('for.all[x,pl.us(x,v1,v2)]');
         var gef1 = M.makeGeneralExpressionFunction([v1,v2], b1);
         var expected2 = M.makeGeneralExpressionFunction(
-            [OM.var('x'), v2], 
+            [OM.var('x'), v2],
             OM.simple('for.all[x0,pl.us(x0,x,v2)]')
         );
         var gef1copy = gef1.copy();
@@ -725,7 +725,7 @@ describe('The ConstraintList class', () => {
 
         expect(CL1.length).toBe(0);
         expect(CL2.length).toBe(3);
-        
+
         var failedAdd = CL2.add(con1, con2, con3);
         expect(failedAdd.length).toBe(3);
         expect(CL2.contents.length).toBe(3);
@@ -778,8 +778,8 @@ describe('The ConstraintList class', () => {
         var CL2 = new M.ConstraintList(con1, con2, con3);
 
         expect(CL1.length).toBe(0);
-        expect(CL2.length).toBe(3);  
-        
+        expect(CL2.length).toBe(3);
+
         CL1.empty();
         CL2.empty();
 
@@ -1011,7 +1011,7 @@ describe('Instantiation', () => {
 
         // Check the case where the substitutions do not make the pattern exactly match the expression
         var con2 = new M.Constraint(
-            quick('m.ply(p.lus(_X,_Y),mi.nus(_X,_Y))'), 
+            quick('m.ply(p.lus(_X,_Y),mi.nus(_X,_Y))'),
             quick('m.ply(p.lus(3,k),mi.nus(3,p))')
         );
         var sub3 = new M.Constraint(quick('_X'), quick('3'));
@@ -1056,7 +1056,7 @@ describe('Instantiation', () => {
         expect(CL3.contents[0].pattern.equals(con3.expression)).toBe(true);
         expect(CL3.contents[0].pattern.equals(CL3.contents[0].expression)).toBe(true);
 
-        // In this case, the order of substitutions does matter. 
+        // In this case, the order of substitutions does matter.
         // But, replacing the temporary variables should give the same result.
         var sub8 = sub5.copy();
         sub8.expression.replaceWith(M.applyInstantiation(sub6, sub8.expression));
@@ -1177,7 +1177,7 @@ describe('The MatchingChallenge class (basic functionality)', () => {
         expect(mc.challengeList.length).toBe(0);
         expect(mc.solutions.length).toBe(0);
         expect(mc.solvable).toBeUndefined();
-        
+
         // Test calling constructor with args
         mc = new M.MatchingChallenge([quick('_X'), quick('a')]);
         expect(mc).toBeInstanceOf(M.MatchingChallenge);
@@ -1444,7 +1444,7 @@ describe('The MatchingChallenge class (solving)', () => {
                 )
             )
         ).toBe(true);
-        
+
         // Test different orderings case
         expect(
             checkSolutions(
@@ -1542,7 +1542,7 @@ describe('The MatchingChallenge class (solving)', () => {
 
         // Example 2
         constraints = newConstraints(
-            ['w(w(_X,_P_of__X),for.all[x,_P_of_x])', 
+            ['w(w(_X,_P_of__X),for.all[x,_P_of_x])',
              'w(w(k,lt(plus(k,1),5)),for.all[s,lt(plus(s,1),5)])'],
         );
         mc = newMC(constraints);
@@ -1552,7 +1552,7 @@ describe('The MatchingChallenge class (solving)', () => {
                 sols,
                 newSolutions(
                     [
-                       ['_X', 'k'], 
+                       ['_X', 'k'],
                        ['_P', lambdaString('v.lt(plus(v,1),5)')],
                     ],
                 )
@@ -1639,7 +1639,7 @@ describe('The MatchingChallenge class (solving)', () => {
                 sols,
                 newSolutions(
                     [
-                        ['_x', 'A(1,2,3)'],  
+                        ['_x', 'A(1,2,3)'],
                         ['_y', 'A(2,1,3)'],
                         ['_P', lambdaString('v.v')],
                     ],
@@ -1696,7 +1696,7 @@ describe('The MatchingChallenge class (solving)', () => {
 
         ////////// Test 6 //////////
         constraints = newConstraints(
-            ['_P_of__x', 'g(k,e(2))'], 
+            ['_P_of__x', 'g(k,e(2))'],
         );
         mc = newMC(constraints);
         sols = mc.getSolutions();
@@ -2238,7 +2238,7 @@ describe('The MatchingChallenge class (solving)', () => {
 
         ////////// Test 25 //////////
         constraints = newConstraints(
-            ['for.all[_x,_P_of__x]', 'for.all[s,eq(sq(s),s)]'],  
+            ['for.all[_x,_P_of__x]', 'for.all[s,eq(sq(s),s)]'],
             ['_P_of__t', 'eq(sq(1),1)'],
         );
         mc = newMC(constraints);
@@ -2335,7 +2335,7 @@ describe('The MatchingChallenge class (solving)', () => {
                 sols,
                 newSolutions(
                     [
-                        ['_x', 'x'],   
+                        ['_x', 'x'],
                         ['_P', lambdaString('v.R(v,v)')],
                         ['_t', 'x'],
                     ],
@@ -2655,7 +2655,7 @@ describe('The MatchingChallenge class (solving)', () => {
         ////////// Test 48 //////////
         constraints = newConstraints(
             ['Sub.proof[_x,_P_of__x]', 'Sub.proof[x,eq(x,x)]'],
-            ['for.all[_y,_P_of__y]', 'for.all[x,eq(x,x)]'], 
+            ['for.all[_y,_P_of__y]', 'for.all[x,eq(x,x)]'],
         );
         mc = newMC(constraints);
         sols = mc.getSolutions();
@@ -2779,7 +2779,7 @@ describe('The MatchingChallenge class (solving)', () => {
         ////////// Test 56 //////////
         constraints = newConstraints(
             ['_P_of_0', 'gte(0,0)'],
-            ['for.all[_k,implies(_P_of__k,SecondOrderMatching.gEFA(_P,plus(_k,1)))]', 
+            ['for.all[_k,implies(_P_of__k,SecondOrderMatching.gEFA(_P,plus(_k,1)))]',
              'for.all[n,implies(gte(n,0),gte(plus(n,1),0))]'],
             ['for.all[_n,_P_of__n]', 'for.all[n,gte(n,0)]'],
         );
@@ -2790,7 +2790,7 @@ describe('The MatchingChallenge class (solving)', () => {
                 sols,
                 newSolutions(
                     [
-                        ['_P', lambdaString('v.gte(v,0)')],   
+                        ['_P', lambdaString('v.gte(v,0)')],
                         ['_k', 'n'],
                         ['_n', 'n'],
                     ],
@@ -2988,7 +2988,7 @@ describe('The MatchingChallenge class (solving)', () => {
                 sols,
                 newSolutions(
                     [
-                       ['_x', 'm'], 
+                       ['_x', 'm'],
                        ['_P', lambdaString('v.gt(v,0)')],
                        ['_Q', 'gt(-1,0)'],
                     ],
@@ -3009,7 +3009,7 @@ describe('The MatchingChallenge class (solving)', () => {
                 sols,
                 newSolutions(
                     [
-                        ['_x', 'x'],   
+                        ['_x', 'x'],
                         ['_y', 'x'],
                         ['_P', lambdaString('v.gt(v,0)')],
                         ['_Q', 'gt(-1,0)'],
@@ -3071,7 +3071,7 @@ describe('The MatchingChallenge class (solving)', () => {
 
         /**
          * ===== RESULTS =====
-         * 
+         *
          * Iterative solve:
          *      18988ms
          *      20911ms
@@ -3080,7 +3080,7 @@ describe('The MatchingChallenge class (solving)', () => {
          *      17478ms
          *      --avg--
          *      18494ms (~18.5s)
-         * 
+         *
          * Recursive solve:
          *      18439ms
          *      21035ms
@@ -3089,8 +3089,8 @@ describe('The MatchingChallenge class (solving)', () => {
          *      22126ms
          *      --avg--
          *      20718ms (~20.7s)
-         * 
-         * Iterative solve is roughly two seconds faster in this test, 
+         *
+         * Iterative solve is roughly two seconds faster in this test,
          * but only about a second faster in other tests.
          * There are probably other optimisations to be made to `solve()`
          * that would cause a greater speedup than switching to a partly iterative implementation.
