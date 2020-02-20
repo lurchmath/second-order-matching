@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "main": "src/second-order-matching.js",
-  "dependencies": {},
+  "dependencies": {
+    "openmath-js": "^1.2.2"
+  },
   "devDependencies": {
     "eslint": "^5.16.0",
     "jest": "^24.9.0",
-    "jsdoc": "^3.6.3",
-    "openmath-js": "^1.2.2"
+    "jsdoc": "^3.6.3"
   },
   "scripts": {
     "test": "jest test/",
