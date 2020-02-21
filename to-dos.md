@@ -7,6 +7,9 @@
   the OpenMath module to ES6 rather than CommonJS.
 - Proofread all documentation strings to see if the docs we're generating with
   JSDoc look good.
+- Update the documentation site to have a more user-friendly landing page.
+  (Right now it says "Home" with a giant blank area.)
+- Publish this repository to npm so it's easy to use in other projects.
 - The `replaceWithoutCapture` function in [language.js](src/language.js) has a
   "FIXME" comment in case 5. It generates new variables relative to an
   expression in a suboptimal way. One optimal fix would be a class for
