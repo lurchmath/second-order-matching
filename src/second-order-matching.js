@@ -964,12 +964,12 @@ export function makeImitationExpression(variables, expr, temp_metavars) {
 }
 
 // FIXME: DELETE LATER
-// function DEBUG_PRINT_CONTRAINT(c) {
+// function DEBUG_PRINT_CONSTRAINT(c) {
 //     console.log(
 //         '( ' + c.pattern.simpleEncode() + ', ' + c.expression.simpleEncode() + ' ):' + c.case
 //     );
 // }
-// function DEBUG_PRINT_CONTRAINTLIST(cl) {
+// function DEBUG_PRINT_CONSTRAINTLIST(cl) {
 //     console.log(
 //         '{ ' +
 //             cl.contents.map((c) =>
