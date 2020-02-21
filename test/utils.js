@@ -3,7 +3,7 @@
  *  Functions useful to have around when running tests
  */
 
-import * as M from '../src/second-order-matching';
+import * as M from '../index';
 const OM = M.OM;
 
 /**

@@ -6,7 +6,7 @@
  * ensure thorough testing.
  */
 
-import * as M from '../src/second-order-matching';
+import * as M from '../index';
 import {
     quick, ef, efa, CToString, CLToString, DEBUG_PRINT_CONSTRAINT,
     DEBUG_PRINT_CONSTRAINTLIST, DEBUG_PRINT_SOLS, newConstraintObject,
