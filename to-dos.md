@@ -5,6 +5,10 @@
   browser, and a WebWorker. Currently, it works as an ES6 module in Node, but
   has not been tested in the other two environments. This may require upgrading
   the OpenMath module to ES6 rather than CommonJS.
+- Since some ES6 features are being used to implement iterators, the whole repo
+  now assumes ES6.  Consequently, a lot of code that was written in ES5 style
+  can be made much slicker (for example, lots of `for` loops with actual
+  index-based counters, etc.).
 - Proofread all documentation strings to see if the docs we're generating with
   JSDoc look good.
 - Update the documentation site to have a more user-friendly landing page.
