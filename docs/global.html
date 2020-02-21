@@ -98,296 +98,6 @@
 
         
             
-<h4 class="name" id="CASE_BINDING"><span class="type-signature">(constant) </span>CASE_BINDING<span class="type-signature"></span></h4>
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line387">line 387</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="CASE_EFA"><span class="type-signature">(constant) </span>CASE_EFA<span class="type-signature"></span></h4>
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line400">line 400</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="CASE_FAILURE"><span class="type-signature">(constant) </span>CASE_FAILURE<span class="type-signature"></span></h4>
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line407">line 407</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="CASE_IDENTITY"><span class="type-signature">(constant) </span>CASE_IDENTITY<span class="type-signature"></span></h4>
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line381">line 381</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="CASE_SIMPLIFICATION"><span class="type-signature">(constant) </span>CASE_SIMPLIFICATION<span class="type-signature"></span></h4>
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line393">line 393</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
 <h4 class="name" id="CASES"><span class="type-signature">(constant) </span>CASES<span class="type-signature"></span></h4>
 
 
@@ -428,7 +138,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line412">line 412</a>
+        <a href="constraints.js.html">constraints.js</a>, <a href="constraints.js.html#line45">line 45</a>
     </li></ul></dd>
     
 
@@ -464,7 +174,9 @@
 
 
 <div class="description">
-    Takes a binding, a bound variable in that binding, and a replacement variable.Returns the result of replacing (without capture) all instances of the boundvariable with the replacement variable.
+    Takes a binding, a bound variable in that binding, and a replacement variable.
+Returns the result of replacing (without capture) all instances of the bound
+variable with the replacement variable.
 </div>
 
 
@@ -603,7 +315,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line188">line 188</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line195">line 195</a>
     </li></ul></dd>
     
 
@@ -657,7 +369,11 @@
 
 
 <div class="description">
-    Checks if two expressions are alpha equivalent.Two expresssions are alpha equivalent if one can be transformed into the otherby the renaming of bound variables.If called when neither expr1 nor expr2 are applications or bindings, this functionreturns false because alpha equivalence is not defined for free variables or constants.
+    Checks if two expressions are alpha equivalent.
+Two expresssions are alpha equivalent if one can be transformed into the other
+by the renaming of bound variables.
+If called when neither expr1 nor expr2 are applications or bindings, this function
+returns false because alpha equivalence is not defined for free variables or constants.
 </div>
 
 
@@ -773,7 +489,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line292">line 292</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line299">line 299</a>
     </li></ul></dd>
     
 
@@ -827,7 +543,8 @@
 
 
 <div class="description">
-    If `canApplyGeneralExpressionFunctionApplication` is true,returns the beta reduction of the gEF and the arguments it is applied to.
+    If `canApplyGeneralExpressionFunctionApplication` is true,
+returns the beta reduction of the gEF and the arguments it is applied to.
 </div>
 
 
@@ -920,7 +637,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line142">line 142</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line149">line 149</a>
     </li></ul></dd>
     
 
@@ -945,176 +662,6 @@
 
 
 
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="applyInstantiation"><span class="type-signature"></span>applyInstantiation<span class="signature">(substitution, pattern)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Applies a singe instantiation (substitution) to a single pattern.Used by instantiate to handle the list case.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>substitution</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Constraint.html">Constraint</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">a single substitution</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>pattern</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">a single pattern</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line791">line 791</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    a copy of the pattern with any substitutions
-</div>
-
-
-
-    
 
 
 
@@ -1134,7 +681,13 @@
 
 
 <div class="description">
-    Takes a general expression function representing λv_1,...,v_k.Band a list of expressions e_1,...,e_k and returns the beta reductionof ((λv_1,...,v_k.B)(e_1,...,e_k)) which is the expression Bwith all v_i replaced by the corresponding e_i.This beta reduction is capture avoiding.See `replaceWithoutCapture` for details.
+    Takes a general expression function representing λv_1,...,v_k.B
+and a list of expressions e_1,...,e_k and returns the beta reduction
+of ((λv_1,...,v_k.B)(e_1,...,e_k)) which is the expression B
+with all v_i replaced by the corresponding e_i.
+
+This beta reduction is capture avoiding.
+See `replaceWithoutCapture` for details.
 </div>
 
 
@@ -1250,7 +803,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line348">line 348</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line355">line 355</a>
     </li></ul></dd>
     
 
@@ -1296,165 +849,6 @@
     
 
     
-    <h4 class="name" id="breakIntoArgPairs"><span class="type-signature"></span>breakIntoArgPairs<span class="signature">(constraint)</span><span class="type-signature"> &rarr; {Array.&lt;<a href="Constraint.html">Constraint</a>>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Takes a constraint which should match the case wherethe the pattern and expression are ordinary functionsand their 'heads' are equal
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>constraint</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Constraint.html">Constraint</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">constraint with CASE_SIMPLIFICATION</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line828">line 828</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    a list of constraints (but not a constraint list) which is theresult of 'zipping' the arguments of each function
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Array.&lt;<a href="Constraint.html">Constraint</a>></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
     <h4 class="name" id="canApplyGeneralExpressionFunctionApplication"><span class="type-signature"></span>canApplyGeneralExpressionFunctionApplication<span class="signature">(gEFA)</span><span class="type-signature"></span></h4>
     
 
@@ -1463,7 +857,9 @@
 
 
 <div class="description">
-    Tests whether a gEFA is of the form gEF(args).If the gEFA is of this form, `applyGeneralExpressionFunctionApplication`can be called with this gEFA as an argument.
+    Tests whether a gEFA is of the form gEF(args).
+If the gEFA is of this form, `applyGeneralExpressionFunctionApplication`
+can be called with this gEFA as an argument.
 </div>
 
 
@@ -1556,7 +952,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line127">line 127</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line134">line 134</a>
     </li></ul></dd>
     
 
@@ -1600,7 +996,9 @@
 
 
 <div class="description">
-    Helper function for ConstraintList constructor.Takes a variable and checks if it of the form, `vX` where `X` is some number.If it is of this form, it returns X + 1 if it is greater than the given index.
+    Helper function used when adding pairs to a constraint list.
+Takes a variable and checks if it of the form, `vX` where `X` is some number.
+If it is of this form, it returns X + 1 if it is greater than the given index.
 </div>
 
 
@@ -1716,7 +1114,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line525">line 525</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line384">line 384</a>
     </li></ul></dd>
     
 
@@ -1853,7 +1251,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line31">line 31</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line39">line 39</a>
     </li></ul></dd>
     
 
@@ -1990,7 +1388,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line160">line 160</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line167">line 167</a>
     </li></ul></dd>
     
 
@@ -2019,7 +1417,8 @@
 
         
 <div class="param-desc">
-    the first variable of the form xNwhich appears nowhere in the supplied expression(s).
+    the first variable of the form xN
+which appears nowhere in the supplied expression(s).
 </div>
 
 
@@ -2044,7 +1443,8 @@
 
 
 <div class="description">
-    Helper function for ConstraintList constructor.
+    Helper function used when adding pairs to a constraint list.
+Returns the list of variables that appear in a given expression.
 </div>
 
 
@@ -2137,7 +1537,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line540">line 540</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line400">line 400</a>
     </li></ul></dd>
     
 
@@ -2172,166 +1572,6 @@
 
 
     
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="instantiate"><span class="type-signature"></span>instantiate<span class="signature">(substitutions, patterns)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Takes two ConstraintList objects, one representing a list of substitutions,the other containing the patterns that the substiutions will be applied to.Each substitution is applied to the pattern satisfying the conditions describedin the summary paper (section 3).
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>substitutions</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="ConstraintList.html">ConstraintList</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">a non empty constraint list satisfying isFunction()</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>patterns</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="ConstraintList.html">ConstraintList</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">a non empty constraint list</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line808">line 808</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2444,7 +1684,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line83">line 83</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line90">line 90</a>
     </li></ul></dd>
     
 
@@ -2528,7 +1768,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line113">line 113</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line120">line 120</a>
     </li></ul></dd>
     
 
@@ -2675,7 +1915,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line39">line 39</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line47">line 47</a>
     </li></ul></dd>
     
 
@@ -2719,7 +1959,10 @@
 
 
 <div class="description">
-    Takes a new variable (relative to some constraint list) and an expressionand returns a gEF which has the meaning λv_n.expr where v_n is the newvariable and expr is the expression.I.e. creates a constant expression function.
+    Takes a new variable (relative to some constraint list) and an expression
+and returns a gEF which has the meaning λv_n.expr where v_n is the new
+variable and expr is the expression.
+I.e. creates a constant expression function.
 </div>
 
 
@@ -2835,7 +2078,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line875">line 875</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line412">line 412</a>
     </li></ul></dd>
     
 
@@ -2879,7 +2122,8 @@
 
 
 <div class="description">
-    Makes a new expression function with the meaningλv1,...,vk.B where v1,...,vk are the variables and B is any OM expression.
+    Makes a new expression function with the meaning
+λv1,...,vk.B where v1,...,vk are the variables and B is any OM expression.
 </div>
 
 
@@ -2995,7 +2239,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line65">line 65</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line72">line 72</a>
     </li></ul></dd>
     
 
@@ -3039,7 +2283,11 @@
 
 
 <div class="description">
-    Makes a new expression function application with the meaningF(arg) where F is either a general expression function (gEF), or ametavariable which is expected to be replaced by a gEF.In the case that F is a gEF, the expression function can be appliedto the argument see `applyGeneralExpressionFunctionApplication`.
+    Makes a new expression function application with the meaning
+F(arg) where F is either a general expression function (gEF), or a
+metavariable which is expected to be replaced by a gEF.
+In the case that F is a gEF, the expression function can be applied
+to the argument see `applyGeneralExpressionFunctionApplication`.
 </div>
 
 
@@ -3155,7 +2403,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line100">line 100</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line107">line 107</a>
     </li></ul></dd>
     
 
@@ -3199,7 +2447,18 @@
 
 
 <div class="description">
-    Takes a list of variables, denoted `v1,...,vk`, an expressionwhich is denoted `g(e1,...,em)`, and a list of temporarymetavariables.For an application, returns a gEF with the meaning`λv_1,...,v_k.g(H_1(v_1,...,v_k),...,H_m(v_1,...,v_k))`where each `H_i` denotes a temporary gEFA as well as a list of thenewly created temporary metavariables `[H_1,...,H_m]`.I.e. it returns an 'imitation' expression function wherethe body is the original expression with each argumentreplaced by a temporary gEFA.
+    Takes a list of variables, denoted `v1,...,vk`, an expression
+which is denoted `g(e1,...,em)`, and a list of temporary
+metavariables.
+
+For an application, returns a gEF with the meaning
+`λv_1,...,v_k.g(H_1(v_1,...,v_k),...,H_m(v_1,...,v_k))`
+where each `H_i` denotes a temporary gEFA as well as a list of the
+newly created temporary metavariables `[H_1,...,H_m]`.
+
+I.e. it returns an 'imitation' expression function where
+the body is the original expression with each argument
+replaced by a temporary gEFA.
 </div>
 
 
@@ -3315,7 +2574,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line919">line 919</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line456">line 456</a>
     </li></ul></dd>
     
 
@@ -3369,7 +2628,9 @@
 
 
 <div class="description">
-    Takes a list of variables v_1,...,v_k and a single variable (a point)v_i and returns a gEF with the meaning λv_1,...,v_k.v_i.I.e. returns a projection expression function for v_i with k arguments.
+    Takes a list of variables v_1,...,v_k and a single variable (a point)
+v_i and returns a gEF with the meaning λv_1,...,v_k.v_i.
+I.e. returns a projection expression function for v_i with k arguments.
 </div>
 
 
@@ -3485,7 +2746,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line889">line 889</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line426">line 426</a>
     </li></ul></dd>
     
 
@@ -3529,7 +2790,18 @@
 
 
 <div class="description">
-    Takes an expression, a variable, and a replacement expression.Manipulates the expression in place in order to replace all occurencesof the variable with the expression in such a way that variable capturewill not occur.Because this function will be called whenever a metavariable's instantiationis discovered by the solve() routine in MatchingChallenge, it must guaranteethat NO occurrences of the variable remain after the function is complete.Note that this function addresses only variable capture that would occurfrom a binding expression inside expr; it does not address any binders thatmay sit in a parent above expr.
+    Takes an expression, a variable, and a replacement expression.
+Manipulates the expression in place in order to replace all occurences
+of the variable with the expression in such a way that variable capture
+will not occur.
+
+Because this function will be called whenever a metavariable's instantiation
+is discovered by the solve() routine in MatchingChallenge, it must guarantee
+that NO occurrences of the variable remain after the function is complete.
+
+Note that this function addresses only variable capture that would occur
+from a binding expression inside expr; it does not address any binders that
+may sit in a parent above expr.
 </div>
 
 
@@ -3668,7 +2940,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line224">line 224</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line231">line 231</a>
     </li></ul></dd>
     
 
@@ -3712,7 +2984,8 @@
 
 
 <div class="description">
-    Marks a variable as a metavariable.Does nothing if the given input is not an OMNode of type variable or type symbol.
+    Marks a variable as a metavariable.
+Does nothing if the given input is not an OMNode of type variable or type symbol.
 </div>
 
 
@@ -3805,7 +3078,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="second-order-matching.js.html">second-order-matching.js</a>, <a href="second-order-matching.js.html#line21">line 21</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line29">line 29</a>
     </li></ul></dd>
     
 
@@ -3851,13 +3124,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Constraint.html">Constraint</a></li><li><a href="ConstraintList.html">ConstraintList</a></li><li><a href="MatchingChallenge.html">MatchingChallenge</a></li></ul><h3>Global</h3><ul><li><a href="global.html#alphaConvert">alphaConvert</a></li><li><a href="global.html#alphaEquivalent">alphaEquivalent</a></li><li><a href="global.html#applyGeneralExpressionFunctionApplication">applyGeneralExpressionFunctionApplication</a></li><li><a href="global.html#applyInstantiation">applyInstantiation</a></li><li><a href="global.html#betaReduce">betaReduce</a></li><li><a href="global.html#breakIntoArgPairs">breakIntoArgPairs</a></li><li><a href="global.html#canApplyGeneralExpressionFunctionApplication">canApplyGeneralExpressionFunctionApplication</a></li><li><a href="global.html#CASE_BINDING">CASE_BINDING</a></li><li><a href="global.html#CASE_EFA">CASE_EFA</a></li><li><a href="global.html#CASE_FAILURE">CASE_FAILURE</a></li><li><a href="global.html#CASE_IDENTITY">CASE_IDENTITY</a></li><li><a href="global.html#CASE_SIMPLIFICATION">CASE_SIMPLIFICATION</a></li><li><a href="global.html#CASES">CASES</a></li><li><a href="global.html#checkVariable">checkVariable</a></li><li><a href="global.html#clearMetavariable">clearMetavariable</a></li><li><a href="global.html#getNewVariableRelativeTo">getNewVariableRelativeTo</a></li><li><a href="global.html#getVariablesIn">getVariablesIn</a></li><li><a href="global.html#instantiate">instantiate</a></li><li><a href="global.html#isGeneralExpressionFunction">isGeneralExpressionFunction</a></li><li><a href="global.html#isGeneralExpressionFunctionApplication">isGeneralExpressionFunctionApplication</a></li><li><a href="global.html#isMetavariable">isMetavariable</a></li><li><a href="global.html#makeConstantExpression">makeConstantExpression</a></li><li><a href="global.html#makeGeneralExpressionFunction">makeGeneralExpressionFunction</a></li><li><a href="global.html#makeGeneralExpressionFunctionApplication">makeGeneralExpressionFunctionApplication</a></li><li><a href="global.html#makeImitationExpression">makeImitationExpression</a></li><li><a href="global.html#makeProjectionExpression">makeProjectionExpression</a></li><li><a href="global.html#replaceWithoutCapture">replaceWithoutCapture</a></li><li><a href="global.html#setMetavariable">setMetavariable</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Constraint.html">Constraint</a></li><li><a href="ConstraintList.html">ConstraintList</a></li><li><a href="MatchingChallenge.html">MatchingChallenge</a></li></ul><h3>Global</h3><ul><li><a href="global.html#alphaConvert">alphaConvert</a></li><li><a href="global.html#alphaEquivalent">alphaEquivalent</a></li><li><a href="global.html#applyGeneralExpressionFunctionApplication">applyGeneralExpressionFunctionApplication</a></li><li><a href="global.html#betaReduce">betaReduce</a></li><li><a href="global.html#canApplyGeneralExpressionFunctionApplication">canApplyGeneralExpressionFunctionApplication</a></li><li><a href="global.html#CASES">CASES</a></li><li><a href="global.html#checkVariable">checkVariable</a></li><li><a href="global.html#clearMetavariable">clearMetavariable</a></li><li><a href="global.html#getNewVariableRelativeTo">getNewVariableRelativeTo</a></li><li><a href="global.html#getVariablesIn">getVariablesIn</a></li><li><a href="global.html#isGeneralExpressionFunction">isGeneralExpressionFunction</a></li><li><a href="global.html#isGeneralExpressionFunctionApplication">isGeneralExpressionFunctionApplication</a></li><li><a href="global.html#isMetavariable">isMetavariable</a></li><li><a href="global.html#makeConstantExpression">makeConstantExpression</a></li><li><a href="global.html#makeGeneralExpressionFunction">makeGeneralExpressionFunction</a></li><li><a href="global.html#makeGeneralExpressionFunctionApplication">makeGeneralExpressionFunctionApplication</a></li><li><a href="global.html#makeImitationExpression">makeImitationExpression</a></li><li><a href="global.html#makeProjectionExpression">makeProjectionExpression</a></li><li><a href="global.html#replaceWithoutCapture">replaceWithoutCapture</a></li><li><a href="global.html#setMetavariable">setMetavariable</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu Feb 20 2020 16:30:50 GMT-0500 (Eastern Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Fri Feb 21 2020 15:57:20 GMT-0500 (Eastern Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
