@@ -172,6 +172,69 @@ export class Constraint {
     reEvalCase() {
         this.case = this.getCase(this.pattern, this.expression);
     }
+
+    /**
+     * Applies this constraint, like a substitution, to a single pattern.
+     * Used by instantiate() in ConstraintList.
+     * @param {OM} pattern - a single pattern
+     * @returns a copy of the pattern with any substitutions
+     */
+    applyInstantiation(target) {
+        var result = target.copy();
+        replaceWithoutCapture(result, this.pattern, this.expression);
+        result.descendantsSatisfying(canApplyGeneralExpressionFunctionApplication).forEach(x =>
+            x.replaceWith(applyGeneralExpressionFunctionApplication(x))
+        );
+        return result;
+    }
+
+    /**
+     * Applies only to constraints that match the case where the pattern and
+     * expression are ordinary functions and their 'heads' are equal
+     * (CASE_SIMPLIFICATION).  Calling it on other types of constraints gives
+     * undefined behavior.
+     * @returns {Constraint[]} a list of constraints (but not a constraint list) which is the
+     * result of 'zipping' the arguments of each function
+     */
+    breakIntoArgPairs() {
+        var arg_pairs = [];
+        if (this.pattern.type == 'a' && this.expression.type == 'a') {
+            let pattern_children = this.pattern.children;
+            let expression_children = this.expression.children;
+            // In getting the case, we checked that the length of children was the same
+            for (let i = 0; i < pattern_children.length; i++) {
+                arg_pairs.push(
+                    new Constraint(
+                        pattern_children[i].copy(),
+                        expression_children[i].copy()
+                    )
+                );
+            }
+        } else if (this.pattern.type == 'bi' && this.expression.type == 'bi') {
+            let pattern_vars = this.pattern.variables;
+            let expression_vars = this.expression.variables;
+            let pattern_body = this.pattern.body;
+            let expression_body = this.expression.body;
+            // In getting the case, we checked that the length of variables was the same
+            for (let i = 0; i < pattern_vars.length; i++) {
+                arg_pairs.push(
+                    new Constraint(
+                        pattern_vars[i].copy(),
+                        expression_vars[i].copy()
+                    )
+                );
+            }
+            // Also push the body of each binding to arg pairs
+            arg_pairs.push(
+                new Constraint(
+                    pattern_body.copy(),
+                    expression_body.copy()
+                )
+            );
+        }
+        return arg_pairs;
+    }
+
 }
 
 /**
@@ -412,88 +475,25 @@ export class ConstraintList {
             )
         );
     }
-}
 
-/**
- * Applies a singe instantiation (substitution) to a single pattern.
- * Used by instantiate to handle the list case.
- * @param {Constraint} substitution - a single substitution
- * @param {OM} pattern - a single pattern
- * @returns a copy of the pattern with any substitutions
- */
-export function applyInstantiation(substitution, pattern) {
-    var result = pattern.copy();
-    replaceWithoutCapture(result, substitution.pattern, substitution.expression);
-    result.descendantsSatisfying(canApplyGeneralExpressionFunctionApplication).forEach(x =>
-        x.replaceWith(applyGeneralExpressionFunctionApplication(x))
-    );
-    return result;
-}
-
-/**
- * Takes two ConstraintList objects, one representing a list of substitutions,
- * the other containing the patterns that the substiutions will be applied to.
- * Each substitution is applied to the pattern satisfying the conditions described
- * in the summary paper (section 3).
- * @param {ConstraintList} substitutions - a non empty constraint list satisfying isFunction()
- * @param {ConstraintList} patterns - a non empty constraint list
- */
-export function instantiate(substitutions, patterns) {
-    for (let i = 0; i < substitutions.length; i++) {
-        var substitution = substitutions.contents[i];
-        for (let j = 0; j < patterns.length; j++) {
-            var pattern = patterns.contents[j].pattern;
-            patterns.contents[j].pattern = applyInstantiation(substitution, pattern);
-            // Re-evaluate case
-            patterns.contents[j].reEvalCase();
+    /**
+     * Takes a ConstraintList object containing the patterns that the
+     * substiutions in this object will be applied to.  Each substitution is
+     * applied to the pattern satisfying the conditions described in the summary
+     * paper (section 3).
+     * @param {ConstraintList} patterns - a non empty constraint list
+     */
+    instantiate(patterns) {
+        for (let i = 0; i < this.length; i++) {
+            var substitution = this.contents[i];
+            for (let j = 0; j < patterns.length; j++) {
+                var pattern = patterns.contents[j].pattern;
+                patterns.contents[j].pattern = substitution.applyInstantiation(pattern);
+                // Re-evaluate case
+                patterns.contents[j].reEvalCase();
+            }
         }
     }
-}
-
-/**
- * Takes a constraint which should match the case where the pattern and
- * expression are ordinary functions and their 'heads' are equal
- * @param {Constraint} constraint - constraint with CASE_SIMPLIFICATION
- * @returns {Constraint[]} a list of constraints (but not a constraint list) which is the
- * result of 'zipping' the arguments of each function
- */
-export function breakIntoArgPairs(constraint) {
-    var arg_pairs = [];
-    if (constraint.pattern.type == 'a' && constraint.expression.type == 'a') {
-        let pattern_children = constraint.pattern.children;
-        let expression_children = constraint.expression.children;
-        // In getting the case, we checked that the length of children was the same
-        for (let i = 0; i < pattern_children.length; i++) {
-            arg_pairs.push(
-                new Constraint(
-                    pattern_children[i].copy(),
-                    expression_children[i].copy()
-                )
-            );
-        }
-    } else if (constraint.pattern.type == 'bi' && constraint.expression.type == 'bi') {
-        let pattern_vars = constraint.pattern.variables;
-        let expression_vars = constraint.expression.variables;
-        let pattern_body = constraint.pattern.body;
-        let expression_body = constraint.expression.body;
-        // In getting the case, we checked that the length of variables was the same
-        for (let i = 0; i < pattern_vars.length; i++) {
-            arg_pairs.push(
-                new Constraint(
-                    pattern_vars[i].copy(),
-                    expression_vars[i].copy()
-                )
-            );
-        }
-        // Also push the body of each binding to arg pairs
-        arg_pairs.push(
-            new Constraint(
-                pattern_body.copy(),
-                expression_body.copy()
-            )
-        );
-    }
-    return arg_pairs;
 }
 
 // FIXME: DELETE LATER
@@ -552,7 +552,7 @@ export class MatchingChallenge {
         let constraint = new Constraint(pattern, expr);
         if (this.solutions.length > 0) {
             let temp_constraint_list = new ConstraintList(constraint);
-            instantiate(temp_constraint_list, this.challengeList);
+            temp_constraint_list.instantiate(this.challengeList);
             constraint = temp_constraint_list.contents[0];
             // We've altered the state of the challenge list so we no longer know if it's solvable
             this.solvable = undefined;
@@ -609,11 +609,11 @@ export class MatchingChallenge {
     /**
      * Adds a solution, and checks that it passes `satisfiesBindingConstraints`.
      * If it does not, empties the solutions list and sets variables in order to end the search.
-     * @param {Constraint} constriant - either a Constraint, or an OM (meta)variable
+     * @param {Constraint} constraint - either a Constraint, or an OM (meta)variable
      */
-    addSolutionAndCheckBindingConstraints(constriant) {
-        instantiate(new ConstraintList(constriant), this.challengeList);
-        this.solutions[0].add(constriant);
+    addSolutionAndCheckBindingConstraints(constraint) {
+        new ConstraintList(constraint).instantiate(this.challengeList);
+        this.solutions[0].add(constraint);
         if (this.satisfiesBindingConstraints()) {
             return true;
         } else {
@@ -707,8 +707,7 @@ export class MatchingChallenge {
                         }
                     }
                 }
-                var arg_pairs = breakIntoArgPairs(current_constraint);
-                this.challengeList.add(...arg_pairs);
+                this.challengeList.add(...current_constraint.breakIntoArgPairs());
                 this.solve();
                 break;
             case CASE_EFA:
@@ -780,7 +779,7 @@ export class MatchingChallenge {
                                 for (let i = 0; i < sol.length; i++) {
                                     let constraint = sol.contents[i];
                                     constraint.expression.replaceWith(
-                                        applyInstantiation(metavar_sub, constraint.expression)
+                                        metavar_sub.applyInstantiation(constraint.expression)
                                     );
                                     constraint.reEvalCase();
                                 }
@@ -849,8 +848,7 @@ export class MatchingChallenge {
                             }
                         }
                     }
-                    var arg_pairs = breakIntoArgPairs(current_constraint);
-                    this.challengeList.add(...arg_pairs);
+                    this.challengeList.add(...current_constraint.breakIntoArgPairs());
                     break;
                 case CASE_EFA:
                     var expression = current_constraint.expression;
@@ -921,7 +919,7 @@ export class MatchingChallenge {
                                     for (let i = 0; i < sol.length; i++) {
                                         let constraint = sol.contents[i];
                                         constraint.expression.replaceWith(
-                                            applyInstantiation(metavar_sub, constraint.expression)
+                                            metavar_sub.applyInstantiation(constraint.expression)
                                         );
                                         constraint.reEvalCase();
                                     }
@@ -995,8 +993,7 @@ export class MatchingChallenge {
                                 }
                             }
                         }
-                        var arg_pairs = breakIntoArgPairs(current_constraint);
-                        mc.challengeList.add(...arg_pairs);
+                        mc.challengeList.add(...current_constraint.breakIntoArgPairs());
                         break;
                     case CASE_EFA:
                         var expression = current_constraint.expression;
@@ -1069,7 +1066,7 @@ export class MatchingChallenge {
                                         for (let i = 0; i < sol.length; i++) {
                                             let constraint = sol.contents[i];
                                             constraint.expression.replaceWith(
-                                                applyInstantiation(metavar_sub, constraint.expression)
+                                                metavar_sub.applyInstantiation(constraint.expression)
                                             );
                                             constraint.reEvalCase();
                                         }

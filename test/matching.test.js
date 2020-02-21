@@ -1070,7 +1070,7 @@ describe('The MatchingChallenge class (solving)', () => {
                 ['_t', 'y'],
             ],
         )[0];
-        M.instantiate(subs, mc.challengeList);
+        subs.instantiate(mc.challengeList);
         sols = mc.getSolutions();
         expect(sols.length).toBe(0);
 

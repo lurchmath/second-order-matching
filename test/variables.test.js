@@ -36,7 +36,7 @@ describe('Metavariables', () => {
 
 describe('Instantiation', () => {
     test('should correctly apply a single instantiation', () => {
-        // Test the simplest case of insantiating a metavariable
+        // Test the simplest case of instantiating a metavariable
         var sub1 = new M.Constraint(quick('_P'), quick('a'));
         var sub2 = new M.Constraint(quick('_Q'), quick('o.r(b,c)'));
         var p1 = quick('_P');
@@ -44,8 +44,8 @@ describe('Instantiation', () => {
         var p2 = quick('_Q');
         var p2copy = p2.copy();
 
-        expect(M.applyInstantiation(sub1, p1).equals(quick('a'))).toBe(true);
-        expect(M.applyInstantiation(sub2, p2).equals(quick('o.r(b,c)'))).toBe(true);
+        expect(sub1.applyInstantiation(p1).equals(quick('a'))).toBe(true);
+        expect(sub2.applyInstantiation(p2).equals(quick('o.r(b,c)'))).toBe(true);
         // Check that the original patterns were not altered
         expect(p1.equals(p1copy)).toBe(true);
         expect(p2.equals(p2copy)).toBe(true);
@@ -54,36 +54,36 @@ describe('Instantiation', () => {
         var p3 = quick('p');
         var p3copy = p3.copy();
 
-        expect(M.applyInstantiation(sub1, p3).equals(p3copy)).toBe(true);
+        expect(sub1.applyInstantiation(p3).equals(p3copy)).toBe(true);
         expect(p3.equals(p3copy)).toBe(true);
-        expect(M.applyInstantiation(sub2, p1).equals(p1copy)).toBe(true);
-        expect(M.applyInstantiation(sub1, p2).equals(p2copy)).toBe(true);
+        expect(sub2.applyInstantiation(p1).equals(p1copy)).toBe(true);
+        expect(sub1.applyInstantiation(p2).equals(p2copy)).toBe(true);
 
         // Test the case where the pattern is an application
         var sub3 = new M.Constraint(quick('_P'), ef('v1', '1'));
         var p4 = quick('_P_of_a');
         var p4copy = p4.copy();
 
-        expect(M.applyInstantiation(sub3, p4).equals(quick('1'))).toBe(true);
+        expect(sub3.applyInstantiation(p4).equals(quick('1'))).toBe(true);
         expect(p4.equals(p4copy)).toBe(true);
 
         var sub4 = new M.Constraint(quick('_P'), ef('v1', '_H(v1)'));
 
-        expect(M.applyInstantiation(sub4, p4).equals(quick('_H(a)'))).toBe(true);
+        expect(sub4.applyInstantiation(p4).equals(quick('_H(a)'))).toBe(true);
         expect(p4.equals(p4copy)).toBe(true);
 
         // Test the case where the pattern is a binding
         var p6 = quick('for.all[y,gr.th(sq.uare(x),y)]');
         var p6copy = p6.copy();
         var sub6 = new M.Constraint(quick('x'), quick('a'));
-        expect(M.applyInstantiation(sub6, p6).equals(quick('for.all[y,gr.th(sq.uare(a),y)]'))).toBe(true);
+        expect(sub6.applyInstantiation(p6).equals(quick('for.all[y,gr.th(sq.uare(a),y)]'))).toBe(true);
         expect(p6.equals(p6copy)).toBe(true);
 
         // Test the case where replacement can cause variable capture
         var p7 = quick('for.all[x,gr.th(sq.uare(x),c)]');
         var p7copy = p7.copy();
         var sub7 = new M.Constraint(quick('c'), quick('x'));
-        expect(M.applyInstantiation(sub7, p7).equals(quick('for.all[x0,gr.th(sq.uare(x0),x)]'))).toBe(true);
+        expect(sub7.applyInstantiation(p7).equals(quick('for.all[x0,gr.th(sq.uare(x0),x)]'))).toBe(true);
         expect(p7.equals(p7copy)).toBe(true);
     });
 
@@ -96,13 +96,13 @@ describe('Instantiation', () => {
         var CL1 = new M.ConstraintList(con1);
         var SL1 = new M.ConstraintList(sub1, sub2);
 
-        M.instantiate(SL1, CL1);
+        SL1.instantiate(CL1);
         expect(CL1.contents[0].pattern.equals(quick('l.and(a,l.or(b,c))'))).toBe(true);
         expect(CL1.contents[0].pattern.equals(CL1.contents[0].expression)).toBe(true);
         // Check that the order of the subs list does not matter
         var CL1new = new M.ConstraintList(con1);
         SL1 = new M.ConstraintList(sub2, sub1);
-        M.instantiate(SL1,CL1new);
+        SL1.instantiate(CL1new);
         expect(CL1new.equals(CL1)).toBe(true);
 
         // Check the case where the substitutions do not make the pattern exactly match the expression
@@ -116,7 +116,7 @@ describe('Instantiation', () => {
         var CL2 = new M.ConstraintList(con2);
         var SL2 = new M.ConstraintList(sub3, sub4);
 
-        M.instantiate(SL2, CL2);
+        SL2.instantiate(CL2);
         expect(CL2.contents[0].pattern.equals(quick('m.ply(p.lus(3,k),mi.nus(3,k))'))).toBe(true);
         expect(CL2.equals(
             new M.ConstraintList(
@@ -148,17 +148,17 @@ describe('Instantiation', () => {
         var CL3 = new M.ConstraintList(con3);
         var SL3 = new M.ConstraintList(sub5, sub6, sub7);
 
-        M.instantiate(SL3, CL3);
+        SL3.instantiate(CL3);
         expect(CL3.contents[0].pattern.equals(con3.expression)).toBe(true);
         expect(CL3.contents[0].pattern.equals(CL3.contents[0].expression)).toBe(true);
 
         // In this case, the order of substitutions does matter.
         // But, replacing the temporary variables should give the same result.
         var sub8 = sub5.copy();
-        sub8.expression.replaceWith(M.applyInstantiation(sub6, sub8.expression));
-        sub8.expression.replaceWith(M.applyInstantiation(sub7, sub8.expression));
+        sub8.expression.replaceWith(sub6.applyInstantiation(sub8.expression));
+        sub8.expression.replaceWith(sub7.applyInstantiation(sub8.expression));
         var CL4 = new M.ConstraintList(con3)
-        M.instantiate(new M.ConstraintList(sub8), CL4);
+        new M.ConstraintList(sub8).instantiate(CL4);
         expect(CL4.contents[0].pattern.equals(con3.expression)).toBe(true);
         expect(CL4.contents[0].pattern.equals(CL4.contents[0].expression)).toBe(true);
     });

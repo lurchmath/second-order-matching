@@ -489,7 +489,7 @@ describe('Constraint manipulation functions',  () => {
         // Check for applications
         constr = new M.Constraint(quick('and(_P,_Q)'), quick('and(a,or(b,c))'));
         expect(constr.case).toBe(M.CASES.CASE_SIMPLIFICATION);
-        arg_pairs = M.breakIntoArgPairs(constr);
+        arg_pairs = constr.breakIntoArgPairs();
         expect(arg_pairs.length).toBe(3);
         expect(arg_pairs[0].equals(new M.Constraint(quick('and'), quick('and')))).toBe(true);
         expect(arg_pairs[1].equals(new M.Constraint(quick('_P'), quick('a')))).toBe(true);
@@ -499,7 +499,7 @@ describe('Constraint manipulation functions',  () => {
             quick('times(plus(_X,_Y),minus(_X,_Y))'),
             quick('times(plus(3,k),minus(3,p))')
         );
-        arg_pairs = M.breakIntoArgPairs(constr);
+        arg_pairs = constr.breakIntoArgPairs();
         expect(arg_pairs.length).toBe(3);
 
         // Check for bindings
@@ -507,7 +507,7 @@ describe('Constraint manipulation functions',  () => {
             quick('for.all[_x,_P]'),
             quick('for.all[r,plus(0,1)]')
         );
-        arg_pairs = M.breakIntoArgPairs(constr);
+        arg_pairs = constr.breakIntoArgPairs();
         expect(arg_pairs.length).toBe(2);
         expect(arg_pairs[0].equals(new M.Constraint(quick('_x'), quick('r')))).toBe(true);
         expect(arg_pairs[1].equals(new M.Constraint(quick('_P'), quick('plus(0,1)')))).toBe(true);
@@ -516,7 +516,7 @@ describe('Constraint manipulation functions',  () => {
             quick('for.all[_x,_y,_z,_P]'),
             quick('for.all[r,s,t,plus(0,1)]')
         );
-        arg_pairs = M.breakIntoArgPairs(constr);
+        arg_pairs = constr.breakIntoArgPairs();
         expect(arg_pairs.length).toBe(4);
         expect(arg_pairs[0].equals(new M.Constraint(quick('_x'), quick('r')))).toBe(true);
         expect(arg_pairs[1].equals(new M.Constraint(quick('_y'), quick('s')))).toBe(true);
