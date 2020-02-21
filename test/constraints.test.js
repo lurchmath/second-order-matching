@@ -35,46 +35,46 @@ describe('The Constraint class', () => {
 
         // Test standard cases
         c = new M.Constraint(quick('a'), quick('a'));
-        expect(c.case).toBe(M.CASES.CASE_IDENTITY);
+        expect(c.case).toBe(M.CASES.IDENTITY);
         c = new M.Constraint(quick('neq(0,1)'), quick('neq(0,1)'));
-        expect(c.case).toBe(M.CASES.CASE_IDENTITY);
+        expect(c.case).toBe(M.CASES.IDENTITY);
 
         c = new M.Constraint(quick('_P'), quick('a'));
-        expect(c.case).toBe(M.CASES.CASE_BINDING);
+        expect(c.case).toBe(M.CASES.BINDING);
 
         c = new M.Constraint(quick('pl.us(X,Y)'), quick('pl.us(3,k)'));
-        expect(c.case).toBe(M.CASES.CASE_SIMPLIFICATION);
+        expect(c.case).toBe(M.CASES.SIMPLIFICATION);
         c = new M.Constraint(quick('neq(0,1)'), quick('neq(0,2)'));
-        expect(c.case).toBe(M.CASES.CASE_SIMPLIFICATION);
+        expect(c.case).toBe(M.CASES.SIMPLIFICATION);
         c = new M.Constraint(quick('for.all[_X,_X]'), quick('for.all[y,y]'));
-        expect(c.case).toBe(M.CASES.CASE_SIMPLIFICATION);
+        expect(c.case).toBe(M.CASES.SIMPLIFICATION);
 
         c = new M.Constraint(quick('_P_of_1'), quick('a'));
-        expect(c.case).toBe(M.CASES.CASE_EFA);
+        expect(c.case).toBe(M.CASES.EFA);
 
         c = new M.Constraint(quick('k'), quick('p'));
-        expect(c.case).toBe(M.CASES.CASE_FAILURE);
+        expect(c.case).toBe(M.CASES.FAILURE);
         c = new M.Constraint(quick('for.all[_X,_X]'), quick('there.exists[y,y]'));
-        expect(c.case).toBe(M.CASES.CASE_FAILURE);
+        expect(c.case).toBe(M.CASES.FAILURE);
 
         // Test bindings
         c = new M.Constraint(
             quick('for.all[_x,_P]'),
             quick('for.all[r,greater.than(plus(sq(r),1),0)]')
         );
-        expect(c.case).toBe(M.CASES.CASE_SIMPLIFICATION);
+        expect(c.case).toBe(M.CASES.SIMPLIFICATION);
 
         c = new M.Constraint(
             quick('for.all[_x,_y,_P]'),
             quick('for.all[r,s,greater.than(plus(sq(r),1),0)]')
         );
-        expect(c.case).toBe(M.CASES.CASE_SIMPLIFICATION);
+        expect(c.case).toBe(M.CASES.SIMPLIFICATION);
 
         c = new M.Constraint(
             quick('for.all[_x,_y,_P]'),
             quick('for.all[r,greater.than(plus(sq(r),1),0)]')
         );
-        expect(c.case).toBe(M.CASES.CASE_FAILURE);
+        expect(c.case).toBe(M.CASES.FAILURE);
     });
 
     test('should make copies correctly', () => {
@@ -488,7 +488,7 @@ describe('Constraint manipulation functions',  () => {
 
         // Check for applications
         constr = new M.Constraint(quick('and(_P,_Q)'), quick('and(a,or(b,c))'));
-        expect(constr.case).toBe(M.CASES.CASE_SIMPLIFICATION);
+        expect(constr.case).toBe(M.CASES.SIMPLIFICATION);
         arg_pairs = constr.breakIntoArgPairs();
         expect(arg_pairs.length).toBe(3);
         expect(arg_pairs[0].equals(new M.Constraint(quick('and'), quick('and')))).toBe(true);
