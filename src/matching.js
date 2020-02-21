@@ -30,20 +30,18 @@ export {
 
 // Used only for debugging.  Commented out for production.
 //
-// function DEBUG_PRINT_CONSTRAINT(c) {
-//     console.log(
-//         '( ' + c.pattern.simpleEncode() + ', ' + c.expression.simpleEncode() + ' ):' + c.case
-//     );
+// function DEBUG_CONSTRAINT(c) {
+//     return '( ' + c.pattern.simpleEncode() + ', ' + c.expression.simpleEncode() + ' ):' + c.case;
 // }
-// function DEBUG_PRINT_CONSTRAINTLIST(cl) {
-//     console.log(
-//         '{ ' +
+// function DEBUG_CONSTRAINTLIST(cl) {
+//     return '{ ' +
 //             cl.contents.map((c) =>
 //                 '( ' + c.pattern.simpleEncode() + ', ' + c.expression.simpleEncode() + ' ):' + c.case
 //             ).join(', ')
 //         + ' }'
-//     )
 // }
+// const DEBUG_ON = false//true
+// const DEBUG = ( ...all ) => { if ( DEBUG_ON ) console.log( ...all ) }
 
 /**
  * Represents a matching challenge.
@@ -109,11 +107,10 @@ export class MatchingChallenge {
      * @returns a deep copy of the matching challenge, including solutions
      */
     clone() {
-        var challengeList_copy = this.challengeList.copy();
-        var solutions_copy = this.solutions.map(sol => sol.copy());
         var result = new MatchingChallenge();
-        result.challengeList = challengeList_copy;
-        result.solutions = solutions_copy;
+        result.challengeList = this.challengeList.copy();
+        result.solutions = this.solutions === undefined ? undefined :
+            this.solutions.map(sol => sol.copy());
         result.solvable = this.solvable;
         return result;
     }
@@ -166,7 +163,32 @@ export class MatchingChallenge {
      * This function will call `getSolutions` in that case.
      */
     isSolvable() {
-        return this.getSolutions().length > 0;
+        if ( this.solvable === undefined ) this.getOneSolution()
+        return this.solvable
+    }
+
+    /**
+     * Computes just one solution to this matching problem and returns it, or
+     * returns undefined if there are none.  Uses the cache if possible.
+     * @returns The first solution or `undefined`.
+     *
+     * State when this is done:
+     * `this.solvable` will be true or false
+     * but `this.solutions` will be undefined, to indicate we have not
+     * computed all of them.
+     */
+    getOneSolution() {
+        if ( this.solvable === false ) return undefined
+        if ( this.solvable === true && this.solutions !== undefined
+          && this.solutions.length > 0 )
+            return this.solutions[0]
+        // then, to ensure that later this class doesn't get confused and think
+        // that we've computed all solutions just because we've computed
+        // this.solvable, we set it to be undefined:
+        this.solutions = undefined
+        const first = this.solutionsIterator().next().value
+        this.solvable = first !== undefined
+        return first
     }
 
     /**
@@ -178,191 +200,64 @@ export class MatchingChallenge {
     }
 
     /**
-     * If the matching challenge is unsolved, this finds any solutions.
+     * If the matching challenge is unsolved, this finds all solutions,
+     * then returns them.  It will guarantee that `this.solvable` is true/false
+     * and that `this.solutions` is fully populated with all solutions.
      * @returns `this.solutions`
      */
     getSolutions() {
-        if (this.solvable === undefined) {
-            this.solve();
+        if (this.solvable === undefined || this.solutions === undefined) {
+            // try {
+            let solutions = [ ];
+            for ( let solution of this.solutionsIterator() )
+                solutions.push( solution )
+            this.solutions = solutions
+            this.solvable = solutions.length > 0;
+            // } catch ( e ) { DEBUG( 'ERROR! -->', e ) }
         }
+        // DEBUG( `LOOKUP (${this.solutions.length} SOL):\n`,
+        //     this.solutions.map( DEBUG_CONSTRAINTLIST ).join( '\n' ) )
         return this.solutions;
     }
 
-    /**
-     * Called by `getSolutions` to solve matching challenge.
-     * Main implementation of the overall algorithm described in the corresponding paper.
-     */
-    solveRecursive() {
-        // If this is a top-level call, create a brand-new solution we will evolve with recursion.
-        if (this.solutions.length == 0) {
-            this.solutions.push( new ConstraintList() );
-        }
-        // Success case occurs when the challenge list is empty
-        if (this.challengeList.length == 0) {
-            this.solvable = true;
-            return;
-        }
-        // Get the constraint with the 'best' case first
-        var current_constraint = this.challengeList.getBestCase();
-        // For whichever case the current constraint has, do action described in paper
-        switch (current_constraint.case) {
-            case CASES.FAILURE:
-                this.solutions = [ ];
-                this.solvable = false;
-                break;
-            case CASES.IDENTITY:
-                this.challengeList.remove(current_constraint);
-                this.solve();
-                break;
-            case CASES.BINDING:
-                this.challengeList.remove(current_constraint);
-                // Apply metavariable substitution to constraints
-                if(!this.addSolutionAndCheckBindingConstraints(current_constraint)) break;
-                this.solve();
-                break;
-            case CASES.SIMPLIFICATION:
-                this.challengeList.remove(current_constraint);
-                // Do any necessary alpha conversion before breaking into argument paits
-                if (current_constraint.pattern.type == 'bi' && current_constraint.expression.type == 'bi') {
-                    let pattern_vars = current_constraint.pattern.variables;
-                    let expression_vars = current_constraint.expression.variables;
-                    // Get case checks number of arguments
-                    for (let i = 0; i < pattern_vars.length; i++) {
-                        let variable = pattern_vars[i];
-                        if (!isMetavariable(variable)) {
-                            var new_var = this.challengeList.nextNewVariable();
-                            current_constraint.expression = alphaConvert(
-                                current_constraint.expression,
-                                expression_vars[i],
-                                new_var
-                            );
-                            current_constraint.pattern = alphaConvert(
-                                current_constraint.pattern,
-                                pattern_vars[i],
-                                new_var
-                            );
-                        }
-                    }
-                }
-                this.challengeList.add(...current_constraint.breakIntoArgPairs());
-                this.solve();
-                break;
-            case CASES.EFA:
-                var expression = current_constraint.expression;
-                // Subcase A, the function may be a constant function
-                var solutions_A = [];
-                if (expression.type != 'a' && expression.type != 'bi') {
-                    let temp_mc_A = this.clone();
-                    let const_sub = new Constraint(
-                        current_constraint.pattern.children[1],
-                        makeConstantExpression(temp_mc_A.challengeList.nextNewVariable(), current_constraint.expression)
-                    );
-                    if(!temp_mc_A.addSolutionAndCheckBindingConstraints(const_sub)) break;
-                    solutions_A = temp_mc_A.getSolutions();
-                }
-
-                // Subcase B, the function may be a projection function
-                var solutions_B = [];
-                var head = current_constraint.pattern.children[1];
-                for (let i = 2; i < current_constraint.pattern.children.length; i++) {
-                    let temp_mc_B = this.clone();
-                    let new_vars = current_constraint.pattern.children.slice(2).map(()=>temp_mc_B.challengeList.nextNewVariable());
-                    let proj_sub = new Constraint(
-                        head,
-                        makeProjectionExpression(new_vars, new_vars[i - 2])
-                    );
-                    if (!temp_mc_B.addSolutionAndCheckBindingConstraints(proj_sub)) break;
-                    solutions_B = solutions_B.concat( temp_mc_B.getSolutions() );
-                }
-
-                // Subcase C, the function may be more complex
-                var solutions_C = [ ];
-                if (expression.type == 'a' || expression.type == 'bi') {
-                    let temp_mc_C = this.clone();
-
-                    let new_vars = current_constraint.pattern.children.slice(2).map(()=>temp_mc_C.challengeList.nextNewVariable());
-
-                    // Get the temporary metavariables
-                    let temp_metavars = [];
-                    if (expression.type == 'a') {
-                        temp_metavars = expression.children.map(() => {
-                            let new_var = temp_mc_C.challengeList.nextNewVariable();
-                            setMetavariable(new_var);
-                            return new_var;
-                        });
-                    } else {
-                        let new_var = temp_mc_C.challengeList.nextNewVariable();
-                        setMetavariable(new_var);
-                        temp_metavars.push(new_var);
-                    }
-
-                    // Get the imitation expression
-                    let imitation_expr = makeImitationExpression(new_vars, expression, temp_metavars);
-
-                    let imitation_sub = new Constraint(
-                            current_constraint.pattern.children[1],
-                            imitation_expr
-                    );
-                    if(!temp_mc_C.addSolutionAndCheckBindingConstraints(imitation_sub)) break;
-                    solutions_C = temp_mc_C.getSolutions();
-
-                    // Remove any temporary metavariables from the solutions, after making substitutions
-                    solutions_C.forEach( sol => {
-                        for (let i = 0; i < temp_metavars.length; i++) {
-                            let metavar = temp_metavars[i];
-                            let metavar_sub = sol.firstSatisfying(c => c.pattern.equals(metavar));
-                            if (metavar_sub != null) {
-                                sol.remove(metavar_sub);
-                                for (let i = 0; i < sol.length; i++) {
-                                    let constraint = sol.contents[i];
-                                    constraint.expression.replaceWith(
-                                        metavar_sub.applyInstantiation(constraint.expression)
-                                    );
-                                    constraint.reEvalCase();
-                                }
-                            }
-                        }
-                    } );
-
-                    // After making temporary metavar substitutions, do a final check for satisfy binding constraints
-                    solutions_C = solutions_C.filter(sol => this.solutionSatisfiesBindingConstraints(sol));
-                }
-
-                // After all subcases are handled, return and record results
-                this.solutions = solutions_A.concat( solutions_B, solutions_C );
-                this.solvable = this.solutions.length > 0;
-                return;
-        }
-    }
-
-    /**
-     * A version of solve that uses more iteration than the fully recursive verision.
-     * It is therefore slightly faster.
-     */
-    solve() {
-        // If this is a top-level call, create a brand-new solution we will evolve with recursion.
-        if (this.solutions.length == 0) {
-            this.solutions.push(new ConstraintList());
-        }
-        while (this.challengeList.length != 0) {
+    solutionsIterator(indent='') {
+        const tab = '\t'
+        let mc = this;
+        // if needed, create a brand-new solution we will evolve with recursion
+        if ( mc.solutions === undefined || mc.solutions.length == 0 )
+            mc.solutions = [ new ConstraintList() ];
+        function* recur () {
+            // DEBUG( indent, DEBUG_CONSTRAINTLIST( mc.challengeList ),
+            //     ' --> ', DEBUG_CONSTRAINTLIST( mc.solutions[0] ) )
+            // Success case occurs when the challenge list is empty
+            if (mc.challengeList.length == 0) {
+                // DEBUG( indent+'SUCCESS' )
+                yield mc.solutions[0]
+                return
+            }
             // Get the constraint with the 'best' case first
-            var current_constraint = this.challengeList.getBestCase();
-
+            var current_constraint = mc.challengeList.getBestCase();
+            // For whichever case the current constraint has, do action described in paper
             switch (current_constraint.case) {
                 case CASES.FAILURE:
-                    this.solutions = [];
-                    this.solvable = false;
-                    return;
+                    // DEBUG( indent+'FAILURE' )
+                    mc.solutions = [ ];
+                    break;
                 case CASES.IDENTITY:
-                    this.challengeList.remove(current_constraint);
+                    // DEBUG( indent+'IDENTITY' )
+                    mc.challengeList.remove(current_constraint);
+                    yield* recur()
                     break;
                 case CASES.BINDING:
-                    this.challengeList.remove(current_constraint);
+                    // DEBUG( indent+'BINDING' )
+                    mc.challengeList.remove(current_constraint);
                     // Apply metavariable substitution to constraints
-                    if (!this.addSolutionAndCheckBindingConstraints(current_constraint)) return;
+                    if(!mc.addSolutionAndCheckBindingConstraints(current_constraint)) break;
+                    yield* recur()
                     break;
                 case CASES.SIMPLIFICATION:
-                    this.challengeList.remove(current_constraint);
+                    // DEBUG( indent+'SIMPLIFICATION' )
+                    mc.challengeList.remove(current_constraint);
                     // Do any necessary alpha conversion before breaking into argument paits
                     if (current_constraint.pattern.type == 'bi' && current_constraint.expression.type == 'bi') {
                         let pattern_vars = current_constraint.pattern.variables;
@@ -371,7 +266,7 @@ export class MatchingChallenge {
                         for (let i = 0; i < pattern_vars.length; i++) {
                             let variable = pattern_vars[i];
                             if (!isMetavariable(variable)) {
-                                var new_var = this.challengeList.nextNewVariable();
+                                var new_var = mc.challengeList.nextNewVariable();
                                 current_constraint.expression = alphaConvert(
                                     current_constraint.expression,
                                     expression_vars[i],
@@ -385,42 +280,51 @@ export class MatchingChallenge {
                             }
                         }
                     }
-                    this.challengeList.add(...current_constraint.breakIntoArgPairs());
+                    mc.challengeList.add(...current_constraint.breakIntoArgPairs());
+                    yield* recur()
                     break;
                 case CASES.EFA:
+                    // DEBUG( indent+'EFA' )
                     var expression = current_constraint.expression;
                     // Subcase A, the function may be a constant function
-                    var solutions_A = [];
-                    if (expression.type != 'a' && expression.type != 'bi') {
-                        let temp_mc_A = this.clone();
-                        let const_sub = new Constraint(
-                            current_constraint.pattern.children[1],
-                            makeConstantExpression(temp_mc_A.challengeList.nextNewVariable(), current_constraint.expression)
-                        );
-                        if (!temp_mc_A.addSolutionAndCheckBindingConstraints(const_sub)) return;
-                        solutions_A = temp_mc_A.getSolutions();
+                    // DEBUG( indent+'EFA-1: constant function' )
+                    let temp_mc_A = mc.clone();
+                    let const_sub = new Constraint(
+                        current_constraint.pattern.children[1],
+                        makeConstantExpression(temp_mc_A.challengeList.nextNewVariable(), current_constraint.expression)
+                    );
+                    // DEBUG( indent+'maybe add:', DEBUG_CONSTRAINT( const_sub ) )
+                    if (temp_mc_A.addSolutionAndCheckBindingConstraints(const_sub)) {
+                        for ( let sol of temp_mc_A.solutionsIterator(indent+tab) ) {
+                            // DEBUG( indent+'EFA-1 result:', DEBUG_CONSTRAINTLIST( sol ) )
+                            yield sol
+                        }
                     }
 
                     // Subcase B, the function may be a projection function
-                    var solutions_B = [];
+                    // DEBUG( indent+'EFA-2: projection function' )
                     var head = current_constraint.pattern.children[1];
                     for (let i = 2; i < current_constraint.pattern.children.length; i++) {
-                        let temp_mc_B = this.clone();
-                        let new_vars = current_constraint.pattern.children.slice(2).map(() => temp_mc_B.challengeList.nextNewVariable());
+                        let temp_mc_B = mc.clone();
+                        let new_vars = current_constraint.pattern.children.slice(2).map(()=>temp_mc_B.challengeList.nextNewVariable());
                         let proj_sub = new Constraint(
                             head,
                             makeProjectionExpression(new_vars, new_vars[i - 2])
                         );
-                        if (!temp_mc_B.addSolutionAndCheckBindingConstraints(proj_sub)) return;
-                        solutions_B = solutions_B.concat(temp_mc_B.getSolutions());
+                        // DEBUG( indent+'maybe add:', DEBUG_CONSTRAINT( proj_sub ) )
+                        if (!temp_mc_B.addSolutionAndCheckBindingConstraints(proj_sub)) break;
+                        for ( let sol of temp_mc_B.solutionsIterator(indent+tab) ) {
+                            // DEBUG( indent+'EFA-2 result:', DEBUG_CONSTRAINTLIST( sol ) )
+                            yield sol
+                        }
                     }
 
                     // Subcase C, the function may be more complex
-                    var solutions_C = [];
+                    // DEBUG( indent+'EFA-3: imitation expression' )
                     if (expression.type == 'a' || expression.type == 'bi') {
-                        let temp_mc_C = this.clone();
+                        let temp_mc_C = mc.clone();
 
-                        let new_vars = current_constraint.pattern.children.slice(2).map(() => temp_mc_C.challengeList.nextNewVariable());
+                        let new_vars = current_constraint.pattern.children.slice(2).map(()=>temp_mc_C.challengeList.nextNewVariable());
 
                         // Get the temporary metavariables
                         let temp_metavars = [];
@@ -440,14 +344,14 @@ export class MatchingChallenge {
                         let imitation_expr = makeImitationExpression(new_vars, expression, temp_metavars);
 
                         let imitation_sub = new Constraint(
-                            current_constraint.pattern.children[1],
-                            imitation_expr
+                                current_constraint.pattern.children[1],
+                                imitation_expr
                         );
-                        if (!temp_mc_C.addSolutionAndCheckBindingConstraints(imitation_sub)) return;
-                        solutions_C = temp_mc_C.getSolutions();
+                        // DEBUG( indent+'maybe add:', DEBUG_CONSTRAINT( imitation_expr ) )
+                        if(!temp_mc_C.addSolutionAndCheckBindingConstraints(imitation_sub)) break;
 
                         // Remove any temporary metavariables from the solutions, after making substitutions
-                        solutions_C.forEach(sol => {
+                        for ( let sol of temp_mc_C.solutionsIterator(indent+tab) ) {
                             for (let i = 0; i < temp_metavars.length; i++) {
                                 let metavar = temp_metavars[i];
                                 let metavar_sub = sol.firstSatisfying(c => c.pattern.equals(metavar));
@@ -462,176 +366,29 @@ export class MatchingChallenge {
                                     }
                                 }
                             }
-                        });
-
-                        // After making temporary metavar substitutions, do a final check for satisfy binding constraints
-                        solutions_C = solutions_C.filter(sol => this.solutionSatisfiesBindingConstraints(sol));
+                            if ( mc.solutionSatisfiesBindingConstraints( sol ) ) {
+                                // DEBUG( indent+'EFA-3 result:', DEBUG_CONSTRAINTLIST( sol ) )
+                                yield sol
+                            } else {
+                                // DEBUG( indent+'EFA-3 ailed-binding:', DEBUG_CONSTRAINTLIST( sol ) )
+                            }
+                        }
                     }
-
-                    // After all subcases are handled, return and record results
-                    this.solutions = solutions_A.concat(solutions_B, solutions_C);
-                    this.solvable = this.solutions.length > 0;
-                    return;
             }
         }
-        // Success case occurs when the challenge list is empty
-        this.solvable = true;
-        return;
-    }
-
-    /**
-     * A generator function version of solve
-     */
-    solveGenerator() {
-        var mc = this;
-        return (function* solveIterator() {
-            // If this is a top-level call, create a brand-new solution we will evolve with recursion.
-            if (mc.solutions.length == 0) {
-                mc.solutions.push(new ConstraintList());
-            }
-            while (mc.challengeList.length != 0) {
-                // Get the constraint with the 'best' case first
-                var current_constraint = mc.challengeList.getBestCase();
-
-                switch (current_constraint.case) {
-                    case CASES.FAILURE:
-                        mc.solutions = [];
-                        mc.solvable = false;
-                        return;
-                    case CASES.IDENTITY:
-                        mc.challengeList.remove(current_constraint);
-                        break;
-                    case CASES.BINDING:
-                        mc.challengeList.remove(current_constraint);
-                        // Apply metavariable substitution to constraints
-                        if (!mc.addSolutionAndCheckBindingConstraints(current_constraint)) return;
-                        break;
-                    case CASES.SIMPLIFICATION:
-                        mc.challengeList.remove(current_constraint);
-                        // Do any necessary alpha conversion before breaking into argument paits
-                        if (current_constraint.pattern.type == 'bi' && current_constraint.expression.type == 'bi') {
-                            let pattern_vars = current_constraint.pattern.variables;
-                            let expression_vars = current_constraint.expression.variables;
-                            // Get case checks number of arguments
-                            for (let i = 0; i < pattern_vars.length; i++) {
-                                let variable = pattern_vars[i];
-                                if (!isMetavariable(variable)) {
-                                    var new_var = mc.challengeList.nextNewVariable();
-                                    current_constraint.expression = alphaConvert(
-                                        current_constraint.expression,
-                                        expression_vars[i],
-                                        new_var
-                                    );
-                                    current_constraint.pattern = alphaConvert(
-                                        current_constraint.pattern,
-                                        pattern_vars[i],
-                                        new_var
-                                    );
-                                }
-                            }
-                        }
-                        mc.challengeList.add(...current_constraint.breakIntoArgPairs());
-                        break;
-                    case CASES.EFA:
-                        var expression = current_constraint.expression;
-                        // Subcase A, the function may be a constant function
-                        var solutions_A = [];
-                        if (expression.type != 'a' && expression.type != 'bi') {
-                            let temp_mc_A = mc.clone();
-                            let const_sub = new Constraint(
-                                current_constraint.pattern.children[1],
-                                makeConstantExpression(temp_mc_A.challengeList.nextNewVariable(), current_constraint.expression)
-                            );
-                            if (!temp_mc_A.addSolutionAndCheckBindingConstraints(const_sub)) return;
-                            // solutions_A = temp_mc_A.getSolutions();
-                            yield* temp_mc_A.solveGenerator();
-                        }
-
-                        // Subcase B, the function may be a projection function
-                        var solutions_B = [];
-                        var head = current_constraint.pattern.children[1];
-                        for (let i = 2; i < current_constraint.pattern.children.length; i++) {
-                            let temp_mc_B = mc.clone();
-                            let new_vars = current_constraint.pattern.children.slice(2).map(() => temp_mc_B.challengeList.nextNewVariable());
-                            let proj_sub = new Constraint(
-                                head,
-                                makeProjectionExpression(new_vars, new_vars[i - 2])
-                            );
-                            if (!temp_mc_B.addSolutionAndCheckBindingConstraints(proj_sub)) return;
-                            // solutions_B = solutions_B.concat(temp_mc_B.getSolutions());
-                            yield* temp_mc_B.solveGenerator();
-                        }
-
-                        // Subcase C, the function may be more complex
-                        var solutions_C = [];
-                        if (expression.type == 'a' || expression.type == 'bi') {
-                            let temp_mc_C = mc.clone();
-
-                            let new_vars = current_constraint.pattern.children.slice(2).map(() => temp_mc_C.challengeList.nextNewVariable());
-
-                            // Get the temporary metavariables
-                            let temp_metavars = [];
-                            if (expression.type == 'a') {
-                                temp_metavars = expression.children.map(() => {
-                                    let new_var = temp_mc_C.challengeList.nextNewVariable();
-                                    setMetavariable(new_var);
-                                    return new_var;
-                                });
-                            } else {
-                                let new_var = temp_mc_C.challengeList.nextNewVariable();
-                                setMetavariable(new_var);
-                                temp_metavars.push(new_var);
-                            }
-
-                            // Get the imitation expression
-                            let imitation_expr = makeImitationExpression(new_vars, expression, temp_metavars);
-
-                            let imitation_sub = new Constraint(
-                                current_constraint.pattern.children[1],
-                                imitation_expr
-                            );
-                            if (!temp_mc_C.addSolutionAndCheckBindingConstraints(imitation_sub)) return;
-                            solutions_C = temp_mc_C.getSolutions();
-
-                            // Remove any temporary metavariables from the solutions, after making substitutions
-                            solutions_C.forEach(sol => {
-                                for (let i = 0; i < temp_metavars.length; i++) {
-                                    let metavar = temp_metavars[i];
-                                    let metavar_sub = sol.firstSatisfying(c => c.pattern.equals(metavar));
-                                    if (metavar_sub != null) {
-                                        sol.remove(metavar_sub);
-                                        for (let i = 0; i < sol.length; i++) {
-                                            let constraint = sol.contents[i];
-                                            constraint.expression.replaceWith(
-                                                metavar_sub.applyInstantiation(constraint.expression)
-                                            );
-                                            constraint.reEvalCase();
-                                        }
-                                    }
-                                }
-                            });
-
-                            // After making temporary metavar substitutions, do a final check for satisfy binding constraints
-                            solutions_C = solutions_C.filter(sol => mc.solutionSatisfiesBindingConstraints(sol));
-                        }
-
-                        // After all subcases are handled, return and record results
-                        mc.solutions = solutions_A.concat(solutions_B, solutions_C);
-                        mc.solvable = mc.solutions.length > 0;
-                        for (let i = 0; i < mc.solutions.length; i++) {
-                            let sol = mc.solutions[i];
-                            yield sol;
-                        }
-                        return;
+        function uniqueIterator ( nonUniqueIterator, comparator ) {
+            const seenSoFar = [ ]
+            function* result () {
+                for ( const element of nonUniqueIterator ) {
+                    if ( !seenSoFar.some( x => comparator( x, element ) ) ) {
+                        seenSoFar.push( element )
+                        yield element
+                    }
                 }
             }
-            // Success case occurs when the challenge list is empty
-            mc.solvable = true;
-            for (let i = 0; i < mc.solutions.length; i++) {
-                let sol = mc.solutions[i];
-                yield sol;
-            }
-            return;
-        })();
+            return result()
+        }
+        return uniqueIterator( recur(), ( sol1, sol2 ) => sol1.equals( sol2 ) )
     }
+
 }
