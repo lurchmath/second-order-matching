@@ -220,7 +220,7 @@ export class MatchingChallenge {
         return this.solutions;
     }
 
-    solutionsIterator(indent='') {
+    solutionsIterator(/*indent=''*/) {
         const tab = '\t'
         let mc = this;
         // if needed, create a brand-new solution we will evolve with recursion
@@ -295,7 +295,7 @@ export class MatchingChallenge {
                     );
                     // DEBUG( indent+'maybe add:', DEBUG_CONSTRAINT( const_sub ) )
                     if (temp_mc_A.addSolutionAndCheckBindingConstraints(const_sub)) {
-                        for ( let sol of temp_mc_A.solutionsIterator(indent+tab) ) {
+                        for ( let sol of temp_mc_A.solutionsIterator(/*indent+tab*/) ) {
                             // DEBUG( indent+'EFA-1 result:', DEBUG_CONSTRAINTLIST( sol ) )
                             yield sol
                         }
@@ -313,7 +313,7 @@ export class MatchingChallenge {
                         );
                         // DEBUG( indent+'maybe add:', DEBUG_CONSTRAINT( proj_sub ) )
                         if (!temp_mc_B.addSolutionAndCheckBindingConstraints(proj_sub)) break;
-                        for ( let sol of temp_mc_B.solutionsIterator(indent+tab) ) {
+                        for ( let sol of temp_mc_B.solutionsIterator(/*indent+tab*/) ) {
                             // DEBUG( indent+'EFA-2 result:', DEBUG_CONSTRAINTLIST( sol ) )
                             yield sol
                         }
@@ -351,7 +351,7 @@ export class MatchingChallenge {
                         if(!temp_mc_C.addSolutionAndCheckBindingConstraints(imitation_sub)) break;
 
                         // Remove any temporary metavariables from the solutions, after making substitutions
-                        for ( let sol of temp_mc_C.solutionsIterator(indent+tab) ) {
+                        for ( let sol of temp_mc_C.solutionsIterator(/*indent+tab*/) ) {
                             for (let i = 0; i < temp_metavars.length; i++) {
                                 let metavar = temp_metavars[i];
                                 let metavar_sub = sol.firstSatisfying(c => c.pattern.equals(metavar));
