@@ -15,7 +15,7 @@
     "jsdoc": "^3.6.3"
   },
   "scripts": {
-    "test": "jest test/*.test.js",
+    "test": "jest --verbose",
     "docs": "jsdoc src/*.js -d ./docs"
   },
   "jest": {
