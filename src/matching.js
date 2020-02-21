@@ -221,7 +221,7 @@ export class MatchingChallenge {
     }
 
     solutionsIterator(/*indent=''*/) {
-        const tab = '\t'
+        // const tab = '\t'
         let mc = this;
         // if needed, create a brand-new solution we will evolve with recursion
         if ( mc.solutions === undefined || mc.solutions.length == 0 )
