@@ -28,7 +28,8 @@ export {
     CASES, Constraint, ConstraintList
 };
 
-// FIXME: DELETE LATER
+// Used only for debugging.  Commented out for production.
+//
 // function DEBUG_PRINT_CONSTRAINT(c) {
 //     console.log(
 //         '( ' + c.pattern.simpleEncode() + ', ' + c.expression.simpleEncode() + ' ):' + c.case
@@ -118,13 +119,17 @@ export class MatchingChallenge {
     }
 
     /**
-     * Tests whether a currently-in-progress solution satisfies all
+     * Tests whether the first currently-in-progress solution satisfies all
      * the challenge's already-computed binding constraints.
      */
     satisfiesBindingConstraints() {
         return this.solutionSatisfiesBindingConstraints(this.solutions[0]);
     }
 
+    /**
+     * Tests whether a solution satisfies all
+     * the challenge's already-computed binding constraints.
+     */
     solutionSatisfiesBindingConstraints(solution) {
         return (
             this.challengeList.bindingConstraints.every(binding_constraint => {
