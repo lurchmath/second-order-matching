@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "src/second-order-matching.js",
-  "dependencies": {
-    "openmath-js": "^1.2.3"
-  },
+  "dependencies": {},
   "type": "module",
   "devDependencies": {
     "eslint": "^5.16.0",

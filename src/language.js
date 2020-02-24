@@ -10,8 +10,8 @@
 
 // TODO: handle the case of this module running in the browser
 // Import openmath-js for testing purposes
-import * as OpenMath from 'openmath-js';
-export const { OM } = OpenMath["default"];
+import { OM } from './openmath.js';
+export { OM };
 
 ////////////////////////////////////////////////////////////////////////////////
 // * The following are functions and constants related to metavariables.
