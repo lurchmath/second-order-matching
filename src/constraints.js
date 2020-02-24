@@ -81,7 +81,7 @@ export class Constraint {
      */
     constructor(pattern, expression) {
         if (!(pattern instanceof OM) || !(expression instanceof OM)) {
-            throw 'Both arguments must be instances of OMNode';
+            throw Error( 'Both arguments must be instances of OMNode' );
         }
         this.pattern = pattern;
         this.expression = expression;
