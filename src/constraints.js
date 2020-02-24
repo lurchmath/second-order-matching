@@ -18,7 +18,7 @@ import {
     alphaConvert, alphaEquivalent, betaReduce,
     checkVariable, getVariablesIn,
     makeConstantExpression, makeProjectionExpression, makeImitationExpression
-} from './language';
+} from './language.js';
 export {
     OM, isMetavariable, setMetavariable, clearMetavariable,
     isGeneralExpressionFunction, makeGeneralExpressionFunction,

@@ -11,10 +11,9 @@ import {
     applyGeneralExpressionFunctionApplication,
     getNewVariableRelativeTo, replaceWithoutCapture,
     alphaConvert, alphaEquivalent, betaReduce,
-    checkVariable, getVariablesIn,
     makeConstantExpression, makeProjectionExpression, makeImitationExpression,
     CASES, Constraint, ConstraintList
-} from './constraints';
+} from './constraints.js';
 export {
     OM, isMetavariable, setMetavariable, clearMetavariable,
     isGeneralExpressionFunction, makeGeneralExpressionFunction,
