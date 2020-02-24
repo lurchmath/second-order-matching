@@ -1,9 +1,9 @@
 
 # To-dos
 
-- Ensure that this package can be loaded as an ES6 module in the Node, the
-  browser, and a WebWorker. Currently, it works as an ES6 module in Node, but
-  has not been tested in the other two environments. This may require upgrading
+- Ensure that this package can be loaded as an ES6 module in the browser
+  and a WebWorker. Currently, it works as an ES6 module in Node, but
+  has not been tested in those other two environments. This may require upgrading
   the OpenMath module to ES6 rather than CommonJS.
 - Since some ES6 features are being used to implement iterators, the whole repo
   now assumes ES6.  Consequently, a lot of code that was written in ES5 style
@@ -11,8 +11,6 @@
   index-based counters, etc.).
 - Proofread all documentation strings to see if the docs we're generating with
   JSDoc look good.
-- Update the documentation site to have a more user-friendly landing page.
-  (Right now it says "Home" with a giant blank area.)
 - Publish this repository to npm so it's easy to use in other projects.
 - The `replaceWithoutCapture` function in [language.js](src/language.js) has a
   "FIXME" comment in case 5. It generates new variables relative to an

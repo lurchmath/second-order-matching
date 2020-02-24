@@ -16,7 +16,7 @@
   },
   "scripts": {
     "test": "jest --verbose",
-    "docs": "jsdoc src/*.js -d ./docs"
+    "docs": "jsdoc --readme src/docs-main.md src/*.js -d ./docs"
   },
   "jest": {
     "testEnvironment": "node",
