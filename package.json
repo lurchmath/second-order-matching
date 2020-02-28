@@ -6,6 +6,9 @@
   "dependencies": {},
   "type": "module",
   "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.8.6",
+    "@babel/preset-env": "^7.8.6",
     "eslint": "^5.16.0",
     "esm": "^3.2.25",
     "jest": "^24.9.0",
@@ -14,7 +17,8 @@
   },
   "scripts": {
     "test": "jest --verbose",
-    "docs": "jsdoc --readme src/docs-main.md src/*.js -d ./docs"
+    "docs": "jsdoc --readme src/docs-main.md src/*.js -d ./docs",
+    "build": "babel src -d build"
   },
   "jest": {
     "testEnvironment": "node",
