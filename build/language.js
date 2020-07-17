@@ -7,6 +7,8 @@
 "use strict"; // TODO: handle the case of this module running in the browser
 // Import openmath-js for testing purposes
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -36,15 +38,9 @@ Object.defineProperty(exports, "OM", {
   }
 });
 
+var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
+
 var _openmath = require("./openmath.js");
-
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
 ////////////////////////////////////////////////////////////////////////////////
 // * The following are functions and constants related to metavariables.
@@ -116,7 +112,7 @@ all elements of first argument must have type variable';
     }
   }
 
-  return _openmath.OM.bin.apply(_openmath.OM, [generalExpressionFunction].concat(_toConsumableArray(variables), [body]));
+  return _openmath.OM.bin.apply(_openmath.OM, [generalExpressionFunction].concat((0, _toConsumableArray2["default"])(variables), [body]));
 }
 /**
  * Tests whether an expression is a general expression function.
@@ -147,7 +143,7 @@ function makeGeneralExpressionFunctionApplication(func, args) {
     args = [args];
   }
 
-  return _openmath.OM.app.apply(_openmath.OM, [generalExpressionFunctionApplication, func].concat(_toConsumableArray(args)));
+  return _openmath.OM.app.apply(_openmath.OM, [generalExpressionFunctionApplication, func].concat((0, _toConsumableArray2["default"])(args)));
 }
 /**
  * @returns true if the supplied expression is a gEFA
@@ -204,7 +200,7 @@ function getNewVariableRelativeTo(expr
   var all_vars = getVariablesIn(expr);
 
   for (var i = 1; i < arguments.length; i++) {
-    all_vars.push.apply(all_vars, _toConsumableArray(getVariablesIn(arguments[i])));
+    all_vars.push.apply(all_vars, (0, _toConsumableArray2["default"])(getVariablesIn(arguments[i])));
   }
 
   var index = 0;
@@ -545,7 +541,7 @@ function makeImitationExpression(variables, expr, temp_metavars) {
     if (type == 'a') {
       return _openmath.OM.app.apply(_openmath.OM, args);
     } else if (type == 'bi') {
-      return _openmath.OM.bin.apply(_openmath.OM, [head].concat(_toConsumableArray(binding_variables), args));
+      return _openmath.OM.bin.apply(_openmath.OM, [head].concat((0, _toConsumableArray2["default"])(binding_variables), args));
     }
   }
 

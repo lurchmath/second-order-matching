@@ -4,6 +4,8 @@
  */
 "use strict"; // Import everything from the language module and expose it as well.
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -117,29 +119,17 @@ Object.defineProperty(exports, "makeImitationExpression", {
 });
 exports.ConstraintList = exports.Constraint = exports.CASES = void 0;
 
+var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
+
+var _construct2 = _interopRequireDefault(require("@babel/runtime/helpers/construct"));
+
+var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
+
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
+
+var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
+
 var _language = require("./language.js");
-
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
-
-function _construct(Parent, args, Class) { if (isNativeReflectConstruct()) { _construct = Reflect.construct; } else { _construct = function _construct(Parent, args, Class) { var a = [null]; a.push.apply(a, args); var Constructor = Function.bind.apply(Parent, a); var instance = new Constructor(); if (Class) _setPrototypeOf(instance, Class.prototype); return instance; }; } return _construct.apply(null, arguments); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 ////////////////////////////////////////////////////////////////////////////////
 // * The classes below allow us to represent constraints.
@@ -191,7 +181,7 @@ var Constraint = /*#__PURE__*/function () {
    * @param {OM} expression - an OM expression which must not contain a metavariable
    */
   function Constraint(pattern, expression) {
-    _classCallCheck(this, Constraint);
+    (0, _classCallCheck2["default"])(this, Constraint);
 
     if (!(pattern instanceof _language.OM) || !(expression instanceof _language.OM)) {
       throw Error('Both arguments must be instances of OMNode');
@@ -206,7 +196,7 @@ var Constraint = /*#__PURE__*/function () {
    */
 
 
-  _createClass(Constraint, [{
+  (0, _createClass2["default"])(Constraint, [{
     key: "copy",
     value: function copy() {
       return new Constraint(this.pattern.copy(), this.expression.copy());
@@ -317,7 +307,6 @@ var Constraint = /*#__PURE__*/function () {
       return arg_pairs;
     }
   }]);
-
   return Constraint;
 }();
 /**
@@ -340,8 +329,7 @@ var ConstraintList = /*#__PURE__*/function () {
   function ConstraintList() {
     var _this = this;
 
-    _classCallCheck(this, ConstraintList);
-
+    (0, _classCallCheck2["default"])(this, ConstraintList);
     this.contents = [];
     this.nextNewVariableIndex = 0;
     this.bindingConstraints = [];
@@ -359,7 +347,7 @@ var ConstraintList = /*#__PURE__*/function () {
    */
 
 
-  _createClass(ConstraintList, [{
+  (0, _createClass2["default"])(ConstraintList, [{
     key: "nextNewVariable",
 
     /**
@@ -378,9 +366,7 @@ var ConstraintList = /*#__PURE__*/function () {
       var contents_copy = this.contents.map(function (c) {
         return c.copy();
       });
-
-      var result = _construct(ConstraintList, _toConsumableArray(contents_copy));
-
+      var result = (0, _construct2["default"])(ConstraintList, (0, _toConsumableArray2["default"])(contents_copy));
       result.bindingConstraints = this.bindingConstraints.map(function (bc) {
         return {
           inner: bc.inner.copy(),
@@ -619,7 +605,7 @@ var ConstraintList = /*#__PURE__*/function () {
       for (var i = 0; i < this.contents.length; i++) {
         var _ret = _loop(i);
 
-        if (_typeof(_ret) === "object") return _ret.v;
+        if ((0, _typeof2["default"])(_ret) === "object") return _ret.v;
       }
 
       var _loop2 = function _loop2(_i2) {
@@ -637,7 +623,7 @@ var ConstraintList = /*#__PURE__*/function () {
       for (var _i2 = 0; _i2 < other.contents.length; _i2++) {
         var _ret2 = _loop2(_i2);
 
-        if (_typeof(_ret2) === "object") return _ret2.v;
+        if ((0, _typeof2["default"])(_ret2) === "object") return _ret2.v;
       }
 
       return true;
@@ -702,7 +688,6 @@ var ConstraintList = /*#__PURE__*/function () {
       return this.contents.length;
     }
   }]);
-
   return ConstraintList;
 }();
 

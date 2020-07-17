@@ -1,5 +1,7 @@
 "use strict"; // Import everything from the constraints module and expose it as well.
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -131,21 +133,15 @@ Object.defineProperty(exports, "ConstraintList", {
 });
 exports.MatchingChallenge = void 0;
 
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+
+var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
+
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
+
+var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
+
 var _constraints = require("./constraints.js");
-
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 // Used only for debugging.  Commented out for production.
 //
@@ -180,8 +176,7 @@ var MatchingChallenge = /*#__PURE__*/function () {
    * i.e. containing two OM expressions.
    */
   function MatchingChallenge() {
-    _classCallCheck(this, MatchingChallenge);
-
+    (0, _classCallCheck2["default"])(this, MatchingChallenge);
     this.challengeList = new _constraints.ConstraintList();
     this.solutions = []; //new ConstraintList();
 
@@ -202,7 +197,7 @@ var MatchingChallenge = /*#__PURE__*/function () {
    */
 
 
-  _createClass(MatchingChallenge, [{
+  (0, _createClass2["default"])(MatchingChallenge, [{
     key: "addConstraint",
     value: function addConstraint(pattern, expr) {
       var constraint = new _constraints.Constraint(pattern, expr);
@@ -390,7 +385,7 @@ var MatchingChallenge = /*#__PURE__*/function () {
     value: function solutionsIterator()
     /*indent=''*/
     {
-      var _marked = /*#__PURE__*/regeneratorRuntime.mark(recur);
+      var _marked = /*#__PURE__*/_regenerator["default"].mark(recur);
 
       // const tab = '\t'
       var mc = this; // if needed, create a brand-new solution we will evolve with recursion
@@ -402,7 +397,7 @@ var MatchingChallenge = /*#__PURE__*/function () {
 
         var current_constraint, pattern_vars, expression_vars, i, variable, new_var, expression, temp_mc_A, const_sub, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, sol, head, _loop, _i, _ret, temp_mc_C, new_vars, temp_metavars, _new_var, imitation_expr, imitation_sub, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, _sol, _loop2, _i2;
 
-        return regeneratorRuntime.wrap(function recur$(_context2) {
+        return _regenerator["default"].wrap(function recur$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
@@ -474,7 +469,7 @@ var MatchingChallenge = /*#__PURE__*/function () {
                   }
                 }
 
-                (_mc$challengeList = mc.challengeList).add.apply(_mc$challengeList, _toConsumableArray(current_constraint.breakIntoArgPairs()));
+                (_mc$challengeList = mc.challengeList).add.apply(_mc$challengeList, (0, _toConsumableArray2["default"])(current_constraint.breakIntoArgPairs()));
 
                 return _context2.delegateYield(recur(), "t3", 22);
 
@@ -553,10 +548,10 @@ var MatchingChallenge = /*#__PURE__*/function () {
                 // Subcase B, the function may be a projection function
                 // DEBUG( indent+'EFA-2: projection function' )
                 head = current_constraint.pattern.children[1];
-                _loop = /*#__PURE__*/regeneratorRuntime.mark(function _loop(_i) {
+                _loop = /*#__PURE__*/_regenerator["default"].mark(function _loop(_i) {
                   var temp_mc_B, new_vars, proj_sub, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, _sol2;
 
-                  return regeneratorRuntime.wrap(function _loop$(_context) {
+                  return _regenerator["default"].wrap(function _loop$(_context) {
                     while (1) {
                       switch (_context.prev = _context.next) {
                         case 0:
@@ -795,14 +790,14 @@ var MatchingChallenge = /*#__PURE__*/function () {
       }
 
       function uniqueIterator(nonUniqueIterator, comparator) {
-        var _marked2 = /*#__PURE__*/regeneratorRuntime.mark(result);
+        var _marked2 = /*#__PURE__*/_regenerator["default"].mark(result);
 
         var seenSoFar = [];
 
         function result() {
           var _iteratorNormalCompletion5, _didIteratorError5, _iteratorError5, _loop3, _iterator5, _step5;
 
-          return regeneratorRuntime.wrap(function result$(_context4) {
+          return _regenerator["default"].wrap(function result$(_context4) {
             while (1) {
               switch (_context4.prev = _context4.next) {
                 case 0:
@@ -810,9 +805,9 @@ var MatchingChallenge = /*#__PURE__*/function () {
                   _didIteratorError5 = false;
                   _iteratorError5 = undefined;
                   _context4.prev = 3;
-                  _loop3 = /*#__PURE__*/regeneratorRuntime.mark(function _loop3() {
+                  _loop3 = /*#__PURE__*/_regenerator["default"].mark(function _loop3() {
                     var element;
-                    return regeneratorRuntime.wrap(function _loop3$(_context3) {
+                    return _regenerator["default"].wrap(function _loop3$(_context3) {
                       while (1) {
                         switch (_context3.prev = _context3.next) {
                           case 0:
@@ -901,7 +896,6 @@ var MatchingChallenge = /*#__PURE__*/function () {
       });
     }
   }]);
-
   return MatchingChallenge;
 }();
 

@@ -1,25 +1,19 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.OM = exports.OMNode = void 0;
 
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
 
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
-
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
 // # OpenMath module
 //
@@ -88,7 +82,7 @@ var tokenTypes = [{
 }];
 
 var OMNode = /*#__PURE__*/function () {
-  _createClass(OMNode, null, [{
+  (0, _createClass2["default"])(OMNode, null, [{
     key: "checkJSON",
     // ### Class ("static") methods
     //
@@ -105,7 +99,7 @@ var OMNode = /*#__PURE__*/function () {
       var child;
 
       if (!(object instanceof Object)) {
-        return "Expected an object, found ".concat(_typeof(object));
+        return "Expected an object, found ".concat((0, _typeof2["default"])(object));
       } // If the object has attributes, we must verify that their keys are the
       // stringified forms of JSON objects representing OpenMath symbols and their
       // values also pass this same validity test, recursively.
@@ -183,7 +177,7 @@ var OMNode = /*#__PURE__*/function () {
           }
 
           if (typeof object.v !== 'number') {
-            return "Not a number: ".concat(object.v, " of type ").concat(_typeof(object.v));
+            return "Not a number: ".concat(object.v, " of type ").concat((0, _typeof2["default"])(object.v));
           }
 
           if (isNaN(object.v)) {
@@ -203,7 +197,7 @@ var OMNode = /*#__PURE__*/function () {
           }
 
           if (typeof object.v !== 'string') {
-            return "Value for st type was ".concat(_typeof(object.v), ", not string");
+            return "Value for st type was ".concat((0, _typeof2["default"])(object.v), ", not string");
           }
 
           break;
@@ -229,15 +223,15 @@ var OMNode = /*#__PURE__*/function () {
           }
 
           if (typeof object.n !== 'string') {
-            return "Name for sy type was ".concat(_typeof(object.n), ", not string");
+            return "Name for sy type was ".concat((0, _typeof2["default"])(object.n), ", not string");
           }
 
           if (typeof object.cd !== 'string') {
-            return "CD for sy type was ".concat(_typeof(object.cd), ", not string");
+            return "CD for sy type was ".concat((0, _typeof2["default"])(object.cd), ", not string");
           }
 
           if (object.uri != null && typeof object.uri !== 'string') {
-            return "URI for sy type was ".concat(_typeof(object.uri), ", not string");
+            return "URI for sy type was ".concat((0, _typeof2["default"])(object.uri), ", not string");
           }
 
           if (!identRE.test(object.n)) {
@@ -258,7 +252,7 @@ var OMNode = /*#__PURE__*/function () {
           }
 
           if (typeof object.n !== 'string') {
-            return "Name for v type was ".concat(_typeof(object.n), ", not string");
+            return "Name for v type was ".concat((0, _typeof2["default"])(object.n), ", not string");
           }
 
           if (!identRE.test(object.n)) {
@@ -583,8 +577,7 @@ var OMNode = /*#__PURE__*/function () {
   }]);
 
   function OMNode(tree) {
-    _classCallCheck(this, OMNode);
-
+    (0, _classCallCheck2["default"])(this, OMNode);
     this.tree = tree;
   } // Define getters for the common attributes type, value, name, cd, uri, symbol, body,
   // children, and variables.  These all return undefined if they do not apply to the
@@ -592,7 +585,7 @@ var OMNode = /*#__PURE__*/function () {
   // in that case.
 
 
-  _createClass(OMNode, [{
+  (0, _createClass2["default"])(OMNode, [{
     key: "encode",
     // ### Serialization
     //
@@ -2137,7 +2130,6 @@ var OMNode = /*#__PURE__*/function () {
       }
     }
   }]);
-
   return OMNode;
 }();
 
@@ -2304,7 +2296,7 @@ OM.prototype.evaluate = function () {
     }
 
     try {
-      value = func.apply(void 0, _toConsumableArray(args || []));
+      value = func.apply(void 0, (0, _toConsumableArray2["default"])(args || []));
     } catch (e) {
       if (message == null) {
         message = '';
