@@ -238,12 +238,35 @@ export function isApplication(expr) {
 }
 
 /**
+ * Make a function application expression from the given children.  For example,
+ * to create f(x,y), pass [f,x,y].  All arguments are used as-is, not copied
+ * first; do not pass copies you need elsewhere.
+ * @param {OM[]} children - the children of the resulting application, the first
+ *   of which should be the operator and the rest the operands
+ */
+export function makeApplication(children) {
+    return OM.app(...children);
+}
+
+/**
  * Return true iff the given expression is a binding expression, false
  * otherwise.
  * @param {OM} expr - the expression to test
  */
 export function isBinding(expr) {
     return expr.type === 'bi';
+}
+
+/**
+ * Make a binding expression from the given symbol, variables, and body.  For
+ * example, to create Forall x, P, pass Forall, [x], and P.  All arguments are
+ * used as-is, not copied first; do not pass copies you need elsewhere.
+ * @param {OM} symbol - the binding operator
+ * @param {OM[]} variables - the array of bound variables
+ * @param {OM} body - the body of the binding
+ */
+export function makeBinding(symbol,variables,body) {
+    return OM.bin(symbol,...variables,body);
 }
 
 /**
@@ -620,8 +643,6 @@ export function makeProjectionExpression(variables, point) {
     return null;
 }
 
-// ---------- proofread up to here
-
 /**
  * Takes a list of variables, denoted `v1,...,vk`, an expression
  * which is denoted `g(e1,...,em)`, and a list of temporary
@@ -648,7 +669,7 @@ export function makeImitationExpression(variables, expr, temp_metavars) {
      * of the imitation function. This is an application of the form:
      * `head(temp_metavars[0](bound_vars),...,temp_metavars[len-1](bound_vars))`
      */
-    function createBody(head, bound_vars, temp_metavars, type, binding_variables) {
+    function createBody(head, bound_vars, temp_metavars, bind, binding_variables) {
         let args = [];
         for (let i = 0; i < temp_metavars.length; i++) {
             let temp_metavar = temp_metavars[i];
@@ -659,25 +680,26 @@ export function makeImitationExpression(variables, expr, temp_metavars) {
                 )
             );
         }
-        if (type == 'a') {
-            return OM.app(...args);
-        } else if (type == 'bi') {
-            return OM.bin(head, ...binding_variables, ...args);
+        if (bind) {
+            // should be only one arg in this case
+            return makeBinding(head,binding_variables,args[0]);
+        } else {
+            return makeApplication(args);
         }
     }
 
     var imitationExpr = null;
 
-    if (variables.every((v) => v instanceof OM) && expr instanceof OM) {
-        let type = expr.type;
+    if (variables.every(isExpression) && isExpression(expr)) {
+        const bind = isBinding(expr);
         imitationExpr = makeGeneralExpressionFunction(
             variables,
             createBody(
-                (type=='a' ? expr.children[0]: expr.symbol),
+                (bind ? getBindingOperator(expr) : getExpressionChildren(expr)[0]),
                 variables,
                 temp_metavars,
-                type,
-                (type=='bi' ? expr.variables : null)
+                bind,
+                (bind ? getBoundVariables(expr) : null)
             )
         );
     }
