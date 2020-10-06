@@ -534,8 +534,6 @@ export function alphaEquivalent(expr1, expr2, firstcall=true) {
     }
 }
 
-// ---------- proofread up to here
-
 /**
  * Takes a general expression function representing λv_1,...,v_k.B
  * and a list of expressions e_1,...,e_k and returns the beta reduction
@@ -556,12 +554,12 @@ export function betaReduce(gEF, expr_list) {
     if (!(expr_list instanceof Array)) {
         throw 'In beta reduction,, the second argument must be a list of expressions'
     }
-    if (gEF.variables.length != expr_list.length) {
+    const variables = getBoundVariables(gEF);
+    if (variables.length != expr_list.length) {
         throw 'In beta reduction, the number of expressions must match number of variables'
     }
 
-    var variables = gEF.variables
-    var result = gEF.body.copy();
+    var result = copyExpression(getBoundBody(gEF));
     for (let i = 0; i < expr_list.length; i++) {
         var v_i = variables[i];
         var e_i = expr_list[i];
@@ -578,14 +576,17 @@ export function betaReduce(gEF, expr_list) {
  * @param {Number} nextNewVariableIndex - the number to check against
  */
 export function checkVariable(variable, nextNewVariableIndex) {
-    if (/^v[0-9]+$/.test(variable.name)) {
+    const name = getVariableName(variable);
+    if (/^v[0-9]+$/.test(name)) {
         nextNewVariableIndex = Math.max(
             nextNewVariableIndex,
-            parseInt(variable.name.slice(1)) + 1
+            parseInt(name.slice(1)) + 1
         );
     }
     return nextNewVariableIndex;
 }
+
+// ---------- proofread up to here
 
 /**
  * Takes a new variable (relative to some constraint list) and an expression
