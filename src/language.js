@@ -143,13 +143,123 @@ export function canApplyGeneralExpressionFunctionApplication(gEFA) {
 }
 
 /**
+ * If this is a gEFA, extract and return the expression function application
+ * that is to be applied.  Otherwise return null.
+ * @param {OM} gEFA - a general expression function application
+ */
+export function getGeneralExpressionFunctionFromApplication(gEFA) {
+    if (canApplyGeneralExpressionFunctionApplication(gEFA)) {
+        return gEFA.children[1];
+    }
+    return null;
+}
+
+/**
+ * If this is a gEFA, extract and return the array of arguments to which the
+ * function is to be applied.  Otherwise return null.
+ * @param {OM} gEFA - a general expression function application
+ */
+export function getGeneralExpressionArgumentsFromApplication(gEFA) {
+    if (canApplyGeneralExpressionFunctionApplication(gEFA)) {
+        return gEFA.children.slice(2);
+    }
+    return null;
+}
+
+/**
+ * Helper function used when adding pairs to a constraint list.
+ * Returns the list of variables that appear in a given expression.
+ * @param {OM} expression - the expression to be checked
+ * @returns a list containing any variables in the given expression
+ */
+export function getVariablesIn(expression) {
+    return expression.descendantsSatisfying((d) => { return d.type === 'v'; });
+}
+
+/**
+ * Returns the variable's name, or null if it is not a variable.
+ * @param {OM} variable - an OM instance of type variable
+ */
+export function getVariableName(variable) {
+    if (variable.type === 'v') {
+        return variable.name;
+    }
+    return null;
+}
+
+/**
+ * Construct an expression that is just a variable, with the given name
+ * @param {string} name - the name of the new variable
+ */
+export function makeVariable(name) {
+    return OM.var(name);
+}
+
+/**
+ * Returns a copy of an OpenMath expression
+ * @param {OM} expr - the expression to copy
+ */
+export function copyExpression(expr) {
+    return expr.copy();
+}
+
+/**
+ * Return a list of the bound variables in the given expression, or null if the
+ * given expression is not a binding one.
+ * @param {OM} binding - the expression whose bound variables are to be returned
+ */
+export function getBoundVariables(binding) {
+    if (binding.type === 'bi') {
+        return binding.variables;
+    }
+    return null
+}
+
+/**
+ * Return the body bound by a binding expression, or null if the given
+ * expression is not a binding one.
+ * @param {OM} binding - the expression whose body is to be returned (the
+ *   original body, not a copy)
+ */
+export function getBoundBody(binding) {
+    if (binding.type === 'bi') {
+        return binding.body;
+    }
+    return null
+}
+
+/**
+ * Compute whether the two expressions are structurally equal, and return true
+ * or false.
+ * @param {OM} expr1 - first expression
+ * @param {OM} expr2 - second expression
+ */
+export function equalExpressions(expr1,expr2) {
+    return expr1.equals(expr2);
+}
+
+/**
+ * Replace one expression, wherever it sits in its parent tree, with another.
+ * @param {OM} toReplace - the expression to be replaced
+ * @param {OM} withThis - the expression with which to replace it
+ */
+export function replaceExpression(toReplace,withThis) {
+    toReplace.replaceWith(withThis);
+}
+
+// ---------- API ends here
+
+/**
  * If `canApplyGeneralExpressionFunctionApplication` is true,
  * returns the beta reduction of the gEF and the arguments it is applied to.
  * @param {OM} gEFA - a general expression function application
  */
 export function applyGeneralExpressionFunctionApplication(gEFA) {
     if (canApplyGeneralExpressionFunctionApplication(gEFA)) {
-        return betaReduce(gEFA.children[1], gEFA.children.slice(2));
+        return betaReduce(
+            getGeneralExpressionFunctionFromApplication(gEFA),
+            getGeneralExpressionArgumentsFromApplication(gEFA)
+        );
     }
     return null;
 }
@@ -165,23 +275,23 @@ export function applyGeneralExpressionFunctionApplication(gEFA) {
  * @returns the first variable of the form xN
  * which appears nowhere in the supplied expression(s).
  */
-export function getNewVariableRelativeTo(expr /*, expr2, ... */) {
-    let all_vars = getVariablesIn(expr);
-    for (let i = 1; i < arguments.length; i++) {
-        all_vars.push(...getVariablesIn(arguments[i]));
+export function getNewVariableRelativeTo(...exprs) {
+    let all_vars = [ ]
+    for (let i = 0; i < exprs.length; i++) {
+        all_vars.push(...getVariablesIn(exprs[i]));
     }
     let index = 0;
     for (let i = 0; i < all_vars.length; i++) {
         let next_var = all_vars[i];
-        if (/^x[0-9]+$/.test(next_var.name)) {
+        if (/^x[0-9]+$/.test(getVariableName(next_var))) {
             index = Math.max(
                 index,
-                parseInt(next_var.name.slice(1)) + 1
+                parseInt(getVariableName(next_var).slice(1)) + 1
             );
         }
     }
     let var_name = 'x' + index;
-    return OM.var(var_name);
+    return makeVariable(var_name);
 }
 
 /**
@@ -194,22 +304,24 @@ export function getNewVariableRelativeTo(expr /*, expr2, ... */) {
  * @returns a copy of the alpha converted binding
  */
 export function alphaConvert(binding, which_var, replace_var) {
-    var result = binding.copy();
-    var bound_vars = result.variables
+    var result = copyExpression(binding);
+    var bound_vars = getBoundVariables(result);
 
-    if (!bound_vars.map(x => x.name).includes(which_var.name)) {
+    if (!bound_vars.map(getVariableName).includes(getVariableName(which_var))) {
         throw 'which_var must be bound in binding'
     }
 
     for (let i = 0; i < bound_vars.length; i++) {
         var variable = bound_vars[i];
-        if (variable.equals(which_var)) {
-            variable.replaceWith(replace_var.copy());
+        if (equalExpressions(variable,which_var)) {
+            replaceExpression(variable,copyExpression(replace_var));
         }
     }
-    replaceWithoutCapture(result.body, which_var, replace_var);
+    replaceWithoutCapture(getBoundBody(result), which_var, replace_var);
     return result;
 }
+
+// ---------- proofread up to here
 
 /**
  * Takes an expression, a variable, and a replacement expression.
@@ -390,16 +502,6 @@ export function checkVariable(variable, nextNewVariableIndex) {
         );
     }
     return nextNewVariableIndex;
-}
-
-/**
- * Helper function used when adding pairs to a constraint list.
- * Returns the list of variables that appear in a given expression.
- * @param {OM} expression - the expression to be checked
- * @returns a list containing any variables in the given expression
- */
-export function getVariablesIn(expression) {
-    return expression.descendantsSatisfying((d) => { return d.type == 'v'; });
 }
 
 /**
