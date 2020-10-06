@@ -229,12 +229,33 @@ export function copyExpression(expr) {
 }
 
 /**
+ * Return true iff the given expression is a function application, false
+ * otherwise.
+ * @param {OM} expr - the expression to test
+ */
+export function isApplication(expr) {
+    return expr.type === 'a';
+}
+
+/**
  * Return true iff the given expression is a binding expression, false
  * otherwise.
  * @param {OM} expr - the expression to test
  */
 export function isBinding(expr) {
     return expr.type === 'bi';
+}
+
+/**
+ * Return the symbol/head/operator of the binding expression, if indeed the
+ * given argument is a binding expression; return null otherwise.
+ * @param {OM} expr - the expression whose operator is to be returned
+ */
+export function getBindingOperator(binding) {
+    if (isBinding(binding)) {
+        return binding.symbol;
+    }
+    return null;
 }
 
 /**
@@ -289,6 +310,16 @@ export function equalExpressions(expr1,expr2) {
  */
 export function replaceExpression(toReplace,withThis) {
     toReplace.replaceWith(withThis);
+}
+
+/**
+ * Return true iff the two expressions have the same type (e.g., both are
+ * variables, or both are bindings, or both are function applications, etc.)
+ * @param {OM} expr1 - first expression
+ * @param {OM} expr2 - second expression
+ */
+export function sameTypeOfExpression(expr1,expr2) {
+    return expr1.type === expr2.type;
 }
 
 // ---------- API ends here
@@ -443,8 +474,6 @@ export function replaceWithoutCapture(expr, variable, replacement) {
     }
 }
 
-// ---------- proofread up to here
-
 /**
  * Checks if two expressions are alpha equivalent.
  * Two expresssions are alpha equivalent if one can be transformed into the other
@@ -457,16 +486,20 @@ export function replaceWithoutCapture(expr, variable, replacement) {
  */
 export function alphaEquivalent(expr1, expr2, firstcall=true) {
     var possible_types = ['a', 'bi'];
-    if (expr1.type != expr2.type) {
+    if (!sameTypeOfExpression(expr1,expr2)) {
         return false;
     }
-    if (firstcall &&
-        (!possible_types.includes(expr1.type) || !possible_types.includes(expr2.type))) {
+    if (
+        firstcall && (
+            !(isApplication(expr1) || isBinding(expr1))
+         || !(isApplication(expr1) || isBinding(expr2))
+        )
+    ) {
         return false;
     }
-    if (expr1.type == 'a') {
-        var expr1_children = expr1.children;
-        var expr2_children = expr2.children;
+    if (isApplication(expr1)) {
+        var expr1_children = getExpressionChildren(expr1);
+        var expr2_children = getExpressionChildren(expr2);
         if (expr1_children.length != expr2_children.length) {
             return false;
         }
@@ -478,26 +511,30 @@ export function alphaEquivalent(expr1, expr2, firstcall=true) {
             }
         }
         return true;
-    } else if (expr1.type == 'bi') {
-        if ((expr1.variables.length != expr2.variables.length)
-            || !(expr1.symbol.equals(expr2.symbol))) {
+    } else if (isBinding(expr1)) {
+        const expr1_vars = getBoundVariables(expr1);
+        const expr2_vars = getBoundVariables(expr2);
+        if ((expr1_vars.length != expr2_vars.length)
+            || !(getBindingOperator(expr1).equals(getBindingOperator(expr2)))) {
             return false;
         }
         // Alpha convert all bound variables in both expressions to
         // new variables, which appear nowhere in either expression.
         // This avoids the problem of 'overwriting' a previous alpha conversion.
-        var expr1conv = expr1.copy();
-        var expr2conv = expr2.copy();
-        for (let i = 0; i < expr1.variables.length; i++) {
+        var expr1conv = copyExpression(expr1);
+        var expr2conv = copyExpression(expr2);
+        for (let i = 0; i < expr1_vars.length; i++) {
             let new_var = getNewVariableRelativeTo(expr1conv, expr2conv);
-            expr1conv = alphaConvert(expr1conv, expr1.variables[i], new_var);
-            expr2conv = alphaConvert(expr2conv, expr2.variables[i], new_var);
+            expr1conv = alphaConvert(expr1conv, expr1_vars[i], new_var);
+            expr2conv = alphaConvert(expr2conv, expr2_vars[i], new_var);
         }
-        return alphaEquivalent(expr1conv.body, expr2conv.body, false);
+        return alphaEquivalent(getBoundBody(expr1conv), getBoundBody(expr2conv), false);
     } else {
-        return expr1.equals(expr2);
+        return equalExpressions(expr1,expr2);
     }
 }
+
+// ---------- proofread up to here
 
 /**
  * Takes a general expression function representing λv_1,...,v_k.B
