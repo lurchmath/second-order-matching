@@ -13,6 +13,23 @@
 import { OM } from './openmath.js';
 export { OM };
 
+/**
+ * Returns true if and only if the given object is an OpenMath expression
+ * @param {object} expr - the object to test
+ */
+export function isExpression(expr) {
+    return expr instanceof OM;
+}
+
+/**
+ * Return an array of the expression's children, in the order in which they
+ * appear as children
+ * @param {OM} expr - the expression whose children should be returned
+ */
+export function getExpressionChildren(expr) {
+    return expr.children;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // * The following are functions and constants related to metavariables.
 // * A metavariable is a variable that will be used for substitution.
@@ -28,7 +45,7 @@ const trueValue = OM.string('true');
  * @param {OM} variable - the variable to be marked
  */
 export function setMetavariable(variable) {
-    if (variable instanceof OM && ['v', 'sy'].includes(variable.type)) {
+    if (isExpression(variable) && ['v', 'sy'].includes(variable.type)) {
         return variable.setAttribute(metavariableSymbol, trueValue.copy());
     } else return null;
 }
@@ -47,7 +64,7 @@ export function clearMetavariable(metavariable) {
  */
 export function isMetavariable(variable) {
     return (
-        variable instanceof OM
+        isExpression(variable)
         && ['v', 'sy'].includes(variable.type)
         && variable.getAttribute(metavariableSymbol) != undefined
         && variable.getAttribute(metavariableSymbol).equals(trueValue)
@@ -90,7 +107,7 @@ all elements of first argument must have type variable';
  */
 export function isGeneralExpressionFunction(expression) {
     return (
-        expression instanceof OM
+        isExpression(expression)
         && expression.type == 'bi'
         && expression.symbol.equals(generalExpressionFunction)
     );
@@ -120,7 +137,7 @@ export function makeGeneralExpressionFunctionApplication(func, args) {
  */
 export function isGeneralExpressionFunctionApplication(expression) {
     return (
-        expression instanceof OM
+        isExpression(expression)
         && expression.type === 'a'
         && expression.children[0].equals(generalExpressionFunctionApplication)
     );
@@ -167,13 +184,21 @@ export function getGeneralExpressionArgumentsFromApplication(gEFA) {
 }
 
 /**
+ * Return true iff the given expression is a variable, false otherwise.
+ * @param {OM} expr - the expression to test
+ */
+export function isVariable(expr) {
+    return expr.type === 'v';
+}
+
+/**
  * Helper function used when adding pairs to a constraint list.
  * Returns the list of variables that appear in a given expression.
  * @param {OM} expression - the expression to be checked
  * @returns a list containing any variables in the given expression
  */
 export function getVariablesIn(expression) {
-    return expression.descendantsSatisfying((d) => { return d.type === 'v'; });
+    return expression.descendantsSatisfying(isVariable);
 }
 
 /**
@@ -181,7 +206,7 @@ export function getVariablesIn(expression) {
  * @param {OM} variable - an OM instance of type variable
  */
 export function getVariableName(variable) {
-    if (variable.type === 'v') {
+    if (isVariable(variable)) {
         return variable.name;
     }
     return null;
@@ -204,12 +229,21 @@ export function copyExpression(expr) {
 }
 
 /**
+ * Return true iff the given expression is a binding expression, false
+ * otherwise.
+ * @param {OM} expr - the expression to test
+ */
+export function isBinding(expr) {
+    return expr.type === 'bi';
+}
+
+/**
  * Return a list of the bound variables in the given expression, or null if the
  * given expression is not a binding one.
  * @param {OM} binding - the expression whose bound variables are to be returned
  */
 export function getBoundVariables(binding) {
-    if (binding.type === 'bi') {
+    if (isBinding(binding)) {
         return binding.variables;
     }
     return null
@@ -222,10 +256,20 @@ export function getBoundVariables(binding) {
  *   original body, not a copy)
  */
 export function getBoundBody(binding) {
-    if (binding.type === 'bi') {
+    if (isBinding(binding)) {
         return binding.body;
     }
     return null
+}
+
+/**
+ * Return true if a structural copy of the given inner (sub)expression occurs
+ * free in the given outer expression.
+ * @param {OM} outer - the expression in which to seek subexpressions
+ * @param {OM} inner - the subexpression to seek
+ */
+export function occursFreeIn(inner,outer) {
+    return outer.occursFree(inner);
 }
 
 /**
@@ -321,8 +365,6 @@ export function alphaConvert(binding, which_var, replace_var) {
     return result;
 }
 
-// ---------- proofread up to here
-
 /**
  * Takes an expression, a variable, and a replacement expression.
  * Manipulates the expression in place in order to replace all occurences
@@ -342,62 +384,66 @@ export function alphaConvert(binding, which_var, replace_var) {
  * @param {OM} replacement - an OM expression
  */
 export function replaceWithoutCapture(expr, variable, replacement) {
-    if (!(expr instanceof OM)
-        || !(variable instanceof OM)
-        || !(replacement instanceof OM)) {
-        throw 'all arguments must be instances of OMNode';
+    if (!isExpression(expr)
+        || !isExpression(variable)
+        || !isExpression(replacement)) {
+        throw 'all arguments must be expressions';
     }
-    if (expr.type != 'bi') {
+    if (!isBinding(expr)) {
         // Case 1: expr is a variable that we must replace, so do it
-        if (expr.type == 'v' && expr.equals(variable)) {
-            expr.replaceWith(replacement.copy());
+        if (isVariable(expr) && equalExpressions(expr,variable)) {
+            replaceExpression(expr,copyExpression(replacement));
         // Case 2: expr is any other non-binding, so recur on its
         // children (of which there may be none, meaning this is some
         // type of atomic other than a variable, which is fine; do nothing)
         } else {
-            var children = expr.children;
+            var children = getExpressionChildren(expr);
             for (let i = 0; i < children.length; i++) {
                 var ch = children[i];
                 replaceWithoutCapture(ch, variable, replacement);
             }
         }
     } else {
-        const varidx = expr.variables.map( v => v.name ).indexOf(variable.name);
+        const variables = getBoundVariables(expr);
+        const varidx = variables.map(getVariableName).indexOf(getVariableName(variable));
         if (varidx > -1) {
             // Case 3: expr is a binding and it binds the variable to be replaced,
             // but the replacement is a non-variable.  This is illegal, because
             // OpenMath bound variable positions can be occupied only by variables.
-            if (replacement.type != 'v') {
+            if (!isVariable(replacement)) {
                 throw 'Cannot replace a bound variable with a non-varible';
             // Case 4: expr is a binding and it binds the variable to be replaced,
             // and the replacement is also a variable.  We can go ahead and replace
             // as requested, knowing that this is just a special case of alpha
             // conversion.
             } else {
-                expr.variables[varidx].replaceWith(replacement.copy());
-                replaceWithoutCapture(expr.body, variable, replacement);
+                replaceExpression(variables[varidx],copyExpression(replacement));
+                replaceWithoutCapture(getBoundBody(expr), variable, replacement);
             }
         } else {
             // Case 5: expr is a binding and it does not bind the variable to be replaced,
             // but the replacement may include capture, so we prevent that.
             // If any bound var would capture the replacement, apply alpha conversion
             // so that the bound var in question becomes an entirely new bound var.
-            if (expr.body.occursFree(variable)) {
-                expr.variables.forEach(bound_var => {
-                    if (replacement.occursFree(bound_var)) {
+            if (occursFreeIn(variable,getBoundBody(expr))) {
+                variables.forEach(bound_var => {
+                    if (occursFreeIn(bound_var,replacement)) {
                         // FIXME: this doesn't seem like the best way to get new variables, but works for now.
                         //      need some way of generating global new variables
                         //      E.g. a class called new variable stream
-                        expr.replaceWith(alphaConvert(expr, bound_var, getNewVariableRelativeTo(expr)));
+                        replaceExpression(expr,alphaConvert(expr, bound_var,
+                            getNewVariableRelativeTo(expr)));
                     }
                 } );
             }
             // now after any needed alpha conversions have made it safe,
             // we can actually do the replacement in the body.
-            replaceWithoutCapture(expr.body, variable, replacement);
+            replaceWithoutCapture(getBoundBody(expr), variable, replacement);
         }
     }
 }
+
+// ---------- proofread up to here
 
 /**
  * Checks if two expressions are alpha equivalent.
