@@ -586,8 +586,6 @@ export function checkVariable(variable, nextNewVariableIndex) {
     return nextNewVariableIndex;
 }
 
-// ---------- proofread up to here
-
 /**
  * Takes a new variable (relative to some constraint list) and an expression
  * and returns a gEF which has the meaning λv_n.expr where v_n is the new
@@ -597,8 +595,9 @@ export function checkVariable(variable, nextNewVariableIndex) {
  * @param {OM} expression - an OM expression
  */
 export function makeConstantExpression(new_variable, expression) {
-    if (new_variable instanceof OM && expression instanceof OM) {
-        return makeGeneralExpressionFunction(new_variable.copy(), expression.copy());
+    if (isExpression(new_variable) && isExpression(expression)) {
+        return makeGeneralExpressionFunction(
+            copyExpression(new_variable),copyExpression(expression));
     }
     return null;
 }
@@ -611,17 +610,17 @@ export function makeConstantExpression(new_variable, expression) {
  * @param {OM} point -  a single OM variable
  */
 export function makeProjectionExpression(variables, point) {
-    if (variables.every((v) => v instanceof OM) && point instanceof OM) {
-        if (!(variables.map((v) => v.name).includes(point.name))) {
+    if (variables.every(isExpression) && isExpression(point)) {
+        if (!(variables.map(getVariableName).includes(getVariableName(point)))) {
             throw "When making a projection function, the point must occur in the list of variables"
         }
         return makeGeneralExpressionFunction(
-            variables.map((v) => v.copy()),
-            point.copy()
-        );
+            variables.map(copyExpression),copyExpression(point));
     }
     return null;
 }
+
+// ---------- proofread up to here
 
 /**
  * Takes a list of variables, denoted `v1,...,vk`, an expression
