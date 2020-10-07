@@ -3,7 +3,7 @@
 
 // Import everything from the constraints module and expose it as well.
 import {
-    OM, isMetavariable, setMetavariable, clearMetavariable,
+    OM, Exprs,
     isGeneralExpressionFunction, makeGeneralExpressionFunction,
     isGeneralExpressionFunctionApplication,
     makeGeneralExpressionFunctionApplication,
@@ -15,7 +15,7 @@ import {
     CASES, Constraint, ConstraintList
 } from './constraints.js';
 export {
-    OM, isMetavariable, setMetavariable, clearMetavariable,
+    OM, Exprs,
     isGeneralExpressionFunction, makeGeneralExpressionFunction,
     isGeneralExpressionFunctionApplication,
     makeGeneralExpressionFunctionApplication,
@@ -131,7 +131,7 @@ export class MatchingChallenge {
             this.challengeList.bindingConstraints.every(binding_constraint => {
                 const inner = solution.lookup(binding_constraint.inner);
                 if (!inner) return true; // metavariable not instantiated yet; can't violate any constraints
-                const outer = isMetavariable(binding_constraint.outer) ? solution.lookup(binding_constraint.outer) : binding_constraint.outer;
+                const outer = Exprs.isMetavariable(binding_constraint.outer) ? solution.lookup(binding_constraint.outer) : binding_constraint.outer;
                 if (!outer) return true; // metavariable not instantiated yet; can't violate any constraints
                 return !inner.occursFree(outer);
             })
@@ -264,7 +264,7 @@ export class MatchingChallenge {
                         // Get case checks number of arguments
                         for (let i = 0; i < pattern_vars.length; i++) {
                             let variable = pattern_vars[i];
-                            if (!isMetavariable(variable)) {
+                            if (!Exprs.isMetavariable(variable)) {
                                 var new_var = mc.challengeList.nextNewVariable();
                                 current_constraint.expression = alphaConvert(
                                     current_constraint.expression,
@@ -330,12 +330,12 @@ export class MatchingChallenge {
                         if (expression.type == 'a') {
                             temp_metavars = expression.children.map(() => {
                                 let new_var = temp_mc_C.challengeList.nextNewVariable();
-                                setMetavariable(new_var);
+                                Exprs.setMetavariable(new_var);
                                 return new_var;
                             });
                         } else {
                             let new_var = temp_mc_C.challengeList.nextNewVariable();
-                            setMetavariable(new_var);
+                            Exprs.setMetavariable(new_var);
                             temp_metavars.push(new_var);
                         }
 

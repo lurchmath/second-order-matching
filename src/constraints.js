@@ -8,7 +8,7 @@
 
 // Import everything from the language module and expose it as well.
 import {
-    OM, isMetavariable, setMetavariable, clearMetavariable,
+    OM, Exprs,
     isGeneralExpressionFunction, makeGeneralExpressionFunction,
     isGeneralExpressionFunctionApplication,
     makeGeneralExpressionFunctionApplication,
@@ -16,11 +16,11 @@ import {
     applyGeneralExpressionFunctionApplication,
     getNewVariableRelativeTo, replaceWithoutCapture,
     alphaConvert, alphaEquivalent, betaReduce,
-    checkVariable, getVariablesIn,
+    checkVariable,
     makeConstantExpression, makeProjectionExpression, makeImitationExpression
 } from './language.js';
 export {
-    OM, isMetavariable, setMetavariable, clearMetavariable,
+    OM, Exprs,
     isGeneralExpressionFunction, makeGeneralExpressionFunction,
     isGeneralExpressionFunctionApplication,
     makeGeneralExpressionFunctionApplication,
@@ -112,7 +112,7 @@ export class Constraint {
      * @returns true if the pattern is a metavariable, false otherwise.
      */
     isSubstitution() {
-        return isMetavariable(this.pattern);
+        return Exprs.isMetavariable(this.pattern);
     }
 
     /**
@@ -124,7 +124,7 @@ export class Constraint {
     getCase(pattern, expression) {
         if (pattern.equals(expression)) {
             return CASES.IDENTITY;
-        } else if (isMetavariable(pattern)) {
+        } else if (Exprs.isMetavariable(pattern)) {
             return CASES.BINDING;
         } else if (
                 (
@@ -148,7 +148,7 @@ export class Constraint {
             ) {
             return CASES.SIMPLIFICATION;
         } else if (isGeneralExpressionFunctionApplication(pattern)
-            || isMetavariable(pattern.children[1])
+            || Exprs.isMetavariable(pattern.children[1])
             ) {
             return CASES.EFA;
         } else {
@@ -295,11 +295,11 @@ export class ConstraintList {
             // Don't add if it's already in the list
             if (this.indexAtWhich((c) => c.equals(constraint)) == -1) {
                 // Set the next new var index
-                var p_vars = getVariablesIn(constraint.pattern);
+                var p_vars = Exprs.getVariablesIn(constraint.pattern);
                 for (let j = 0; j < p_vars.length; j++) {
                     this.nextNewVariableIndex = checkVariable(p_vars[j], this.nextNewVariableIndex);
                 }
-                var e_vars = getVariablesIn(constraint.expression);
+                var e_vars = Exprs.getVariablesIn(constraint.expression);
                 for (let k = 0; k < e_vars.length; k++) {
                     this.nextNewVariableIndex = checkVariable(e_vars[k], this.nextNewVariableIndex);
                 }
@@ -413,7 +413,7 @@ export class ConstraintList {
     lookup(variable) {
         if (!(variable instanceof OM)) {
             variable = OM.var(variable);
-            setMetavariable(variable);
+            Exprs.setMetavariable(variable);
         }
         for (let i = 0; i < this.contents.length; i++) {
             var constraint = this.contents[i];
@@ -451,7 +451,7 @@ export class ConstraintList {
     computeBindingConstraints() {
         this.contents.forEach(constraint =>
             constraint.pattern.descendantsSatisfying(d => d.type == 'bi').forEach(binding =>
-                binding.descendantsSatisfying(isMetavariable).forEach(innerMV => {
+                binding.descendantsSatisfying(Exprs.isMetavariable).forEach(innerMV => {
                     if (innerMV.isFree(binding)) {
                         binding.variables.forEach(outerMV => {
                             if (!this.bindingConstraints.find(existing =>
