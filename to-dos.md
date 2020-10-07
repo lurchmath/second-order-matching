@@ -24,13 +24,10 @@
 
 ## Moving beyond OpenMath
 
-- Find every OM-specific function/property/comparison/data/etc. in the file and
-  abstract it into a function or constant declared at the top of the file, then
-  re-used throughout the file.  The goal is to create an API by which the vast
-  majority of the file interfaces with OM.
 - Prove that this has been done well by splitting the file into two, one that
   defines and exports that new API, and the second file that contains most of
   the original, and which just uses that API.
+- Ensure that the docs build correctly after all these changes.
 - Rework the `language.js` file so that it doesn't import the new API, but
   rather exposes a function by which it expects to be provided such an API.
   Rework the new API file so that it exposes the API in a way that could be
