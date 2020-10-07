@@ -4,7 +4,7 @@
  */
 
 import * as M from '../index';
-const OM = M.OM;
+import { OM } from '../src/openmath.js';
 
 /**
  * Takes strings for OM.simple, any variable begginning with an underscore

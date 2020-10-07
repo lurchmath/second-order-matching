@@ -10,7 +10,7 @@ import {
     DEBUG_PRINT_CONSTRAINTLIST, DEBUG_PRINT_SOLS, newConstraintObject,
     newConstraints, newMC, lambdaString, newSolutions, checkSolutions
 } from './utils';
-const OM = M.OM;
+import { OM } from '../src/openmath.js';
 
 describe('Generalized Expression Functions', () => {
     test('should reliably make general expression functions', () => {

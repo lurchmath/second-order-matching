@@ -24,9 +24,6 @@
 
 ## Moving beyond OpenMath
 
-- Prove that this has been done well by splitting the file into two, one that
-  defines and exports that new API, and the second file that contains most of
-  the original, and which just uses that API.
 - Ensure that the docs build correctly after all these changes.
 - Rework the `language.js` file so that it doesn't import the new API, but
   rather exposes a function by which it expects to be provided such an API.

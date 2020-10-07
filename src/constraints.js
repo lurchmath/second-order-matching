@@ -8,26 +8,20 @@
 
 // Import everything from the language module and expose it as well.
 import {
-    OM, Exprs,
-    isExpressionFunction, makeExpressionFunction,
-    isExpressionFunctionApplication,
-    makeExpressionFunctionApplication,
+    Exprs, isExpressionFunction, makeExpressionFunction,
+    isExpressionFunctionApplication, makeExpressionFunctionApplication,
     canApplyExpressionFunctionApplication,
-    applyExpressionFunctionApplication,
-    getNewVariableRelativeTo, replaceWithoutCapture,
-    alphaConvert, alphaEquivalent, betaReduce,
-    checkVariable,
-    makeConstantExpression, makeProjectionExpression, makeImitationExpression
+    applyExpressionFunctionApplication, getNewVariableRelativeTo,
+    replaceWithoutCapture, alphaConvert, alphaEquivalent, betaReduce,
+    checkVariable, makeConstantExpression, makeProjectionExpression,
+    makeImitationExpression
 } from './language.js';
 export {
-    OM, Exprs,
-    isExpressionFunction, makeExpressionFunction,
-    isExpressionFunctionApplication,
-    makeExpressionFunctionApplication,
+    Exprs, isExpressionFunction, makeExpressionFunction,
+    isExpressionFunctionApplication, makeExpressionFunctionApplication,
     canApplyExpressionFunctionApplication,
-    applyExpressionFunctionApplication,
-    getNewVariableRelativeTo, replaceWithoutCapture,
-    alphaConvert, alphaEquivalent, betaReduce,
+    applyExpressionFunctionApplication, getNewVariableRelativeTo,
+    replaceWithoutCapture, alphaConvert, alphaEquivalent, betaReduce,
     makeConstantExpression, makeProjectionExpression, makeImitationExpression
 };
 
@@ -76,12 +70,12 @@ Object.freeze(CASES);
 export class Constraint {
     /**
      * Creates a new constraint with given pattern and expression.
-     * @param {OM} pattern - an OM expression which should contain a metavariable (but may not)
-     * @param {OM} expression - an OM expression which must not contain a metavariable
+     * @param {OM} pattern - an expression which should contain a metavariable (but may not)
+     * @param {OM} expression - an expression which must not contain a metavariable
      */
     constructor(pattern, expression) {
-        if (!(pattern instanceof OM) || !(expression instanceof OM)) {
-            throw Error( 'Both arguments must be instances of OMNode' );
+        if (!Exprs.isExpression(pattern) || !Exprs.isExpression(expression)) {
+            throw Error( 'Both arguments must be expressions' );
         }
         this.pattern = pattern;
         this.expression = expression;
@@ -261,7 +255,7 @@ export class ConstraintList {
      * @returns a new variable starting at `vN` (see constructor for definition of `vN`).
      */
     nextNewVariable() {
-        return OM.simple('v' + this.nextNewVariableIndex++);
+        return Exprs.variable('v' + this.nextNewVariableIndex++);
     }
 
     /**
@@ -406,13 +400,13 @@ export class ConstraintList {
 
     /**
      * If the constraint list is a function, this routine returns the expression associated with a given metavariable.
-     * @param variable - a string or OM object
-     * @returns the OM object that is the expression of the constraint
-     * with the pattern that equals the variable, null otherwise.
+     * @param variable - a string or expression
+     * @returns the expression of the constraint with the pattern that equals
+     *   the variable, null otherwise.
      */
     lookup(variable) {
-        if (!(variable instanceof OM)) {
-            variable = OM.var(variable);
+        if (!Exprs.isExpression(variable)) {
+            variable = Exprs.variable(variable);
             Exprs.setMetavariable(variable);
         }
         for (let i = 0; i < this.contents.length; i++) {

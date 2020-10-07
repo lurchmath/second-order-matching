@@ -3,26 +3,20 @@
 
 // Import everything from the constraints module and expose it as well.
 import {
-    OM, Exprs,
-    isExpressionFunction, makeExpressionFunction,
-    isExpressionFunctionApplication,
-    makeExpressionFunctionApplication,
+    Exprs, isExpressionFunction, makeExpressionFunction,
+    isExpressionFunctionApplication, makeExpressionFunctionApplication,
     canApplyExpressionFunctionApplication,
-    applyExpressionFunctionApplication,
-    getNewVariableRelativeTo, replaceWithoutCapture,
-    alphaConvert, alphaEquivalent, betaReduce,
+    applyExpressionFunctionApplication, getNewVariableRelativeTo,
+    replaceWithoutCapture, alphaConvert, alphaEquivalent, betaReduce,
     makeConstantExpression, makeProjectionExpression, makeImitationExpression,
     CASES, Constraint, ConstraintList
 } from './constraints.js';
 export {
-    OM, Exprs,
-    isExpressionFunction, makeExpressionFunction,
-    isExpressionFunctionApplication,
-    makeExpressionFunctionApplication,
+    Exprs, isExpressionFunction, makeExpressionFunction,
+    isExpressionFunctionApplication, makeExpressionFunctionApplication,
     canApplyExpressionFunctionApplication,
-    applyExpressionFunctionApplication,
-    getNewVariableRelativeTo, replaceWithoutCapture,
-    alphaConvert, alphaEquivalent, betaReduce,
+    applyExpressionFunctionApplication, getNewVariableRelativeTo,
+    replaceWithoutCapture, alphaConvert, alphaEquivalent, betaReduce,
     makeConstantExpression, makeProjectionExpression, makeImitationExpression,
     CASES, Constraint, ConstraintList
 };
@@ -57,7 +51,7 @@ export class MatchingChallenge {
      * and then creating a constraints list out of them called challenge.
      * @param {Array} constraints - an arbitrary number of arguments each
      * of which is a length-2 array containing a pattern and an expression,
-     * i.e. containing two OM expressions.
+     * i.e. containing two expressions.
      */
     constructor(...constraints) {
         this.challengeList = new ConstraintList();
@@ -71,12 +65,12 @@ export class MatchingChallenge {
     }
 
     /**
-     * Takes two OM expressions, creates a Constraint object from them,
+     * Takes two expressions, creates a Constraint object from them,
      * and adds it to `this.challengeList`.
      * If any solutions have been found already,
      * they are applied to the constraint before it is added.
-     * @param {OM} pattern - An OM expression
-     * @param {OM} expr - An OM expression
+     * @param {OM} pattern - An expression
+     * @param {OM} expr - An expression
      */
     addConstraint(pattern, expr) {
         let constraint = new Constraint(pattern, expr);
@@ -142,7 +136,7 @@ export class MatchingChallenge {
     /**
      * Adds a solution, and checks that it passes `satisfiesBindingConstraints`.
      * If it does not, empties the solutions list and sets variables in order to end the search.
-     * @param {Constraint} constraint - either a Constraint, or an OM (meta)variable
+     * @param {Constraint} constraint - either a Constraint, or a (meta)variable
      */
     addSolutionAndCheckBindingConstraints(constraint) {
         new ConstraintList(constraint).instantiate(this.challengeList);
