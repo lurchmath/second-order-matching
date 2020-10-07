@@ -57,7 +57,7 @@ export function ef(variables, body) {
     if (!(body instanceof OM)) {
         body = quick(body);
     }
-    return M.makeGeneralExpressionFunction(variables, body);
+    return M.makeExpressionFunction(variables, body);
 }
 
 /**
@@ -75,7 +75,7 @@ export function efa(func, params) {
             params[i] = quick(params[i]);
         }
     }
-    return M.makeGeneralExpressionFunctionApplication(func, params);
+    return M.makeExpressionFunctionApplication(func, params);
 }
 
 /**
@@ -152,12 +152,12 @@ export const newMC = (constraints) => {
 /**
  * Helper to use notation similar to test paper.
  * Takes a string like `'v.f(1,2)'`, splits it
- * on the first `.`, and makes a corresponding gEF.
+ * on the first `.`, and makes a corresponding EF.
  * @param {string} s
  */
 export const lambdaString = (s) => {
     let [v, body] = s.split(/\.(.+)/);
-    return ('SecondOrderMatching.gEF[' + v + "," + body + ']');
+    return ('SecondOrderMatching.EF[' + v + "," + body + ']');
 }
 
 /**

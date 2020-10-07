@@ -13,7 +13,17 @@
 import { OM } from './openmath.js';
 export { OM };
 
+// Define the metavariable symbol to be used as an attribute key, and its corresponding value
+const metavariableSymbol = OM.symbol('metavariable', 'SecondOrderMatching');
+const trueValue = OM.string('true');
+
 export const Exprs = {
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // What is an expression?
+    // Here are several basic functions for identifying, comparing, copying,
+    // and doing basic manipulations of expressions.
+    ////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Returns true if and only if the given object is an OpenMath expression
@@ -22,69 +32,45 @@ export const Exprs = {
     isExpression : (expr) => expr instanceof OM,
 
     /**
-     * Return an array of the expression's children, in the order in which they
-     * appear as children
-     * @param {OM} expr - the expression whose children should be returned
+     * Return true iff the two expressions have the same type (e.g., both are
+     * variables, or both are bindings, or both are function applications, etc.)
+     * @param {OM} expr1 - first expression
+     * @param {OM} expr2 - second expression
      */
-    getChildren : (expr) => expr.children,
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // * The following are functions and constants related to metavariables.
-    // * A metavariable is a variable that will be used for substitution.
-    ////////////////////////////////////////////////////////////////////////////////
-
-    // Define the metavariable symbol to be used as an attribute key, and its corresponding value
-    metavariableSymbol : OM.symbol('metavariable', 'SecondOrderMatching'),
-    trueValue : OM.string('true'),
+    sameType : (expr1,expr2) => expr1.type === expr2.type,
 
     /**
-     * Marks a variable as a metavariable.
-     * Does nothing if the given input is not an OMNode of type variable or type symbol.
-     * @param {OM} variable - the variable to be marked
+     * Returns a copy of an OpenMath expression
+     * @param {OM} expr - the expression to copy
      */
-    setMetavariable : (variable) => 
-        Exprs.isExpression(variable) && ['v', 'sy'].includes(variable.type) ?
-        variable.setAttribute(Exprs.metavariableSymbol, Exprs.trueValue.copy()) : null,
+    copy : (expr) => expr.copy(),
 
     /**
-     * Removes the metavariable attribute if it is present.
-     * @param {OM} metavariable - the metavariable to be unmarked
+     * Compute whether the two expressions are structurally equal, and return true
+     * or false.
+     * @param {OM} expr1 - first expression
+     * @param {OM} expr2 - second expression
      */
-    clearMetavariable : (metavariable) => metavariable.removeAttribute(Exprs.metavariableSymbol),
+    equal : (expr1,expr2) => expr1.equals(expr2),
 
     /**
-     * Tests whether the given variable has the metavariable attribute.
-     * @param {OM} variable - the variable to be checked
+     * Replace one expression, wherever it sits in its parent tree, with another.
+     * @param {OM} toReplace - the expression to be replaced
+     * @param {OM} withThis - the expression with which to replace it
      */
-    isMetavariable : (variable) =>
-        Exprs.isExpression(variable)
-     && ['v', 'sy'].includes(variable.type)
-     && variable.getAttribute(Exprs.metavariableSymbol) != undefined
-     && variable.getAttribute(Exprs.metavariableSymbol).equals(Exprs.trueValue),
+    replace : (toReplace,withThis) => toReplace.replaceWith(withThis),
 
     ////////////////////////////////////////////////////////////////////////////////
-    // * The following are generalised versions expression functions.
-    // * When P: E -> E, P is an expression function.
-    // * This generalisation allows us to have expression functions
-    // * with more than one variable.
+    // Which expressions are variables?
+    // How can I extract a variable's name, or build a variable from a name?
+    // How can we find the variables inside another expression?
     ////////////////////////////////////////////////////////////////////////////////
-
-    generalExpressionFunction : OM.symbol('gEF', 'SecondOrderMatching'),
-    generalExpressionFunctionApplication : OM.symbol('gEFA', 'SecondOrderMatching'),
 
     /**
      * Return true iff the given expression is a variable, false otherwise.
      * @param {OM} expr - the expression to test
      */
     isVariable : (expr) => expr.type === 'v',
-
-    /**
-     * Helper function used when adding pairs to a constraint list.
-     * Returns the list of variables that appear in a given expression.
-     * @param {OM} expression - the expression to be checked
-     * @returns a list containing any variables in the given expression
-     */
-    getVariablesIn : (expression) => expression.descendantsSatisfying(Exprs.isVariable),
 
     /**
      * Returns the variable's name, or null if it is not a variable.
@@ -98,11 +84,32 @@ export const Exprs = {
      */
     variable : (name) => OM.var(name),
 
+    ////////////////////////////////////////////////////////////////////////////////
+    // Sometimes we wish to create a new symbol in the language.
+    // This may be a special type of expression, or a type of variable or string,
+    // based on the language.  In OpenMath, it is a first-class citizen.
+    ////////////////////////////////////////////////////////////////////////////////
+
     /**
-     * Returns a copy of an OpenMath expression
-     * @param {OM} expr - the expression to copy
+     * Construct an expression that is a symbol with the given name.
+     * The Content Dictionary is set to the name of this package.
+     * @param {string} name - the name to use for the symbol
      */
-    copy : (expr) => expr.copy(),
+    makeSymbol : (name) => OM.sym(name,'SecondOrderMatching'),
+
+    /**
+     * Helper function used when adding pairs to a constraint list.
+     * Returns the list of variables that appear in a given expression.
+     * @param {OM} expression - the expression to be checked
+     * @returns a list containing any variables in the given expression
+     */
+    getVariablesIn : (expression) => expression.descendantsSatisfying(Exprs.isVariable),
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Which expressions are function applications?
+    // How can I build a function application expression,
+    // or extract the list of children from an existing function application?
+    ////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Return true iff the given expression is a function application, false
@@ -119,6 +126,20 @@ export const Exprs = {
      *   of which should be the operator and the rest the operands
      */
     application : (children) => OM.app(...children),
+
+    /**
+     * Return an array of the expression's children, in the order in which they
+     * appear as children
+     * @param {OM} expr - the expression whose children should be returned
+     */
+    getChildren : (expr) => expr.children,
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Which expressions bind variables?
+    // How can I build such an expression?
+    // If I have a binding expression, how can I extract its head, variables, or body?
+    // How can I tell if one expression occurs free inside another?
+    ////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Return true iff the given expression is a binding expression, false
@@ -167,30 +188,48 @@ export const Exprs = {
      */
     occursFreeIn : (inner,outer) => outer.occursFree(inner),
 
-    /**
-     * Compute whether the two expressions are structurally equal, and return true
-     * or false.
-     * @param {OM} expr1 - first expression
-     * @param {OM} expr2 - second expression
-     */
-    equal : (expr1,expr2) => expr1.equals(expr2),
+    ////////////////////////////////////////////////////////////////////////////////
+    // A metavariable is a variable that will be used for substitution.
+    // How can I tell which variables are metavariables?
+    // How can I mark a variable as being a metavariable, or clear such a mark?
+    ////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Replace one expression, wherever it sits in its parent tree, with another.
-     * @param {OM} toReplace - the expression to be replaced
-     * @param {OM} withThis - the expression with which to replace it
+     * Tests whether the given variable has the metavariable attribute.
+     * @param {OM} variable - the variable to be checked
      */
-    replace : (toReplace,withThis) => toReplace.replaceWith(withThis),
+    isMetavariable : (variable) =>
+        Exprs.isExpression(variable)
+     && ['v', 'sy'].includes(variable.type)
+     && variable.getAttribute(metavariableSymbol) != undefined
+     && variable.getAttribute(metavariableSymbol).equals(trueValue),
 
     /**
-     * Return true iff the two expressions have the same type (e.g., both are
-     * variables, or both are bindings, or both are function applications, etc.)
-     * @param {OM} expr1 - first expression
-     * @param {OM} expr2 - second expression
+     * Marks a variable as a metavariable.
+     * Does nothing if the given input is not an OMNode of type variable or type symbol.
+     * @param {OM} variable - the variable to be marked
      */
-    sameType : (expr1,expr2) => expr1.type === expr2.type
+    setMetavariable : (variable) => 
+        Exprs.isExpression(variable) && ['v', 'sy'].includes(variable.type) ?
+        variable.setAttribute(metavariableSymbol, trueValue.copy()) : null,
+
+    /**
+     * Removes the metavariable attribute if it is present.
+     * @param {OM} metavariable - the metavariable to be unmarked
+     */
+    clearMetavariable : (metavariable) => metavariable.removeAttribute(metavariableSymbol),
 
 };
+
+
+////////////////////////////////////////////////////////////////////////////////
+// An expression function is a type of expression that is intended to be
+// applied as a function mapping expressions to expressions.
+// We define here two symbols that will be used to represent such things.
+////////////////////////////////////////////////////////////////////////////////
+
+const expressionFunctionSymbol = Exprs.makeSymbol('EF');
+const expressionFunctionApplicationSymbol = Exprs.makeSymbol('EFA');
 
 /**
  * Makes a new expression function with the meaning
@@ -198,7 +237,7 @@ export const Exprs = {
  * @param {OM[]} variables - a list of OM variables
  * @param {OM} body - any OM expression
  */
-export function makeGeneralExpressionFunction(variables, body) {
+export function makeExpressionFunction(variables, body) {
     if (!(variables instanceof Array)) {
         variables = [variables];
     }
@@ -209,61 +248,61 @@ export function makeGeneralExpressionFunction(variables, body) {
 all elements of first argument must have type variable';
         }
     }
-    return Exprs.binding(Exprs.generalExpressionFunction, variables, body);
+    return Exprs.binding(expressionFunctionSymbol, variables, body);
 }
 
 /**
  * Tests whether an expression is a general expression function.
  * @param {OM} expression - the expression to be checked
  */
-export function isGeneralExpressionFunction(expression) {
+export function isExpressionFunction(expression) {
     return (
         Exprs.isExpression(expression)
         && Exprs.isBinding(expression)
-        && Exprs.equal(Exprs.bindingHead(expression),Exprs.generalExpressionFunction)
+        && Exprs.equal(Exprs.bindingHead(expression),expressionFunctionSymbol)
     );
 }
 
 /**
  * Makes a new expression function application with the meaning
- * F(arg) where F is either a general expression function (gEF), or a
- * metavariable which is expected to be replaced by a gEF.
- * In the case that F is a gEF, the expression function can be applied
- * to the argument see `applyGeneralExpressionFunctionApplication`.
- * @param {OM} func - either a gEF or something which can be instantiated as a gEF.
+ * F(arg) where F is either an expression function (EF), or a
+ * metavariable which is expected to be replaced by an EF.
+ * In the case that F is an EF, the expression function can be applied
+ * to the argument see `applyExpressionFunctionApplication`.
+ * @param {OM} func - either an EF or something which can be instantiated as an EF.
  * @param {OM[]} arguments - a list of OM expressions
  */
-export function makeGeneralExpressionFunctionApplication(func, args) {
-    if (!(isGeneralExpressionFunction(func) || Exprs.isMetavariable(func))) {
-        throw 'When making gEFAs, the func must be either a EF or a metavariable'
+export function makeExpressionFunctionApplication(func, args) {
+    if (!(isExpressionFunction(func) || Exprs.isMetavariable(func))) {
+        throw 'When making EFAs, the func must be either an EF or a metavariable'
     }
     if (!(args instanceof Array)) {
         args = [args]
     }
-    return Exprs.application([Exprs.generalExpressionFunctionApplication, func, ...args]);
+    return Exprs.application([expressionFunctionApplicationSymbol, func, ...args]);
 }
 
 /**
- * @returns true if the supplied expression is a gEFA
+ * @returns true if the supplied expression is an EFA
  */
-export function isGeneralExpressionFunctionApplication(expression) {
+export function isExpressionFunctionApplication(expression) {
     return (
         Exprs.isExpression(expression)
         && Exprs.isApplication(expression)
-        && Exprs.equal(Exprs.getChildren(expression)[0],Exprs.generalExpressionFunctionApplication)
+        && Exprs.equal(Exprs.getChildren(expression)[0],expressionFunctionApplicationSymbol)
     );
 }
 
 /**
- * Tests whether a gEFA is of the form gEF(args).
- * If the gEFA is of this form, `applyGeneralExpressionFunctionApplication`
- * can be called with this gEFA as an argument.
- * @param {OM} gEFA - a general expression function application
+ * Tests whether an EFA is of the form EF(args).
+ * If the EFA is of this form, `applyExpressionFunctionApplication`
+ * can be called with this EFA as an argument.
+ * @param {OM} EFA - an expression function application
  */
-export function canApplyGeneralExpressionFunctionApplication(gEFA) {
+export function canApplyExpressionFunctionApplication(EFA) {
     if (
-        isGeneralExpressionFunctionApplication(gEFA)
-        && isGeneralExpressionFunction(Exprs.getChildren(gEFA)[1])
+        isExpressionFunctionApplication(EFA)
+        && isExpressionFunction(Exprs.getChildren(EFA)[1])
     ) {
         return true;
     }
@@ -271,39 +310,39 @@ export function canApplyGeneralExpressionFunctionApplication(gEFA) {
 }
 
 /**
- * If this is a gEFA, extract and return the expression function application
+ * If this is an EFA, extract and return the expression function application
  * that is to be applied.  Otherwise return null.
- * @param {OM} gEFA - a general expression function application
+ * @param {OM} EFA - an expression function application
  */
-export function getGeneralExpressionFunctionFromApplication(gEFA) {
-    if (canApplyGeneralExpressionFunctionApplication(gEFA)) {
-        return Exprs.getChildren(gEFA)[1];
+export function getExpressionFunctionFromApplication(EFA) {
+    if (canApplyExpressionFunctionApplication(EFA)) {
+        return Exprs.getChildren(EFA)[1];
     }
     return null;
 }
 
 /**
- * If this is a gEFA, extract and return the array of arguments to which the
+ * If this is an EFA, extract and return the array of arguments to which the
  * function is to be applied.  Otherwise return null.
- * @param {OM} gEFA - a general expression function application
+ * @param {OM} EFA - an expression function application
  */
-export function getGeneralExpressionArgumentsFromApplication(gEFA) {
-    if (canApplyGeneralExpressionFunctionApplication(gEFA)) {
-        return Exprs.getChildren(gEFA).slice(2);
+export function getGeneralExpressionArgumentsFromApplication(EFA) {
+    if (canApplyExpressionFunctionApplication(EFA)) {
+        return Exprs.getChildren(EFA).slice(2);
     }
     return null;
 }
 
 /**
- * If `canApplyGeneralExpressionFunctionApplication` is true,
- * returns the beta reduction of the gEF and the arguments it is applied to.
- * @param {OM} gEFA - a general expression function application
+ * If `canApplyExpressionFunctionApplication` is true,
+ * returns the beta reduction of the EF and the arguments it is applied to.
+ * @param {OM} EFA - an expression function application
  */
-export function applyGeneralExpressionFunctionApplication(gEFA) {
-    if (canApplyGeneralExpressionFunctionApplication(gEFA)) {
+export function applyExpressionFunctionApplication(EFA) {
+    if (canApplyExpressionFunctionApplication(EFA)) {
         return betaReduce(
-            getGeneralExpressionFunctionFromApplication(gEFA),
-            getGeneralExpressionArgumentsFromApplication(gEFA)
+            getExpressionFunctionFromApplication(EFA),
+            getGeneralExpressionArgumentsFromApplication(EFA)
         );
     }
     return null;
@@ -512,24 +551,24 @@ export function alphaEquivalent(expr1, expr2, firstcall=true) {
  *
  * This beta reduction is capture avoiding.
  * See `replaceWithoutCapture` for details.
- * @param {OM} gEF - a general expression function with n variables
+ * @param {OM} EF - an expression function with n variables
  * @param {OM[]} expr_list - a list of expressions of length n
  * @returns an expression manipulated as described above
  */
-export function betaReduce(gEF, expr_list) {
+export function betaReduce(EF, expr_list) {
     // Check we can actually do a beta reduction
-    if (!isGeneralExpressionFunction(gEF)) {
+    if (!isExpressionFunction(EF)) {
         throw 'In beta reduction, the first argument must be a general expression function'
     }
     if (!(expr_list instanceof Array)) {
         throw 'In beta reduction,, the second argument must be a list of expressions'
     }
-    const variables = Exprs.bindingVariables(gEF);
+    const variables = Exprs.bindingVariables(EF);
     if (variables.length != expr_list.length) {
         throw 'In beta reduction, the number of expressions must match number of variables'
     }
 
-    var result = Exprs.copy(Exprs.bindingBody(gEF));
+    var result = Exprs.copy(Exprs.bindingBody(EF));
     for (let i = 0; i < expr_list.length; i++) {
         var v_i = variables[i];
         var e_i = expr_list[i];
@@ -558,7 +597,7 @@ export function checkVariable(variable, nextNewVariableIndex) {
 
 /**
  * Takes a new variable (relative to some constraint list) and an expression
- * and returns a gEF which has the meaning λv_n.expr where v_n is the new
+ * and returns an EF which has the meaning λv_n.expr where v_n is the new
  * variable and expr is the expression.
  * I.e. creates a constant expression function.
  * @param {OM} new_variable - an OM variable
@@ -566,7 +605,7 @@ export function checkVariable(variable, nextNewVariableIndex) {
  */
 export function makeConstantExpression(new_variable, expression) {
     if (Exprs.isExpression(new_variable) && Exprs.isExpression(expression)) {
-        return makeGeneralExpressionFunction(
+        return makeExpressionFunction(
             Exprs.copy(new_variable),Exprs.copy(expression));
     }
     return null;
@@ -574,7 +613,7 @@ export function makeConstantExpression(new_variable, expression) {
 
 /**
  * Takes a list of variables v_1,...,v_k and a single variable (a point)
- * v_i and returns a gEF with the meaning λv_1,...,v_k.v_i.
+ * v_i and returns an EF with the meaning λv_1,...,v_k.v_i.
  * I.e. returns a projection expression function for v_i with k arguments.
  * @param {OM[]} variables - a list of OM variables
  * @param {OM} point -  a single OM variable
@@ -584,7 +623,7 @@ export function makeProjectionExpression(variables, point) {
         if (!(variables.map(Exprs.getVariableName).includes(Exprs.getVariableName(point)))) {
             throw "When making a projection function, the point must occur in the list of variables"
         }
-        return makeGeneralExpressionFunction(
+        return makeExpressionFunction(
             variables.map(Exprs.copy),Exprs.copy(point));
     }
     return null;
@@ -595,17 +634,17 @@ export function makeProjectionExpression(variables, point) {
  * which is denoted `g(e1,...,em)`, and a list of temporary
  * metavariables.
  *
- * For an application, returns a gEF with the meaning
+ * For an application, returns an EF with the meaning
  * `λv_1,...,v_k.g(H_1(v_1,...,v_k),...,H_m(v_1,...,v_k))`
- * where each `H_i` denotes a temporary gEFA as well as a list of the
+ * where each `H_i` denotes a temporary EFA as well as a list of the
  * newly created temporary metavariables `[H_1,...,H_m]`.
  *
  * I.e. it returns an 'imitation' expression function where
  * the body is the original expression with each argument
- * replaced by a temporary gEFA.
+ * replaced by a temporary EFA.
  * @param {OM} variables - a list of OM variables
  * @param {OM} expr - an OM application
- * @returns a gEF which is the imitation expression described above
+ * @returns an EF which is the imitation expression described above
  */
 export function makeImitationExpression(variables, expr, temp_metavars) {
     /**
@@ -621,7 +660,7 @@ export function makeImitationExpression(variables, expr, temp_metavars) {
         for (let i = 0; i < temp_metavars.length; i++) {
             let temp_metavar = temp_metavars[i];
             args.push(
-                makeGeneralExpressionFunctionApplication(
+                makeExpressionFunctionApplication(
                     temp_metavar,
                     bound_vars
                 )
@@ -639,7 +678,7 @@ export function makeImitationExpression(variables, expr, temp_metavars) {
 
     if (variables.every(Exprs.isExpression) && Exprs.isExpression(expr)) {
         const bind = Exprs.isBinding(expr);
-        imitationExpr = makeGeneralExpressionFunction(
+        imitationExpr = makeExpressionFunction(
             variables,
             createBody(
                 (bind ? Exprs.bindingHead(expr) : Exprs.getChildren(expr)[0]),

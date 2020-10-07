@@ -9,11 +9,11 @@
 // Import everything from the language module and expose it as well.
 import {
     OM, Exprs,
-    isGeneralExpressionFunction, makeGeneralExpressionFunction,
-    isGeneralExpressionFunctionApplication,
-    makeGeneralExpressionFunctionApplication,
-    canApplyGeneralExpressionFunctionApplication,
-    applyGeneralExpressionFunctionApplication,
+    isExpressionFunction, makeExpressionFunction,
+    isExpressionFunctionApplication,
+    makeExpressionFunctionApplication,
+    canApplyExpressionFunctionApplication,
+    applyExpressionFunctionApplication,
     getNewVariableRelativeTo, replaceWithoutCapture,
     alphaConvert, alphaEquivalent, betaReduce,
     checkVariable,
@@ -21,11 +21,11 @@ import {
 } from './language.js';
 export {
     OM, Exprs,
-    isGeneralExpressionFunction, makeGeneralExpressionFunction,
-    isGeneralExpressionFunctionApplication,
-    makeGeneralExpressionFunctionApplication,
-    canApplyGeneralExpressionFunctionApplication,
-    applyGeneralExpressionFunctionApplication,
+    isExpressionFunction, makeExpressionFunction,
+    isExpressionFunctionApplication,
+    makeExpressionFunctionApplication,
+    canApplyExpressionFunctionApplication,
+    applyExpressionFunctionApplication,
     getNewVariableRelativeTo, replaceWithoutCapture,
     alphaConvert, alphaEquivalent, betaReduce,
     makeConstantExpression, makeProjectionExpression, makeImitationExpression
@@ -55,7 +55,7 @@ export {
  * and the expression are functions and the 'head' of the pattern function is
  * not a metavariable
  *
- * EFA represents the case in which the pattern is gEFA,
+ * EFA represents the case in which the pattern is an expression function application,
  * or a function with a metavariable as its 'head', and `SIMPLIFICATION`
  * does not hold
  *
@@ -131,7 +131,7 @@ export class Constraint {
                     (
                         (
                             pattern.type == 'a'
-                            && !(isGeneralExpressionFunctionApplication(pattern))
+                            && !(isExpressionFunctionApplication(pattern))
                         )
                         && expression.type == 'a'
                     )
@@ -147,7 +147,7 @@ export class Constraint {
                 )
             ) {
             return CASES.SIMPLIFICATION;
-        } else if (isGeneralExpressionFunctionApplication(pattern)
+        } else if (isExpressionFunctionApplication(pattern)
             || Exprs.isMetavariable(pattern.children[1])
             ) {
             return CASES.EFA;
@@ -172,8 +172,8 @@ export class Constraint {
     applyInstantiation(target) {
         var result = target.copy();
         replaceWithoutCapture(result, this.pattern, this.expression);
-        result.descendantsSatisfying(canApplyGeneralExpressionFunctionApplication).forEach(x =>
-            x.replaceWith(applyGeneralExpressionFunctionApplication(x))
+        result.descendantsSatisfying(canApplyExpressionFunctionApplication).forEach(x =>
+            x.replaceWith(applyExpressionFunctionApplication(x))
         );
         return result;
     }

@@ -146,7 +146,7 @@ describe('Expression Function Creators', () => {
         temps = [quick('_H1'), quick('_H2'), quick('_H3')];
         imit = M.makeImitationExpression(vars, expr, temps);
         expect(imit.equals(
-            quick('SecondOrderMatching.gEF[v1,v2,v3,SecondOrderMatching.gEFA(_H1,v1,v2,v3)(SecondOrderMatching.gEFA(_H2,v1,v2,v3),SecondOrderMatching.gEFA(_H3,v1,v2,v3))]'))
+            quick('SecondOrderMatching.EF[v1,v2,v3,SecondOrderMatching.EFA(_H1,v1,v2,v3)(SecondOrderMatching.EFA(_H2,v1,v2,v3),SecondOrderMatching.EFA(_H3,v1,v2,v3))]'))
         ).toBe(true);
     });
 });

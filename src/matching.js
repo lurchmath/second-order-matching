@@ -4,11 +4,11 @@
 // Import everything from the constraints module and expose it as well.
 import {
     OM, Exprs,
-    isGeneralExpressionFunction, makeGeneralExpressionFunction,
-    isGeneralExpressionFunctionApplication,
-    makeGeneralExpressionFunctionApplication,
-    canApplyGeneralExpressionFunctionApplication,
-    applyGeneralExpressionFunctionApplication,
+    isExpressionFunction, makeExpressionFunction,
+    isExpressionFunctionApplication,
+    makeExpressionFunctionApplication,
+    canApplyExpressionFunctionApplication,
+    applyExpressionFunctionApplication,
     getNewVariableRelativeTo, replaceWithoutCapture,
     alphaConvert, alphaEquivalent, betaReduce,
     makeConstantExpression, makeProjectionExpression, makeImitationExpression,
@@ -16,11 +16,11 @@ import {
 } from './constraints.js';
 export {
     OM, Exprs,
-    isGeneralExpressionFunction, makeGeneralExpressionFunction,
-    isGeneralExpressionFunctionApplication,
-    makeGeneralExpressionFunctionApplication,
-    canApplyGeneralExpressionFunctionApplication,
-    applyGeneralExpressionFunctionApplication,
+    isExpressionFunction, makeExpressionFunction,
+    isExpressionFunctionApplication,
+    makeExpressionFunctionApplication,
+    canApplyExpressionFunctionApplication,
+    applyExpressionFunctionApplication,
     getNewVariableRelativeTo, replaceWithoutCapture,
     alphaConvert, alphaEquivalent, betaReduce,
     makeConstantExpression, makeProjectionExpression, makeImitationExpression,
