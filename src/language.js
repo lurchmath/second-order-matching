@@ -13,239 +13,184 @@
 import { OM } from './openmath.js';
 export { OM };
 
-export const Exprs = { };
+export const Exprs = {
 
-/**
- * Returns true if and only if the given object is an OpenMath expression
- * @param {object} expr - the object to test
- */
-Exprs.isExpression = (expr) => {
-    return expr instanceof OM;
-}
+    /**
+     * Returns true if and only if the given object is an OpenMath expression
+     * @param {object} expr - the object to test
+     */
+    isExpression : (expr) => expr instanceof OM,
 
-/**
- * Return an array of the expression's children, in the order in which they
- * appear as children
- * @param {OM} expr - the expression whose children should be returned
- */
-Exprs.getChildren = (expr) => {
-    return expr.children;
-}
+    /**
+     * Return an array of the expression's children, in the order in which they
+     * appear as children
+     * @param {OM} expr - the expression whose children should be returned
+     */
+    getChildren : (expr) => expr.children,
 
-////////////////////////////////////////////////////////////////////////////////
-// * The following are functions and constants related to metavariables.
-// * A metavariable is a variable that will be used for substitution.
-////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////
+    // * The following are functions and constants related to metavariables.
+    // * A metavariable is a variable that will be used for substitution.
+    ////////////////////////////////////////////////////////////////////////////////
 
-// Define the metavariable symbol to be used as an attribute key, and its corresponding value
-Exprs.metavariableSymbol = OM.symbol('metavariable', 'SecondOrderMatching');
-Exprs.trueValue = OM.string('true');
+    // Define the metavariable symbol to be used as an attribute key, and its corresponding value
+    metavariableSymbol : OM.symbol('metavariable', 'SecondOrderMatching'),
+    trueValue : OM.string('true'),
 
-/**
- * Marks a variable as a metavariable.
- * Does nothing if the given input is not an OMNode of type variable or type symbol.
- * @param {OM} variable - the variable to be marked
- */
-Exprs.setMetavariable = (variable) => {
-    if (Exprs.isExpression(variable) && ['v', 'sy'].includes(variable.type)) {
-        return variable.setAttribute(Exprs.metavariableSymbol, Exprs.trueValue.copy());
-    } else return null;
-}
+    /**
+     * Marks a variable as a metavariable.
+     * Does nothing if the given input is not an OMNode of type variable or type symbol.
+     * @param {OM} variable - the variable to be marked
+     */
+    setMetavariable : (variable) => 
+        Exprs.isExpression(variable) && ['v', 'sy'].includes(variable.type) ?
+        variable.setAttribute(Exprs.metavariableSymbol, Exprs.trueValue.copy()) : null,
 
-/**
- * Removes the metavariable attribute if it is present.
- * @param {OM} metavariable - the metavariable to be unmarked
- */
-Exprs.clearMetavariable = (metavariable) => {
-    return metavariable.removeAttribute(Exprs.metavariableSymbol);
-}
+    /**
+     * Removes the metavariable attribute if it is present.
+     * @param {OM} metavariable - the metavariable to be unmarked
+     */
+    clearMetavariable : (metavariable) => metavariable.removeAttribute(Exprs.metavariableSymbol),
 
-/**
- * Tests whether the given variable has the metavariable attribute.
- * @param {OM} variable - the variable to be checked
- */
-Exprs.isMetavariable = (variable) => {
-    return (
+    /**
+     * Tests whether the given variable has the metavariable attribute.
+     * @param {OM} variable - the variable to be checked
+     */
+    isMetavariable : (variable) =>
         Exprs.isExpression(variable)
-        && ['v', 'sy'].includes(variable.type)
-        && variable.getAttribute(Exprs.metavariableSymbol) != undefined
-        && variable.getAttribute(Exprs.metavariableSymbol).equals(Exprs.trueValue)
-    );
-}
+     && ['v', 'sy'].includes(variable.type)
+     && variable.getAttribute(Exprs.metavariableSymbol) != undefined
+     && variable.getAttribute(Exprs.metavariableSymbol).equals(Exprs.trueValue),
 
-////////////////////////////////////////////////////////////////////////////////
-// * The following are generalised versions expression functions.
-// * When P: E -> E, P is an expression function.
-// * This generalisation allows us to have expression functions
-// * with more than one variable.
-////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////
+    // * The following are generalised versions expression functions.
+    // * When P: E -> E, P is an expression function.
+    // * This generalisation allows us to have expression functions
+    // * with more than one variable.
+    ////////////////////////////////////////////////////////////////////////////////
 
-Exprs.generalExpressionFunction = OM.symbol('gEF', 'SecondOrderMatching');
-Exprs.generalExpressionFunctionApplication = OM.symbol('gEFA', 'SecondOrderMatching');
+    generalExpressionFunction : OM.symbol('gEF', 'SecondOrderMatching'),
+    generalExpressionFunctionApplication : OM.symbol('gEFA', 'SecondOrderMatching'),
 
-/**
- * Return true iff the given expression is a variable, false otherwise.
- * @param {OM} expr - the expression to test
- */
-Exprs.isVariable = (expr) => {
-    return expr.type === 'v';
-}
+    /**
+     * Return true iff the given expression is a variable, false otherwise.
+     * @param {OM} expr - the expression to test
+     */
+    isVariable : (expr) => expr.type === 'v',
 
-/**
- * Helper function used when adding pairs to a constraint list.
- * Returns the list of variables that appear in a given expression.
- * @param {OM} expression - the expression to be checked
- * @returns a list containing any variables in the given expression
- */
-Exprs.getVariablesIn = (expression) => {
-    return expression.descendantsSatisfying(Exprs.isVariable);
-}
+    /**
+     * Helper function used when adding pairs to a constraint list.
+     * Returns the list of variables that appear in a given expression.
+     * @param {OM} expression - the expression to be checked
+     * @returns a list containing any variables in the given expression
+     */
+    getVariablesIn : (expression) => expression.descendantsSatisfying(Exprs.isVariable),
 
-/**
- * Returns the variable's name, or null if it is not a variable.
- * @param {OM} variable - an OM instance of type variable
- */
-Exprs.getVariableName = (variable) => {
-    if (Exprs.isVariable(variable)) {
-        return variable.name;
-    }
-    return null;
-}
+    /**
+     * Returns the variable's name, or null if it is not a variable.
+     * @param {OM} variable - an OM instance of type variable
+     */
+    getVariableName : (variable) => Exprs.isVariable(variable) ? variable.name : null,
 
-/**
- * Construct an expression that is just a variable, with the given name
- * @param {string} name - the name of the new variable
- */
-Exprs.variable = (name) => {
-    return OM.var(name);
-}
+    /**
+     * Construct an expression that is just a variable, with the given name
+     * @param {string} name - the name of the new variable
+     */
+    variable : (name) => OM.var(name),
 
-/**
- * Returns a copy of an OpenMath expression
- * @param {OM} expr - the expression to copy
- */
-Exprs.copy = (expr) => {
-    return expr.copy();
-}
+    /**
+     * Returns a copy of an OpenMath expression
+     * @param {OM} expr - the expression to copy
+     */
+    copy : (expr) => expr.copy(),
 
-/**
- * Return true iff the given expression is a function application, false
- * otherwise.
- * @param {OM} expr - the expression to test
- */
-Exprs.isApplication = (expr) => {
-    return expr.type === 'a';
-}
+    /**
+     * Return true iff the given expression is a function application, false
+     * otherwise.
+     * @param {OM} expr - the expression to test
+     */
+    isApplication : (expr) => expr.type === 'a',
 
-/**
- * Make a function application expression from the given children.  For example,
- * to create f(x,y), pass [f,x,y].  All arguments are used as-is, not copied
- * first; do not pass copies you need elsewhere.
- * @param {OM[]} children - the children of the resulting application, the first
- *   of which should be the operator and the rest the operands
- */
-Exprs.application = (children) => {
-    return OM.app(...children);
-}
+    /**
+     * Make a function application expression from the given children.  For example,
+     * to create f(x,y), pass [f,x,y].  All arguments are used as-is, not copied
+     * first; do not pass copies you need elsewhere.
+     * @param {OM[]} children - the children of the resulting application, the first
+     *   of which should be the operator and the rest the operands
+     */
+    application : (children) => OM.app(...children),
 
-/**
- * Return true iff the given expression is a binding expression, false
- * otherwise.
- * @param {OM} expr - the expression to test
- */
-Exprs.isBinding = (expr) => {
-    return expr.type === 'bi';
-}
+    /**
+     * Return true iff the given expression is a binding expression, false
+     * otherwise.
+     * @param {OM} expr - the expression to test
+     */
+    isBinding : (expr) => expr.type === 'bi',
 
-/**
- * Make a binding expression from the given symbol, variables, and body.  For
- * example, to create Forall x, P, pass Forall, [x], and P.  All arguments are
- * used as-is, not copied first; do not pass copies you need elsewhere.
- * @param {OM} symbol - the binding operator
- * @param {OM[]} variables - the array of bound variables
- * @param {OM} body - the body of the binding
- */
-Exprs.binding = (symbol,variables,body) => {
-    return OM.bin(symbol,...variables,body);
-}
+    /**
+     * Make a binding expression from the given symbol, variables, and body.  For
+     * example, to create Forall x, P, pass Forall, [x], and P.  All arguments are
+     * used as-is, not copied first; do not pass copies you need elsewhere.
+     * @param {OM} symbol - the binding operator
+     * @param {OM[]} variables - the array of bound variables
+     * @param {OM} body - the body of the binding
+     */
+    binding : (symbol,variables,body) => OM.bin(symbol,...variables,body),
 
-/**
- * Return the symbol/head/operator of the binding expression, if indeed the
- * given argument is a binding expression; return null otherwise.
- * @param {OM} expr - the expression whose operator is to be returned
- */
-Exprs.bindingHead = (binding) => {
-    if (Exprs.isBinding(binding)) {
-        return binding.symbol;
-    }
-    return null;
-}
+    /**
+     * Return the symbol/head/operator of the binding expression, if indeed the
+     * given argument is a binding expression; return null otherwise.
+     * @param {OM} expr - the expression whose operator is to be returned
+     */
+    bindingHead : (binding) => Exprs.isBinding(binding) ? binding.symbol : null,
 
-/**
- * Return a list of the bound variables in the given expression, or null if the
- * given expression is not a binding one.
- * @param {OM} binding - the expression whose bound variables are to be returned
- */
-Exprs.bindingVariables = (binding) => {
-    if (Exprs.isBinding(binding)) {
-        return binding.variables;
-    }
-    return null
-}
+    /**
+     * Return a list of the bound variables in the given expression, or null if the
+     * given expression is not a binding one.
+     * @param {OM} binding - the expression whose bound variables are to be returned
+     */
+    bindingVariables : (binding) => Exprs.isBinding(binding) ? binding.variables : null,
 
-/**
- * Return the body bound by a binding expression, or null if the given
- * expression is not a binding one.
- * @param {OM} binding - the expression whose body is to be returned (the
- *   original body, not a copy)
- */
-Exprs.bindingBody = (binding) => {
-    if (Exprs.isBinding(binding)) {
-        return binding.body;
-    }
-    return null
-}
+    /**
+     * Return the body bound by a binding expression, or null if the given
+     * expression is not a binding one.
+     * @param {OM} binding - the expression whose body is to be returned (the
+     *   original body, not a copy)
+     */
+    bindingBody : (binding) => Exprs.isBinding(binding) ? binding.body : null,
 
-/**
- * Return true if a structural copy of the given inner (sub)expression occurs
- * free in the given outer expression.
- * @param {OM} outer - the expression in which to seek subexpressions
- * @param {OM} inner - the subexpression to seek
- */
-Exprs.occursFreeIn = (inner,outer) => {
-    return outer.occursFree(inner);
-}
+    /**
+     * Return true if a structural copy of the given inner (sub)expression occurs
+     * free in the given outer expression.
+     * @param {OM} outer - the expression in which to seek subexpressions
+     * @param {OM} inner - the subexpression to seek
+     */
+    occursFreeIn : (inner,outer) => outer.occursFree(inner),
 
-/**
- * Compute whether the two expressions are structurally equal, and return true
- * or false.
- * @param {OM} expr1 - first expression
- * @param {OM} expr2 - second expression
- */
-Exprs.equal = (expr1,expr2) => {
-    return expr1.equals(expr2);
-}
+    /**
+     * Compute whether the two expressions are structurally equal, and return true
+     * or false.
+     * @param {OM} expr1 - first expression
+     * @param {OM} expr2 - second expression
+     */
+    equal : (expr1,expr2) => expr1.equals(expr2),
 
-/**
- * Replace one expression, wherever it sits in its parent tree, with another.
- * @param {OM} toReplace - the expression to be replaced
- * @param {OM} withThis - the expression with which to replace it
- */
-Exprs.replace = (toReplace,withThis) => {
-    toReplace.replaceWith(withThis);
-}
+    /**
+     * Replace one expression, wherever it sits in its parent tree, with another.
+     * @param {OM} toReplace - the expression to be replaced
+     * @param {OM} withThis - the expression with which to replace it
+     */
+    replace : (toReplace,withThis) => toReplace.replaceWith(withThis),
 
-/**
- * Return true iff the two expressions have the same type (e.g., both are
- * variables, or both are bindings, or both are function applications, etc.)
- * @param {OM} expr1 - first expression
- * @param {OM} expr2 - second expression
- */
-Exprs.sameType = (expr1,expr2) => {
-    return expr1.type === expr2.type;
-}
+    /**
+     * Return true iff the two expressions have the same type (e.g., both are
+     * variables, or both are bindings, or both are function applications, etc.)
+     * @param {OM} expr1 - first expression
+     * @param {OM} expr2 - second expression
+     */
+    sameType : (expr1,expr2) => expr1.type === expr2.type
 
-// ---------- API ends here
+};
 
 /**
  * Makes a new expression function with the meaning
