@@ -36,26 +36,20 @@
 
 // Import everything from the language module and expose it as well.
 import {
-    OM, isMetavariable, setMetavariable, clearMetavariable,
-    isGeneralExpressionFunction, makeGeneralExpressionFunction,
-    isGeneralExpressionFunctionApplication,
-    makeGeneralExpressionFunctionApplication,
-    canApplyGeneralExpressionFunctionApplication,
-    applyGeneralExpressionFunctionApplication,
-    getNewVariableRelativeTo, replaceWithoutCapture,
-    alphaConvert, alphaEquivalent, betaReduce,
-    checkVariable, getVariablesIn,
-    makeConstantExpression, makeProjectionExpression, makeImitationExpression
+    Exprs, isExpressionFunction, makeExpressionFunction,
+    isExpressionFunctionApplication, makeExpressionFunctionApplication,
+    canApplyExpressionFunctionApplication,
+    applyExpressionFunctionApplication, getNewVariableRelativeTo,
+    replaceWithoutCapture, alphaConvert, alphaEquivalent, betaReduce,
+    checkVariable, makeConstantExpression, makeProjectionExpression,
+    makeImitationExpression
 } from './language.js';
 export {
-    OM, isMetavariable, setMetavariable, clearMetavariable,
-    isGeneralExpressionFunction, makeGeneralExpressionFunction,
-    isGeneralExpressionFunctionApplication,
-    makeGeneralExpressionFunctionApplication,
-    canApplyGeneralExpressionFunctionApplication,
-    applyGeneralExpressionFunctionApplication,
-    getNewVariableRelativeTo, replaceWithoutCapture,
-    alphaConvert, alphaEquivalent, betaReduce,
+    Exprs, isExpressionFunction, makeExpressionFunction,
+    isExpressionFunctionApplication, makeExpressionFunctionApplication,
+    canApplyExpressionFunctionApplication,
+    applyExpressionFunctionApplication, getNewVariableRelativeTo,
+    replaceWithoutCapture, alphaConvert, alphaEquivalent, betaReduce,
     makeConstantExpression, makeProjectionExpression, makeImitationExpression
 };
 
@@ -83,7 +77,7 @@ export {
  * and the expression are functions and the 'head' of the pattern function is
  * not a metavariable
  *
- * EFA represents the case in which the pattern is gEFA,
+ * EFA represents the case in which the pattern is an expression function application,
  * or a function with a metavariable as its 'head', and `SIMPLIFICATION`
  * does not hold
  *
@@ -104,12 +98,12 @@ Object.freeze(CASES);
 export class Constraint {
     /**
      * Creates a new constraint with given pattern and expression.
-     * @param {OM} pattern - an OM expression which should contain a metavariable (but may not)
-     * @param {OM} expression - an OM expression which must not contain a metavariable
+     * @param {OM} pattern - an expression which should contain a metavariable (but may not)
+     * @param {OM} expression - an expression which must not contain a metavariable
      */
     constructor(pattern, expression) {
-        if (!(pattern instanceof OM) || !(expression instanceof OM)) {
-            throw Error( 'Both arguments must be instances of OMNode' );
+        if (!Exprs.isExpression(pattern) || !Exprs.isExpression(expression)) {
+            throw Error( 'Both arguments must be expressions' );
         }
         this.pattern = pattern;
         this.expression = expression;
@@ -140,7 +134,7 @@ export class Constraint {
      * @returns true if the pattern is a metavariable, false otherwise.
      */
     isSubstitution() {
-        return isMetavariable(this.pattern);
+        return Exprs.isMetavariable(this.pattern);
     }
 
     /**
@@ -152,14 +146,14 @@ export class Constraint {
     getCase(pattern, expression) {
         if (pattern.equals(expression)) {
             return CASES.IDENTITY;
-        } else if (isMetavariable(pattern)) {
+        } else if (Exprs.isMetavariable(pattern)) {
             return CASES.BINDING;
         } else if (
                 (
                     (
                         (
                             pattern.type == 'a'
-                            &amp;&amp; !(isGeneralExpressionFunctionApplication(pattern))
+                            &amp;&amp; !(isExpressionFunctionApplication(pattern))
                         )
                         &amp;&amp; expression.type == 'a'
                     )
@@ -175,8 +169,8 @@ export class Constraint {
                 )
             ) {
             return CASES.SIMPLIFICATION;
-        } else if (isGeneralExpressionFunctionApplication(pattern)
-            || isMetavariable(pattern.children[1])
+        } else if (isExpressionFunctionApplication(pattern)
+            || Exprs.isMetavariable(pattern.children[1])
             ) {
             return CASES.EFA;
         } else {
@@ -200,8 +194,8 @@ export class Constraint {
     applyInstantiation(target) {
         var result = target.copy();
         replaceWithoutCapture(result, this.pattern, this.expression);
-        result.descendantsSatisfying(canApplyGeneralExpressionFunctionApplication).forEach(x =>
-            x.replaceWith(applyGeneralExpressionFunctionApplication(x))
+        result.descendantsSatisfying(canApplyExpressionFunctionApplication).forEach(x =>
+            x.replaceWith(applyExpressionFunctionApplication(x))
         );
         return result;
     }
@@ -289,7 +283,7 @@ export class ConstraintList {
      * @returns a new variable starting at `vN` (see constructor for definition of `vN`).
      */
     nextNewVariable() {
-        return OM.simple('v' + this.nextNewVariableIndex++);
+        return Exprs.variable('v' + this.nextNewVariableIndex++);
     }
 
     /**
@@ -323,11 +317,11 @@ export class ConstraintList {
             // Don't add if it's already in the list
             if (this.indexAtWhich((c) => c.equals(constraint)) == -1) {
                 // Set the next new var index
-                var p_vars = getVariablesIn(constraint.pattern);
+                var p_vars = Exprs.getVariablesIn(constraint.pattern);
                 for (let j = 0; j &lt; p_vars.length; j++) {
                     this.nextNewVariableIndex = checkVariable(p_vars[j], this.nextNewVariableIndex);
                 }
-                var e_vars = getVariablesIn(constraint.expression);
+                var e_vars = Exprs.getVariablesIn(constraint.expression);
                 for (let k = 0; k &lt; e_vars.length; k++) {
                     this.nextNewVariableIndex = checkVariable(e_vars[k], this.nextNewVariableIndex);
                 }
@@ -434,14 +428,14 @@ export class ConstraintList {
 
     /**
      * If the constraint list is a function, this routine returns the expression associated with a given metavariable.
-     * @param variable - a string or OM object
-     * @returns the OM object that is the expression of the constraint
-     * with the pattern that equals the variable, null otherwise.
+     * @param variable - a string or expression
+     * @returns the expression of the constraint with the pattern that equals
+     *   the variable, null otherwise.
      */
     lookup(variable) {
-        if (!(variable instanceof OM)) {
-            variable = OM.var(variable);
-            setMetavariable(variable);
+        if (!Exprs.isExpression(variable)) {
+            variable = Exprs.variable(variable);
+            Exprs.setMetavariable(variable);
         }
         for (let i = 0; i &lt; this.contents.length; i++) {
             var constraint = this.contents[i];
@@ -479,7 +473,7 @@ export class ConstraintList {
     computeBindingConstraints() {
         this.contents.forEach(constraint =>
             constraint.pattern.descendantsSatisfying(d => d.type == 'bi').forEach(binding =>
-                binding.descendantsSatisfying(isMetavariable).forEach(innerMV => {
+                binding.descendantsSatisfying(Exprs.isMetavariable).forEach(innerMV => {
                     if (innerMV.isFree(binding)) {
                         binding.variables.forEach(outerMV => {
                             if (!this.bindingConstraints.find(existing =>
@@ -523,13 +517,13 @@ export class ConstraintList {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Constraint.html">Constraint</a></li><li><a href="ConstraintList.html">ConstraintList</a></li><li><a href="MatchingChallenge.html">MatchingChallenge</a></li></ul><h3>Global</h3><ul><li><a href="global.html#alphaConvert">alphaConvert</a></li><li><a href="global.html#alphaEquivalent">alphaEquivalent</a></li><li><a href="global.html#applyGeneralExpressionFunctionApplication">applyGeneralExpressionFunctionApplication</a></li><li><a href="global.html#betaReduce">betaReduce</a></li><li><a href="global.html#canApplyGeneralExpressionFunctionApplication">canApplyGeneralExpressionFunctionApplication</a></li><li><a href="global.html#CASES">CASES</a></li><li><a href="global.html#checkVariable">checkVariable</a></li><li><a href="global.html#clearMetavariable">clearMetavariable</a></li><li><a href="global.html#getNewVariableRelativeTo">getNewVariableRelativeTo</a></li><li><a href="global.html#getVariablesIn">getVariablesIn</a></li><li><a href="global.html#isGeneralExpressionFunction">isGeneralExpressionFunction</a></li><li><a href="global.html#isGeneralExpressionFunctionApplication">isGeneralExpressionFunctionApplication</a></li><li><a href="global.html#isMetavariable">isMetavariable</a></li><li><a href="global.html#makeConstantExpression">makeConstantExpression</a></li><li><a href="global.html#makeGeneralExpressionFunction">makeGeneralExpressionFunction</a></li><li><a href="global.html#makeGeneralExpressionFunctionApplication">makeGeneralExpressionFunctionApplication</a></li><li><a href="global.html#makeImitationExpression">makeImitationExpression</a></li><li><a href="global.html#makeProjectionExpression">makeProjectionExpression</a></li><li><a href="global.html#replaceWithoutCapture">replaceWithoutCapture</a></li><li><a href="global.html#setMetavariable">setMetavariable</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="OpenMathAPI.html">OpenMathAPI</a></li></ul><h3>Classes</h3><ul><li><a href="Constraint.html">Constraint</a></li><li><a href="ConstraintList.html">ConstraintList</a></li><li><a href="MatchingChallenge.html">MatchingChallenge</a></li></ul><h3>Global</h3><ul><li><a href="global.html#alphaConvert">alphaConvert</a></li><li><a href="global.html#alphaEquivalent">alphaEquivalent</a></li><li><a href="global.html#applyExpressionFunctionApplication">applyExpressionFunctionApplication</a></li><li><a href="global.html#betaReduce">betaReduce</a></li><li><a href="global.html#canApplyExpressionFunctionApplication">canApplyExpressionFunctionApplication</a></li><li><a href="global.html#CASES">CASES</a></li><li><a href="global.html#checkVariable">checkVariable</a></li><li><a href="global.html#getExpressionFunctionFromApplication">getExpressionFunctionFromApplication</a></li><li><a href="global.html#getGeneralExpressionArgumentsFromApplication">getGeneralExpressionArgumentsFromApplication</a></li><li><a href="global.html#getNewVariableRelativeTo">getNewVariableRelativeTo</a></li><li><a href="global.html#isExpressionFunction">isExpressionFunction</a></li><li><a href="global.html#isExpressionFunctionApplication">isExpressionFunctionApplication</a></li><li><a href="global.html#makeConstantExpression">makeConstantExpression</a></li><li><a href="global.html#makeExpressionFunction">makeExpressionFunction</a></li><li><a href="global.html#makeExpressionFunctionApplication">makeExpressionFunctionApplication</a></li><li><a href="global.html#makeImitationExpression">makeImitationExpression</a></li><li><a href="global.html#makeProjectionExpression">makeProjectionExpression</a></li><li><a href="global.html#replaceWithoutCapture">replaceWithoutCapture</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Mon Feb 24 2020 09:10:56 GMT-0500 (Eastern Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu Oct 08 2020 11:24:28 GMT-0400 (Eastern Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

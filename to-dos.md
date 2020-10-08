@@ -24,7 +24,6 @@
 
 ## Moving beyond OpenMath
 
-- Ensure that the docs build correctly after all these changes.
 - Rework the `language.js` file so that it doesn't import the new API, but
   rather exposes a function by which it expects to be provided such an API.
   Rework the new API file so that it exposes the API in a way that could be
@@ -50,3 +49,4 @@
 - Create a new test file in which you import only `matching-without-om.js` and
   provide a simple OM alternative, then ensure that a subset of the original
   test suite still passes in that new paradigm.
+- Update all docs to describe this new paradigm.

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Global</title>
+    <title>JSDoc: Namespace: OpenMathAPI</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Global</h1>
+    <h1 class="page-title">Namespace: OpenMathAPI</h1>
 
     
 
@@ -28,7 +28,7 @@
 
 <header>
     
-        <h2></h2>
+        <h2>OpenMathAPI</h2>
         
     
 </header>
@@ -36,6 +36,9 @@
 <article>
     <div class="container-overview">
     
+        
+            <div class="description">This namespace creates an API by which this package can use a simple JavaScript
+implementation of OpenMath to store and manipulate mathematical expressions.</div>
         
 
         
@@ -68,6 +71,11 @@
     
 
     
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line12">line 12</a>
+    </li></ul></dd>
+    
 
     
 
@@ -94,15 +102,85 @@
     
 
     
-        <h3 class="subsection-title">Members</h3>
+
+    
+        <h3 class="subsection-title">Methods</h3>
 
         
             
-<h4 class="name" id="CASES"><span class="type-signature">(constant) </span>CASES<span class="type-signature"></span></h4>
+
+    
+
+    
+    <h4 class="name" id=".application"><span class="type-signature">(static) </span>application<span class="signature">(children)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Make a function application expression from the given children.  For example,
+to create f(x,y), pass [f,x,y].  All arguments are used as-is, not copied
+first; do not pass copies you need elsewhere.
+</div>
 
 
 
 
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>children</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;OM></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the children of the resulting application, the first
+  of which should be the operator and the rest the operands</td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -138,7 +216,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="constraints.js.html">constraints.js</a>, <a href="constraints.js.html#line39">line 39</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line140">line 140</a>
     </li></ul></dd>
     
 
@@ -154,11 +232,19 @@
 
 
 
-        
-    
 
-    
-        <h3 class="subsection-title">Methods</h3>
+
+
+
+
+
+
+
+
+
+
+
+
 
         
             
@@ -166,7 +252,7 @@
     
 
     
-    <h4 class="name" id="alphaConvert"><span class="type-signature"></span>alphaConvert<span class="signature">(binding, which_var, replace_var)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".binding"><span class="type-signature">(static) </span>binding<span class="signature">(symbol, variables, body)</span><span class="type-signature"></span></h4>
     
 
     
@@ -174,9 +260,193 @@
 
 
 <div class="description">
-    Takes a binding, a bound variable in that binding, and a replacement variable.
-Returns the result of replacing (without capture) all instances of the bound
-variable with the replacement variable.
+    Make a binding expression from the given symbol, variables, and body.  For
+example, to create Forall x, P, pass Forall, [x], and P.  All arguments are
+used as-is, not copied first; do not pass copies you need elsewhere.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>symbol</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the binding operator</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>variables</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;OM></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the array of bound variables</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>body</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the body of the binding</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line176">line 176</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".bindingBody"><span class="type-signature">(static) </span>bindingBody<span class="signature">(binding)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Return the body bound by a binding expression, or null if the given
+expression is not a binding one.
 </div>
 
 
@@ -228,53 +498,8 @@ variable with the replacement variable.
 
             
 
-            <td class="description last">an OM binding</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>which_var</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">the bound variable to replace</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>replace_var</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">the replacement variable</td>
+            <td class="description last">the expression whose body is to be returned (the
+  original body, not a copy)</td>
         </tr>
 
     
@@ -315,329 +540,7 @@ variable with the replacement variable.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line179">line 179</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    a copy of the alpha converted binding
-</div>
-
-
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="alphaEquivalent"><span class="type-signature"></span>alphaEquivalent<span class="signature">(expr1, expr2)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Checks if two expressions are alpha equivalent.
-Two expresssions are alpha equivalent if one can be transformed into the other
-by the renaming of bound variables.
-If called when neither expr1 nor expr2 are applications or bindings, this function
-returns false because alpha equivalence is not defined for free variables or constants.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>expr1</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">an OM expression (must be application or binding on first call)</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>expr2</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">an OM expression (must be application or binding on first call)gef</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line285">line 285</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    true if the two expressions are alpha equivalent, false otherwise
-</div>
-
-
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="applyExpressionFunctionApplication"><span class="type-signature"></span>applyExpressionFunctionApplication<span class="signature">(EFA)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    If `canApplyExpressionFunctionApplication` is true,
-returns the beta reduction of the EF and the arguments it is applied to.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>EFA</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">an expression function application</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line130">line 130</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line206">line 206</a>
     </li></ul></dd>
     
 
@@ -673,7 +576,7 @@ returns the beta reduction of the EF and the arguments it is applied to.
     
 
     
-    <h4 class="name" id="betaReduce"><span class="type-signature"></span>betaReduce<span class="signature">(EF, expr_list)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".bindingHead"><span class="type-signature">(static) </span>bindingHead<span class="signature">(expr)</span><span class="type-signature"></span></h4>
     
 
     
@@ -681,760 +584,8 @@ returns the beta reduction of the EF and the arguments it is applied to.
 
 
 <div class="description">
-    Takes a general expression function representing λv_1,...,v_k.B
-and a list of expressions e_1,...,e_k and returns the beta reduction
-of ((λv_1,...,v_k.B)(e_1,...,e_k)) which is the expression B
-with all v_i replaced by the corresponding e_i.
-
-This beta reduction is capture avoiding.
-See `replaceWithoutCapture` for details.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>EF</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">an expression function with n variables</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>expr_list</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;OM></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">a list of expressions of length n</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line347">line 347</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    an expression manipulated as described above
-</div>
-
-
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="canApplyExpressionFunctionApplication"><span class="type-signature"></span>canApplyExpressionFunctionApplication<span class="signature">(EFA)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Tests whether an EFA is of the form EF(args).
-If the EFA is of this form, `applyExpressionFunctionApplication`
-can be called with this EFA as an argument.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>EFA</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">an expression function application</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line91">line 91</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="checkVariable"><span class="type-signature"></span>checkVariable<span class="signature">(variable, nextNewVariableIndex)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Helper function used when adding pairs to a constraint list.
-Takes a variable and checks if it of the form, `vX` where `X` is some number.
-If it is of this form, it returns X + 1 if it is greater than the given index.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>variable</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">the variable to be checked</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>nextNewVariableIndex</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">the number to check against</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line376">line 376</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="getExpressionFunctionFromApplication"><span class="type-signature"></span>getExpressionFunctionFromApplication<span class="signature">(EFA)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    If this is an EFA, extract and return the expression function application
-that is to be applied.  Otherwise return null.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>EFA</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">an expression function application</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line106">line 106</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="getGeneralExpressionArgumentsFromApplication"><span class="type-signature"></span>getGeneralExpressionArgumentsFromApplication<span class="signature">(EFA)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    If this is an EFA, extract and return the array of arguments to which the
-function is to be applied.  Otherwise return null.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>EFA</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">an expression function application</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line118">line 118</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="getNewVariableRelativeTo"><span class="type-signature"></span>getNewVariableRelativeTo<span class="signature">(expr)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Helper function for other expression manipulation functions.
+    Return the symbol/head/operator of the binding expression, if indeed the
+given argument is a binding expression; return null otherwise.
 </div>
 
 
@@ -1486,7 +637,7 @@ function is to be applied.  Otherwise return null.
 
             
 
-            <td class="description last">an OM expression, more expr arguments are accepted.</td>
+            <td class="description last">the expression whose operator is to be returned</td>
         </tr>
 
     
@@ -1527,7 +678,7 @@ function is to be applied.  Otherwise return null.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line151">line 151</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line188">line 188</a>
     </li></ul></dd>
     
 
@@ -1552,17 +703,6 @@ function is to be applied.  Otherwise return null.
 
 
 
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    the first variable of the form xN
-which appears nowhere in the supplied expression(s).
-</div>
-
-
-
-    
 
 
 
@@ -1574,7 +714,7 @@ which appears nowhere in the supplied expression(s).
     
 
     
-    <h4 class="name" id="isExpressionFunction"><span class="type-signature"></span>isExpressionFunction<span class="signature">(expression)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".bindingVariables"><span class="type-signature">(static) </span>bindingVariables<span class="signature">(binding)</span><span class="type-signature"></span></h4>
     
 
     
@@ -1582,7 +722,856 @@ which appears nowhere in the supplied expression(s).
 
 
 <div class="description">
-    Tests whether an expression is a general expression function.
+    Return a list of the bound variables in the given expression, or null if the
+given expression is not a binding one.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>binding</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the expression whose bound variables are to be returned</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line197">line 197</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".clearMetavariable"><span class="type-signature">(static) </span>clearMetavariable<span class="signature">(metavariable)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Removes the metavariable attribute if it is present.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>metavariable</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the metavariable to be unmarked</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line255">line 255</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".copy"><span class="type-signature">(static) </span>copy<span class="signature">(expr)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns a copy of an OpenMath expression
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>expr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the expression to copy</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line43">line 43</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".equal"><span class="type-signature">(static) </span>equal<span class="signature">(expr1, expr2)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Compute whether the two expressions are structurally equal, and return true
+or false.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>expr1</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">first expression</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>expr2</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">second expression</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line51">line 51</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".getChildren"><span class="type-signature">(static) </span>getChildren<span class="signature">(expr)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Return an array of the expression's children, in the order in which they
+appear as children
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>expr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the expression whose children should be returned</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line151">line 151</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".getVariableName"><span class="type-signature">(static) </span>getVariableName<span class="signature">(variable)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns the variable's name, or null if it is not a variable.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>variable</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">an OM instance of type variable</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line84">line 84</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".getVariablesIn"><span class="type-signature">(static) </span>getVariablesIn<span class="signature">(expression)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Helper function used when adding pairs to a constraint list.
+Returns the list of variables that appear in a given expression.
 </div>
 
 
@@ -1675,91 +1664,7 @@ which appears nowhere in the supplied expression(s).
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line47">line 47</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="isExpressionFunctionApplication"><span class="type-signature"></span>isExpressionFunctionApplication<span class="signature">()</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line77">line 77</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line115">line 115</a>
     </li></ul></dd>
     
 
@@ -1788,7 +1693,7 @@ which appears nowhere in the supplied expression(s).
 
         
 <div class="param-desc">
-    true if the supplied expression is an EFA
+    a list containing any variables in the given expression
 </div>
 
 
@@ -1805,7 +1710,7 @@ which appears nowhere in the supplied expression(s).
     
 
     
-    <h4 class="name" id="makeConstantExpression"><span class="type-signature"></span>makeConstantExpression<span class="signature">(new_variable, expression)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".isApplication"><span class="type-signature">(static) </span>isApplication<span class="signature">(expr)</span><span class="type-signature"></span></h4>
     
 
     
@@ -1813,849 +1718,8 @@ which appears nowhere in the supplied expression(s).
 
 
 <div class="description">
-    Takes a new variable (relative to some constraint list) and an expression
-and returns an EF which has the meaning λv_n.expr where v_n is the new
-variable and expr is the expression.
-I.e. creates a constant expression function.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>new_variable</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">an OM variable</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>expression</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">an OM expression</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line395">line 395</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="makeExpressionFunction"><span class="type-signature"></span>makeExpressionFunction<span class="signature">(variables, body)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Makes a new expression function with the meaning
-λv1,...,vk.B where v1,...,vk are the variables and B is any OM expression.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>variables</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;OM></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">a list of OM variables</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>body</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">any OM expression</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line29">line 29</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="makeExpressionFunctionApplication"><span class="type-signature"></span>makeExpressionFunctionApplication<span class="signature">(func, arguments)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Makes a new expression function application with the meaning
-F(arg) where F is either an expression function (EF), or a
-metavariable which is expected to be replaced by an EF.
-In the case that F is an EF, the expression function can be applied
-to the argument see `applyExpressionFunctionApplication`.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>func</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">either an EF or something which can be instantiated as an EF.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>arguments</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;OM></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">a list of OM expressions</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line64">line 64</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="makeImitationExpression"><span class="type-signature"></span>makeImitationExpression<span class="signature">(variables, expr)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Takes a list of variables, denoted `v1,...,vk`, an expression
-which is denoted `g(e1,...,em)`, and a list of temporary
-metavariables.
-
-For an application, returns an EF with the meaning
-`λv_1,...,v_k.g(H_1(v_1,...,v_k),...,H_m(v_1,...,v_k))`
-where each `H_i` denotes a temporary EFA as well as a list of the
-newly created temporary metavariables `[H_1,...,H_m]`.
-
-I.e. it returns an 'imitation' expression function where
-the body is the original expression with each argument
-replaced by a temporary EFA.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>variables</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">a list of OM variables</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>expr</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">an OM application</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line438">line 438</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    an EF which is the imitation expression described above
-</div>
-
-
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="makeProjectionExpression"><span class="type-signature"></span>makeProjectionExpression<span class="signature">(variables, point)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Takes a list of variables v_1,...,v_k and a single variable (a point)
-v_i and returns an EF with the meaning λv_1,...,v_k.v_i.
-I.e. returns a projection expression function for v_i with k arguments.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>variables</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;OM></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">a list of OM variables</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>point</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">a single OM variable</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line410">line 410</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="replaceWithoutCapture"><span class="type-signature"></span>replaceWithoutCapture<span class="signature">(expr, variable, replacement)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Takes an expression, a variable, and a replacement expression.
-Manipulates the expression in place in order to replace all occurences
-of the variable with the expression in such a way that variable capture
-will not occur.
-
-Because this function will be called whenever a metavariable's instantiation
-is discovered by the solve() routine in MatchingChallenge, it must guarantee
-that NO occurrences of the variable remain after the function is complete.
-
-Note that this function addresses only variable capture that would occur
-from a binding expression inside expr; it does not address any binders that
-may sit in a parent above expr.
+    Return true iff the given expression is a function application, false
+otherwise.
 </div>
 
 
@@ -2707,9 +1771,398 @@ may sit in a parent above expr.
 
             
 
-            <td class="description last">an OM expression</td>
+            <td class="description last">the expression to test</td>
         </tr>
 
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line131">line 131</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".isBinding"><span class="type-signature">(static) </span>isBinding<span class="signature">(expr)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Return true iff the given expression is a binding expression, false
+otherwise.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>expr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the expression to test</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line167">line 167</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".isExpression"><span class="type-signature">(static) </span>isExpression<span class="signature">(expr)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns true if and only if the given object is an OpenMath expression
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>expr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the object to test</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line25">line 25</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".isMetavariable"><span class="type-signature">(static) </span>isMetavariable<span class="signature">(variable)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Tests whether the given variable has the metavariable attribute.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
     
 
         <tr>
@@ -2730,30 +2183,7 @@ may sit in a parent above expr.
 
             
 
-            <td class="description last">an OM variable</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>replacement</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">an OM expression</td>
+            <td class="description last">the variable to be checked</td>
         </tr>
 
     
@@ -2794,7 +2224,1039 @@ may sit in a parent above expr.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line215">line 215</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line232">line 232</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".isVariable"><span class="type-signature">(static) </span>isVariable<span class="signature">(expr)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Return true iff the given expression is a variable, false otherwise.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>expr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the expression to test</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line76">line 76</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".occursFreeIn"><span class="type-signature">(static) </span>occursFreeIn<span class="signature">(outer, inner)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Return true if a structural copy of the given inner (sub)expression occurs
+free in the given outer expression.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>outer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the expression in which to seek subexpressions</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>inner</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the subexpression to seek</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line216">line 216</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".replace"><span class="type-signature">(static) </span>replace<span class="signature">(toReplace, withThis)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Replace one expression, wherever it sits in its parent tree, with another.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>toReplace</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the expression to be replaced</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>withThis</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the expression with which to replace it</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line61">line 61</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".sameType"><span class="type-signature">(static) </span>sameType<span class="signature">(expr1, expr2)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Return true iff the two expressions have the same type (e.g., both are
+variables, or both are bindings, or both are function applications, etc.)
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>expr1</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">first expression</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>expr2</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">second expression</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line33">line 33</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".setMetavariable"><span class="type-signature">(static) </span>setMetavariable<span class="signature">(variable)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Marks a variable as a metavariable.
+Does nothing if the given input is not an OMNode of type variable or type symbol.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>variable</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the variable to be marked</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line244">line 244</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".symbol"><span class="type-signature">(static) </span>symbol<span class="signature">(name)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Construct an expression that is a symbol with the given name.
+The Content Dictionary is set to the name of this package.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the name to use for the symbol</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line106">line 106</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".variable"><span class="type-signature">(static) </span>variable<span class="signature">(name)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Construct an expression that is just a variable, with the given name
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the name of the new variable</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line92">line 92</a>
     </li></ul></dd>
     
 
