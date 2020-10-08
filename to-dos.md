@@ -24,14 +24,6 @@
 
 ## Moving beyond OpenMath
 
-- Rework the `constraints.js` file so that it doesn't import the new API, but
-  rather exposes a function by which it expects to be provided such an API, just
-  as `language.js` does.  Have `matching.js` import the API and pass it to
-  `constraints.js`, which, in turn, passes it to `language.js`.
-- Ensure that `matching.js` doesn't use any OM-specific functionality either,
-  but also accesses OM only through the new API.  This may require only updating
-  `matching.js`, or it may require extending the API.  Hopefully it is only the
-  former.
 - Copy `matching.js` to `matching-without-om.js`.  Change that file so that,
   rather than importing OM, it exposes a function by which it expects to be
   provided such an API, just as `constraints.js` does.  It should then pass that

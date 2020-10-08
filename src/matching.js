@@ -3,7 +3,7 @@
 
 // Import everything from the constraints module and expose it as well.
 import {
-    API, isExpressionFunction, makeExpressionFunction,
+    setAPI, isExpressionFunction, makeExpressionFunction,
     isExpressionFunctionApplication, makeExpressionFunctionApplication,
     canApplyExpressionFunctionApplication,
     applyExpressionFunctionApplication, getNewVariableRelativeTo,
@@ -12,7 +12,7 @@ import {
     CASES, Constraint, ConstraintList
 } from './constraints.js';
 export {
-    API, isExpressionFunction, makeExpressionFunction,
+    isExpressionFunction, makeExpressionFunction,
     isExpressionFunctionApplication, makeExpressionFunctionApplication,
     canApplyExpressionFunctionApplication,
     applyExpressionFunctionApplication, getNewVariableRelativeTo,
@@ -20,6 +20,9 @@ export {
     makeConstantExpression, makeProjectionExpression, makeImitationExpression,
     CASES, Constraint, ConstraintList
 };
+import { API } from './openmath-api.js';
+export { API };
+setAPI( API );
 
 // Used only for debugging.  Commented out for production.
 //
