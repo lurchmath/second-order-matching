@@ -115,7 +115,7 @@ export function getExpressionFunctionFromApplication(EFA) {
  * function is to be applied.  Otherwise return null.
  * @param {OM} EFA - an expression function application
  */
-export function getGeneralExpressionArgumentsFromApplication(EFA) {
+export function getExpressionArgumentsFromApplication(EFA) {
     if (canApplyExpressionFunctionApplication(EFA)) {
         return Exprs.getChildren(EFA).slice(2);
     }
@@ -131,7 +131,7 @@ export function applyExpressionFunctionApplication(EFA) {
     if (canApplyExpressionFunctionApplication(EFA)) {
         return betaReduce(
             getExpressionFunctionFromApplication(EFA),
-            getGeneralExpressionArgumentsFromApplication(EFA)
+            getExpressionArgumentsFromApplication(EFA)
         );
     }
     return null;
