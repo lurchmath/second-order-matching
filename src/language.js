@@ -8,17 +8,30 @@
 
 "use strict"
 
-import { API } from './openmath-api.js';
-export { API };
+let API, expressionFunctionSymbol, expressionFunctionApplicationSymbol;
+/**
+ * Provide an API by which this module can deal with expressions.  More needs
+ * to be documented about this; the only existing API is the OpenMath API.
+ * See openmath-api.js for details.
+ * @param {Object} APIObject - the namespace containing all expression-related
+ *   functions
+ */
+export function setAPI ( APIObject ) {
+    API = APIObject;
+    expressionFunctionSymbol = API.symbol('EF');
+    expressionFunctionApplicationSymbol = API.symbol('EFA')
+}
+/**
+ * Get the API stored in the global variable in this module, as set by
+ * setAPI().
+ */
+export const getAPI = () => API;
 
 ////////////////////////////////////////////////////////////////////////////////
 // An expression function is a type of expression that is intended to be
 // applied as a function mapping expressions to expressions.
 // We define here two symbols that will be used to represent such things.
 ////////////////////////////////////////////////////////////////////////////////
-
-const expressionFunctionSymbol = API.symbol('EF');
-const expressionFunctionApplicationSymbol = API.symbol('EFA');
 
 /**
  * Makes a new expression function with the meaning

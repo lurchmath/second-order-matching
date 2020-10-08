@@ -8,16 +8,19 @@
 
 // Import everything from the language module and expose it as well.
 import {
-    API, isExpressionFunction, makeExpressionFunction,
+    isExpressionFunction, makeExpressionFunction,
     isExpressionFunctionApplication, makeExpressionFunctionApplication,
     canApplyExpressionFunctionApplication,
     applyExpressionFunctionApplication, getNewVariableRelativeTo,
     replaceWithoutCapture, alphaConvert, alphaEquivalent, betaReduce,
     checkVariable, makeConstantExpression, makeProjectionExpression,
-    makeImitationExpression
+    makeImitationExpression, setAPI, getAPI
 } from './language.js';
+import * as OM from './openmath-api.js';
+setAPI( OM.API );
+export const API = getAPI();
 export {
-    API, isExpressionFunction, makeExpressionFunction,
+    isExpressionFunction, makeExpressionFunction,
     isExpressionFunctionApplication, makeExpressionFunctionApplication,
     canApplyExpressionFunctionApplication,
     applyExpressionFunctionApplication, getNewVariableRelativeTo,
