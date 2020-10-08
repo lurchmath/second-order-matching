@@ -33,7 +33,7 @@ export function makeExpressionFunction(variables, body) {
     for (let i = 0; i < variables.length; i++) {
         var variable = variables[i];
         if (!API.isVariable(variable)) {
-            throw 'When making a general expression function,\
+            throw 'When making an expression function,\
 all elements of first argument must have type variable';
         }
     }
@@ -41,7 +41,7 @@ all elements of first argument must have type variable';
 }
 
 /**
- * Tests whether an expression is a general expression function.
+ * Tests whether an expression is an expression function.
  * @param {OM} expression - the expression to be checked
  */
 export function isExpressionFunction(expression) {
@@ -333,7 +333,7 @@ export function alphaEquivalent(expr1, expr2, firstcall=true) {
 }
 
 /**
- * Takes a general expression function representing λv_1,...,v_k.B
+ * Takes an expression function representing λv_1,...,v_k.B
  * and a list of expressions e_1,...,e_k and returns the beta reduction
  * of ((λv_1,...,v_k.B)(e_1,...,e_k)) which is the expression B
  * with all v_i replaced by the corresponding e_i.
@@ -347,7 +347,7 @@ export function alphaEquivalent(expr1, expr2, firstcall=true) {
 export function betaReduce(EF, expr_list) {
     // Check we can actually do a beta reduction
     if (!isExpressionFunction(EF)) {
-        throw 'In beta reduction, the first argument must be a general expression function'
+        throw 'In beta reduction, the first argument must be an expression function'
     }
     if (!(expr_list instanceof Array)) {
         throw 'In beta reduction,, the second argument must be a list of expressions'
