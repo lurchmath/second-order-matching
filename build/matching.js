@@ -5,64 +5,46 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-Object.defineProperty(exports, "OM", {
+Object.defineProperty(exports, "Exprs", {
   enumerable: true,
   get: function get() {
-    return _constraints.OM;
+    return _constraints.Exprs;
   }
 });
-Object.defineProperty(exports, "isMetavariable", {
+Object.defineProperty(exports, "isExpressionFunction", {
   enumerable: true,
   get: function get() {
-    return _constraints.isMetavariable;
+    return _constraints.isExpressionFunction;
   }
 });
-Object.defineProperty(exports, "setMetavariable", {
+Object.defineProperty(exports, "makeExpressionFunction", {
   enumerable: true,
   get: function get() {
-    return _constraints.setMetavariable;
+    return _constraints.makeExpressionFunction;
   }
 });
-Object.defineProperty(exports, "clearMetavariable", {
+Object.defineProperty(exports, "isExpressionFunctionApplication", {
   enumerable: true,
   get: function get() {
-    return _constraints.clearMetavariable;
+    return _constraints.isExpressionFunctionApplication;
   }
 });
-Object.defineProperty(exports, "isGeneralExpressionFunction", {
+Object.defineProperty(exports, "makeExpressionFunctionApplication", {
   enumerable: true,
   get: function get() {
-    return _constraints.isGeneralExpressionFunction;
+    return _constraints.makeExpressionFunctionApplication;
   }
 });
-Object.defineProperty(exports, "makeGeneralExpressionFunction", {
+Object.defineProperty(exports, "canApplyExpressionFunctionApplication", {
   enumerable: true,
   get: function get() {
-    return _constraints.makeGeneralExpressionFunction;
+    return _constraints.canApplyExpressionFunctionApplication;
   }
 });
-Object.defineProperty(exports, "isGeneralExpressionFunctionApplication", {
+Object.defineProperty(exports, "applyExpressionFunctionApplication", {
   enumerable: true,
   get: function get() {
-    return _constraints.isGeneralExpressionFunctionApplication;
-  }
-});
-Object.defineProperty(exports, "makeGeneralExpressionFunctionApplication", {
-  enumerable: true,
-  get: function get() {
-    return _constraints.makeGeneralExpressionFunctionApplication;
-  }
-});
-Object.defineProperty(exports, "canApplyGeneralExpressionFunctionApplication", {
-  enumerable: true,
-  get: function get() {
-    return _constraints.canApplyGeneralExpressionFunctionApplication;
-  }
-});
-Object.defineProperty(exports, "applyGeneralExpressionFunctionApplication", {
-  enumerable: true,
-  get: function get() {
-    return _constraints.applyGeneralExpressionFunctionApplication;
+    return _constraints.applyExpressionFunctionApplication;
   }
 });
 Object.defineProperty(exports, "getNewVariableRelativeTo", {
@@ -173,7 +155,7 @@ var MatchingChallenge = /*#__PURE__*/function () {
    * and then creating a constraints list out of them called challenge.
    * @param {Array} constraints - an arbitrary number of arguments each
    * of which is a length-2 array containing a pattern and an expression,
-   * i.e. containing two OM expressions.
+   * i.e. containing two expressions.
    */
   function MatchingChallenge() {
     (0, _classCallCheck2["default"])(this, MatchingChallenge);
@@ -188,12 +170,12 @@ var MatchingChallenge = /*#__PURE__*/function () {
     }
   }
   /**
-   * Takes two OM expressions, creates a Constraint object from them,
+   * Takes two expressions, creates a Constraint object from them,
    * and adds it to `this.challengeList`.
    * If any solutions have been found already,
    * they are applied to the constraint before it is added.
-   * @param {OM} pattern - An OM expression
-   * @param {OM} expr - An OM expression
+   * @param {OM} pattern - An expression
+   * @param {OM} expr - An expression
    */
 
 
@@ -263,7 +245,7 @@ var MatchingChallenge = /*#__PURE__*/function () {
         var inner = solution.lookup(binding_constraint.inner);
         if (!inner) return true; // metavariable not instantiated yet; can't violate any constraints
 
-        var outer = (0, _constraints.isMetavariable)(binding_constraint.outer) ? solution.lookup(binding_constraint.outer) : binding_constraint.outer;
+        var outer = _constraints.Exprs.isMetavariable(binding_constraint.outer) ? solution.lookup(binding_constraint.outer) : binding_constraint.outer;
         if (!outer) return true; // metavariable not instantiated yet; can't violate any constraints
 
         return !inner.occursFree(outer);
@@ -272,7 +254,7 @@ var MatchingChallenge = /*#__PURE__*/function () {
     /**
      * Adds a solution, and checks that it passes `satisfiesBindingConstraints`.
      * If it does not, empties the solutions list and sets variables in order to end the search.
-     * @param {Constraint} constraint - either a Constraint, or an OM (meta)variable
+     * @param {Constraint} constraint - either a Constraint, or a (meta)variable
      */
 
   }, {
@@ -461,7 +443,7 @@ var MatchingChallenge = /*#__PURE__*/function () {
                   for (i = 0; i < pattern_vars.length; i++) {
                     variable = pattern_vars[i];
 
-                    if (!(0, _constraints.isMetavariable)(variable)) {
+                    if (!_constraints.Exprs.isMetavariable(variable)) {
                       new_var = mc.challengeList.nextNewVariable();
                       current_constraint.expression = (0, _constraints.alphaConvert)(current_constraint.expression, expression_vars[i], new_var);
                       current_constraint.pattern = (0, _constraints.alphaConvert)(current_constraint.pattern, pattern_vars[i], new_var);
@@ -672,12 +654,16 @@ var MatchingChallenge = /*#__PURE__*/function () {
                 if (expression.type == 'a') {
                   temp_metavars = expression.children.map(function () {
                     var new_var = temp_mc_C.challengeList.nextNewVariable();
-                    (0, _constraints.setMetavariable)(new_var);
+
+                    _constraints.Exprs.setMetavariable(new_var);
+
                     return new_var;
                   });
                 } else {
                   _new_var = temp_mc_C.challengeList.nextNewVariable();
-                  (0, _constraints.setMetavariable)(_new_var);
+
+                  _constraints.Exprs.setMetavariable(_new_var);
+
                   temp_metavars.push(_new_var);
                 } // Get the imitation expression
 

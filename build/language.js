@@ -4,92 +4,55 @@
  * OpenMath, defining metavariables and instantiation, defining expression
  * functions and application of them, alpha conversion, and beta reduction.
  */
-"use strict"; // TODO: handle the case of this module running in the browser
-// Import openmath-js for testing purposes
+"use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.setMetavariable = setMetavariable;
-exports.clearMetavariable = clearMetavariable;
-exports.isMetavariable = isMetavariable;
-exports.makeGeneralExpressionFunction = makeGeneralExpressionFunction;
-exports.isGeneralExpressionFunction = isGeneralExpressionFunction;
-exports.makeGeneralExpressionFunctionApplication = makeGeneralExpressionFunctionApplication;
-exports.isGeneralExpressionFunctionApplication = isGeneralExpressionFunctionApplication;
-exports.canApplyGeneralExpressionFunctionApplication = canApplyGeneralExpressionFunctionApplication;
-exports.applyGeneralExpressionFunctionApplication = applyGeneralExpressionFunctionApplication;
+exports.makeExpressionFunction = makeExpressionFunction;
+exports.isExpressionFunction = isExpressionFunction;
+exports.makeExpressionFunctionApplication = makeExpressionFunctionApplication;
+exports.isExpressionFunctionApplication = isExpressionFunctionApplication;
+exports.canApplyExpressionFunctionApplication = canApplyExpressionFunctionApplication;
+exports.getExpressionFunctionFromApplication = getExpressionFunctionFromApplication;
+exports.getExpressionArgumentsFromApplication = getExpressionArgumentsFromApplication;
+exports.applyExpressionFunctionApplication = applyExpressionFunctionApplication;
 exports.getNewVariableRelativeTo = getNewVariableRelativeTo;
 exports.alphaConvert = alphaConvert;
 exports.replaceWithoutCapture = replaceWithoutCapture;
 exports.alphaEquivalent = alphaEquivalent;
 exports.betaReduce = betaReduce;
 exports.checkVariable = checkVariable;
-exports.getVariablesIn = getVariablesIn;
 exports.makeConstantExpression = makeConstantExpression;
 exports.makeProjectionExpression = makeProjectionExpression;
 exports.makeImitationExpression = makeImitationExpression;
 Object.defineProperty(exports, "OM", {
   enumerable: true,
   get: function get() {
-    return _openmath.OM;
+    return _openmathApi.OM;
+  }
+});
+Object.defineProperty(exports, "Exprs", {
+  enumerable: true,
+  get: function get() {
+    return _openmathApi.Exprs;
   }
 });
 
 var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
 
-var _openmath = require("./openmath.js");
+var _openmathApi = require("./openmath-api.js");
 
 ////////////////////////////////////////////////////////////////////////////////
-// * The following are functions and constants related to metavariables.
-// * A metavariable is a variable that will be used for substitution.
+// An expression function is a type of expression that is intended to be
+// applied as a function mapping expressions to expressions.
+// We define here two symbols that will be used to represent such things.
 ////////////////////////////////////////////////////////////////////////////////
-// Define the metavariable symbol to be used as an attribute key, and its corresponding value
-var metavariableSymbol = _openmath.OM.symbol('metavariable', 'SecondOrderMatching');
+var expressionFunctionSymbol = _openmathApi.Exprs.symbol('EF');
 
-var trueValue = _openmath.OM.string('true');
-/**
- * Marks a variable as a metavariable.
- * Does nothing if the given input is not an OMNode of type variable or type symbol.
- * @param {OM} variable - the variable to be marked
- */
-
-
-function setMetavariable(variable) {
-  if (variable instanceof _openmath.OM && ['v', 'sy'].includes(variable.type)) {
-    return variable.setAttribute(metavariableSymbol, trueValue.copy());
-  } else return null;
-}
-/**
- * Removes the metavariable attribute if it is present.
- * @param {OM} metavariable - the metavariable to be unmarked
- */
-
-
-function clearMetavariable(metavariable) {
-  return metavariable.removeAttribute(metavariableSymbol);
-}
-/**
- * Tests whether the given variable has the metavariable attribute.
- * @param {OM} variable - the variable to be checked
- */
-
-
-function isMetavariable(variable) {
-  return variable instanceof _openmath.OM && ['v', 'sy'].includes(variable.type) && variable.getAttribute(metavariableSymbol) != undefined && variable.getAttribute(metavariableSymbol).equals(trueValue);
-} ////////////////////////////////////////////////////////////////////////////////
-// * The following are generalised versions expression functions.
-// * When P: E -> E, P is an expression function.
-// * This generalisation allows us to have expression functions
-// * with more than one variable.
-////////////////////////////////////////////////////////////////////////////////
-
-
-var generalExpressionFunction = _openmath.OM.symbol('gEF', 'SecondOrderMatching');
-
-var generalExpressionFunctionApplication = _openmath.OM.symbol('gEFA', 'SecondOrderMatching');
+var expressionFunctionApplicationSymbol = _openmathApi.Exprs.symbol('EFA');
 /**
  * Makes a new expression function with the meaning
  * λv1,...,vk.B where v1,...,vk are the variables and B is any OM expression.
@@ -98,7 +61,7 @@ var generalExpressionFunctionApplication = _openmath.OM.symbol('gEFA', 'SecondOr
  */
 
 
-function makeGeneralExpressionFunction(variables, body) {
+function makeExpressionFunction(variables, body) {
   if (!(variables instanceof Array)) {
     variables = [variables];
   }
@@ -106,13 +69,13 @@ function makeGeneralExpressionFunction(variables, body) {
   for (var i = 0; i < variables.length; i++) {
     var variable = variables[i];
 
-    if (variable.type !== 'v') {
+    if (!_openmathApi.Exprs.isVariable(variable)) {
       throw 'When making a general expression function,\
 all elements of first argument must have type variable';
     }
   }
 
-  return _openmath.OM.bin.apply(_openmath.OM, [generalExpressionFunction].concat((0, _toConsumableArray2["default"])(variables), [body]));
+  return _openmathApi.Exprs.binding(expressionFunctionSymbol, variables, body);
 }
 /**
  * Tests whether an expression is a general expression function.
@@ -120,64 +83,92 @@ all elements of first argument must have type variable';
  */
 
 
-function isGeneralExpressionFunction(expression) {
-  return expression instanceof _openmath.OM && expression.type == 'bi' && expression.symbol.equals(generalExpressionFunction);
+function isExpressionFunction(expression) {
+  return _openmathApi.Exprs.isExpression(expression) && _openmathApi.Exprs.isBinding(expression) && _openmathApi.Exprs.equal(_openmathApi.Exprs.bindingHead(expression), expressionFunctionSymbol);
 }
 /**
  * Makes a new expression function application with the meaning
- * F(arg) where F is either a general expression function (gEF), or a
- * metavariable which is expected to be replaced by a gEF.
- * In the case that F is a gEF, the expression function can be applied
- * to the argument see `applyGeneralExpressionFunctionApplication`.
- * @param {OM} func - either a gEF or something which can be instantiated as a gEF.
+ * F(arg) where F is either an expression function (EF), or a
+ * metavariable which is expected to be replaced by an EF.
+ * In the case that F is an EF, the expression function can be applied
+ * to the argument see `applyExpressionFunctionApplication`.
+ * @param {OM} func - either an EF or something which can be instantiated as an EF.
  * @param {OM[]} arguments - a list of OM expressions
  */
 
 
-function makeGeneralExpressionFunctionApplication(func, args) {
-  if (!(isGeneralExpressionFunction(func) || isMetavariable(func))) {
-    throw 'When making gEFAs, the func must be either a EF or a metavariable';
+function makeExpressionFunctionApplication(func, args) {
+  if (!(isExpressionFunction(func) || _openmathApi.Exprs.isMetavariable(func))) {
+    throw 'When making EFAs, the func must be either an EF or a metavariable';
   }
 
   if (!(args instanceof Array)) {
     args = [args];
   }
 
-  return _openmath.OM.app.apply(_openmath.OM, [generalExpressionFunctionApplication, func].concat((0, _toConsumableArray2["default"])(args)));
+  return _openmathApi.Exprs.application([expressionFunctionApplicationSymbol, func].concat((0, _toConsumableArray2["default"])(args)));
 }
 /**
- * @returns true if the supplied expression is a gEFA
+ * @returns true if the supplied expression is an EFA
  */
 
 
-function isGeneralExpressionFunctionApplication(expression) {
-  return expression instanceof _openmath.OM && expression.type === 'a' && expression.children[0].equals(generalExpressionFunctionApplication);
+function isExpressionFunctionApplication(expression) {
+  return _openmathApi.Exprs.isExpression(expression) && _openmathApi.Exprs.isApplication(expression) && _openmathApi.Exprs.equal(_openmathApi.Exprs.getChildren(expression)[0], expressionFunctionApplicationSymbol);
 }
 /**
- * Tests whether a gEFA is of the form gEF(args).
- * If the gEFA is of this form, `applyGeneralExpressionFunctionApplication`
- * can be called with this gEFA as an argument.
- * @param {OM} gEFA - a general expression function application
+ * Tests whether an EFA is of the form EF(args).
+ * If the EFA is of this form, `applyExpressionFunctionApplication`
+ * can be called with this EFA as an argument.
+ * @param {OM} EFA - an expression function application
  */
 
 
-function canApplyGeneralExpressionFunctionApplication(gEFA) {
-  if (isGeneralExpressionFunctionApplication(gEFA) && isGeneralExpressionFunction(gEFA.children[1])) {
+function canApplyExpressionFunctionApplication(EFA) {
+  if (isExpressionFunctionApplication(EFA) && isExpressionFunction(_openmathApi.Exprs.getChildren(EFA)[1])) {
     return true;
   }
 
   return false;
 }
 /**
- * If `canApplyGeneralExpressionFunctionApplication` is true,
- * returns the beta reduction of the gEF and the arguments it is applied to.
- * @param {OM} gEFA - a general expression function application
+ * If this is an EFA, extract and return the expression function application
+ * that is to be applied.  Otherwise return null.
+ * @param {OM} EFA - an expression function application
  */
 
 
-function applyGeneralExpressionFunctionApplication(gEFA) {
-  if (canApplyGeneralExpressionFunctionApplication(gEFA)) {
-    return betaReduce(gEFA.children[1], gEFA.children.slice(2));
+function getExpressionFunctionFromApplication(EFA) {
+  if (canApplyExpressionFunctionApplication(EFA)) {
+    return _openmathApi.Exprs.getChildren(EFA)[1];
+  }
+
+  return null;
+}
+/**
+ * If this is an EFA, extract and return the array of arguments to which the
+ * function is to be applied.  Otherwise return null.
+ * @param {OM} EFA - an expression function application
+ */
+
+
+function getExpressionArgumentsFromApplication(EFA) {
+  if (canApplyExpressionFunctionApplication(EFA)) {
+    return _openmathApi.Exprs.getChildren(EFA).slice(2);
+  }
+
+  return null;
+}
+/**
+ * If `canApplyExpressionFunctionApplication` is true,
+ * returns the beta reduction of the EF and the arguments it is applied to.
+ * @param {OM} EFA - an expression function application
+ */
+
+
+function applyExpressionFunctionApplication(EFA) {
+  if (canApplyExpressionFunctionApplication(EFA)) {
+    return betaReduce(getExpressionFunctionFromApplication(EFA), getExpressionArgumentsFromApplication(EFA));
   }
 
   return null;
@@ -194,13 +185,11 @@ function applyGeneralExpressionFunctionApplication(gEFA) {
  */
 
 
-function getNewVariableRelativeTo(expr
-/*, expr2, ... */
-) {
-  var all_vars = getVariablesIn(expr);
+function getNewVariableRelativeTo() {
+  var all_vars = [];
 
-  for (var i = 1; i < arguments.length; i++) {
-    all_vars.push.apply(all_vars, (0, _toConsumableArray2["default"])(getVariablesIn(arguments[i])));
+  for (var i = 0; i < arguments.length; i++) {
+    all_vars.push.apply(all_vars, (0, _toConsumableArray2["default"])(_openmathApi.Exprs.getVariablesIn(i < 0 || arguments.length <= i ? undefined : arguments[i])));
   }
 
   var index = 0;
@@ -208,13 +197,13 @@ function getNewVariableRelativeTo(expr
   for (var _i = 0; _i < all_vars.length; _i++) {
     var next_var = all_vars[_i];
 
-    if (/^x[0-9]+$/.test(next_var.name)) {
-      index = Math.max(index, parseInt(next_var.name.slice(1)) + 1);
+    if (/^x[0-9]+$/.test(_openmathApi.Exprs.getVariableName(next_var))) {
+      index = Math.max(index, parseInt(_openmathApi.Exprs.getVariableName(next_var).slice(1)) + 1);
     }
   }
 
   var var_name = 'x' + index;
-  return _openmath.OM["var"](var_name);
+  return _openmathApi.Exprs.variable(var_name);
 }
 /**
  * Takes a binding, a bound variable in that binding, and a replacement variable.
@@ -228,24 +217,23 @@ function getNewVariableRelativeTo(expr
 
 
 function alphaConvert(binding, which_var, replace_var) {
-  var result = binding.copy();
-  var bound_vars = result.variables;
+  var result = _openmathApi.Exprs.copy(binding);
 
-  if (!bound_vars.map(function (x) {
-    return x.name;
-  }).includes(which_var.name)) {
+  var bound_vars = _openmathApi.Exprs.bindingVariables(result);
+
+  if (!bound_vars.map(_openmathApi.Exprs.getVariableName).includes(_openmathApi.Exprs.getVariableName(which_var))) {
     throw 'which_var must be bound in binding';
   }
 
   for (var i = 0; i < bound_vars.length; i++) {
     var variable = bound_vars[i];
 
-    if (variable.equals(which_var)) {
-      variable.replaceWith(replace_var.copy());
+    if (_openmathApi.Exprs.equal(variable, which_var)) {
+      _openmathApi.Exprs.replace(variable, _openmathApi.Exprs.copy(replace_var));
     }
   }
 
-  replaceWithoutCapture(result.body, which_var, replace_var);
+  replaceWithoutCapture(_openmathApi.Exprs.bindingBody(result), which_var, replace_var);
   return result;
 }
 /**
@@ -269,18 +257,19 @@ function alphaConvert(binding, which_var, replace_var) {
 
 
 function replaceWithoutCapture(expr, variable, replacement) {
-  if (!(expr instanceof _openmath.OM) || !(variable instanceof _openmath.OM) || !(replacement instanceof _openmath.OM)) {
-    throw 'all arguments must be instances of OMNode';
+  if (!_openmathApi.Exprs.isExpression(expr) || !_openmathApi.Exprs.isExpression(variable) || !_openmathApi.Exprs.isExpression(replacement)) {
+    throw 'all arguments must be expressions';
   }
 
-  if (expr.type != 'bi') {
+  if (!_openmathApi.Exprs.isBinding(expr)) {
     // Case 1: expr is a variable that we must replace, so do it
-    if (expr.type == 'v' && expr.equals(variable)) {
-      expr.replaceWith(replacement.copy()); // Case 2: expr is any other non-binding, so recur on its
+    if (_openmathApi.Exprs.isVariable(expr) && _openmathApi.Exprs.equal(expr, variable)) {
+      _openmathApi.Exprs.replace(expr, _openmathApi.Exprs.copy(replacement)); // Case 2: expr is any other non-binding, so recur on its
       // children (of which there may be none, meaning this is some
       // type of atomic other than a variable, which is fine; do nothing)
+
     } else {
-      var children = expr.children;
+      var children = _openmathApi.Exprs.getChildren(expr);
 
       for (var i = 0; i < children.length; i++) {
         var ch = children[i];
@@ -288,42 +277,43 @@ function replaceWithoutCapture(expr, variable, replacement) {
       }
     }
   } else {
-    var varidx = expr.variables.map(function (v) {
-      return v.name;
-    }).indexOf(variable.name);
+    var variables = _openmathApi.Exprs.bindingVariables(expr);
+
+    var varidx = variables.map(_openmathApi.Exprs.getVariableName).indexOf(_openmathApi.Exprs.getVariableName(variable));
 
     if (varidx > -1) {
       // Case 3: expr is a binding and it binds the variable to be replaced,
       // but the replacement is a non-variable.  This is illegal, because
       // OpenMath bound variable positions can be occupied only by variables.
-      if (replacement.type != 'v') {
+      if (!_openmathApi.Exprs.isVariable(replacement)) {
         throw 'Cannot replace a bound variable with a non-varible'; // Case 4: expr is a binding and it binds the variable to be replaced,
         // and the replacement is also a variable.  We can go ahead and replace
         // as requested, knowing that this is just a special case of alpha
         // conversion.
       } else {
-        expr.variables[varidx].replaceWith(replacement.copy());
-        replaceWithoutCapture(expr.body, variable, replacement);
+        _openmathApi.Exprs.replace(variables[varidx], _openmathApi.Exprs.copy(replacement));
+
+        replaceWithoutCapture(_openmathApi.Exprs.bindingBody(expr), variable, replacement);
       }
     } else {
       // Case 5: expr is a binding and it does not bind the variable to be replaced,
       // but the replacement may include capture, so we prevent that.
       // If any bound var would capture the replacement, apply alpha conversion
       // so that the bound var in question becomes an entirely new bound var.
-      if (expr.body.occursFree(variable)) {
-        expr.variables.forEach(function (bound_var) {
-          if (replacement.occursFree(bound_var)) {
+      if (_openmathApi.Exprs.occursFreeIn(variable, _openmathApi.Exprs.bindingBody(expr))) {
+        variables.forEach(function (bound_var) {
+          if (_openmathApi.Exprs.occursFreeIn(bound_var, replacement)) {
             // FIXME: this doesn't seem like the best way to get new variables, but works for now.
             //      need some way of generating global new variables
             //      E.g. a class called new variable stream
-            expr.replaceWith(alphaConvert(expr, bound_var, getNewVariableRelativeTo(expr)));
+            _openmathApi.Exprs.replace(expr, alphaConvert(expr, bound_var, getNewVariableRelativeTo(expr)));
           }
         });
       } // now after any needed alpha conversions have made it safe,
       // we can actually do the replacement in the body.
 
 
-      replaceWithoutCapture(expr.body, variable, replacement);
+      replaceWithoutCapture(_openmathApi.Exprs.bindingBody(expr), variable, replacement);
     }
   }
 }
@@ -343,17 +333,18 @@ function alphaEquivalent(expr1, expr2) {
   var firstcall = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
   var possible_types = ['a', 'bi'];
 
-  if (expr1.type != expr2.type) {
+  if (!_openmathApi.Exprs.sameType(expr1, expr2)) {
     return false;
   }
 
-  if (firstcall && (!possible_types.includes(expr1.type) || !possible_types.includes(expr2.type))) {
+  if (firstcall && (!(_openmathApi.Exprs.isApplication(expr1) || _openmathApi.Exprs.isBinding(expr1)) || !(_openmathApi.Exprs.isApplication(expr1) || _openmathApi.Exprs.isBinding(expr2)))) {
     return false;
   }
 
-  if (expr1.type == 'a') {
-    var expr1_children = expr1.children;
-    var expr2_children = expr2.children;
+  if (_openmathApi.Exprs.isApplication(expr1)) {
+    var expr1_children = _openmathApi.Exprs.getChildren(expr1);
+
+    var expr2_children = _openmathApi.Exprs.getChildren(expr2);
 
     if (expr1_children.length != expr2_children.length) {
       return false;
@@ -369,26 +360,31 @@ function alphaEquivalent(expr1, expr2) {
     }
 
     return true;
-  } else if (expr1.type == 'bi') {
-    if (expr1.variables.length != expr2.variables.length || !expr1.symbol.equals(expr2.symbol)) {
+  } else if (_openmathApi.Exprs.isBinding(expr1)) {
+    var expr1_vars = _openmathApi.Exprs.bindingVariables(expr1);
+
+    var expr2_vars = _openmathApi.Exprs.bindingVariables(expr2);
+
+    if (expr1_vars.length != expr2_vars.length || !_openmathApi.Exprs.bindingHead(expr1).equals(_openmathApi.Exprs.bindingHead(expr2))) {
       return false;
     } // Alpha convert all bound variables in both expressions to
     // new variables, which appear nowhere in either expression.
     // This avoids the problem of 'overwriting' a previous alpha conversion.
 
 
-    var expr1conv = expr1.copy();
-    var expr2conv = expr2.copy();
+    var expr1conv = _openmathApi.Exprs.copy(expr1);
 
-    for (var _i2 = 0; _i2 < expr1.variables.length; _i2++) {
+    var expr2conv = _openmathApi.Exprs.copy(expr2);
+
+    for (var _i2 = 0; _i2 < expr1_vars.length; _i2++) {
       var new_var = getNewVariableRelativeTo(expr1conv, expr2conv);
-      expr1conv = alphaConvert(expr1conv, expr1.variables[_i2], new_var);
-      expr2conv = alphaConvert(expr2conv, expr2.variables[_i2], new_var);
+      expr1conv = alphaConvert(expr1conv, expr1_vars[_i2], new_var);
+      expr2conv = alphaConvert(expr2conv, expr2_vars[_i2], new_var);
     }
 
-    return alphaEquivalent(expr1conv.body, expr2conv.body, false);
+    return alphaEquivalent(_openmathApi.Exprs.bindingBody(expr1conv), _openmathApi.Exprs.bindingBody(expr2conv), false);
   } else {
-    return expr1.equals(expr2);
+    return _openmathApi.Exprs.equal(expr1, expr2);
   }
 }
 /**
@@ -399,15 +395,15 @@ function alphaEquivalent(expr1, expr2) {
  *
  * This beta reduction is capture avoiding.
  * See `replaceWithoutCapture` for details.
- * @param {OM} gEF - a general expression function with n variables
+ * @param {OM} EF - an expression function with n variables
  * @param {OM[]} expr_list - a list of expressions of length n
  * @returns an expression manipulated as described above
  */
 
 
-function betaReduce(gEF, expr_list) {
+function betaReduce(EF, expr_list) {
   // Check we can actually do a beta reduction
-  if (!isGeneralExpressionFunction(gEF)) {
+  if (!isExpressionFunction(EF)) {
     throw 'In beta reduction, the first argument must be a general expression function';
   }
 
@@ -415,12 +411,13 @@ function betaReduce(gEF, expr_list) {
     throw 'In beta reduction,, the second argument must be a list of expressions';
   }
 
-  if (gEF.variables.length != expr_list.length) {
+  var variables = _openmathApi.Exprs.bindingVariables(EF);
+
+  if (variables.length != expr_list.length) {
     throw 'In beta reduction, the number of expressions must match number of variables';
   }
 
-  var variables = gEF.variables;
-  var result = gEF.body.copy();
+  var result = _openmathApi.Exprs.copy(_openmathApi.Exprs.bindingBody(EF));
 
   for (var i = 0; i < expr_list.length; i++) {
     var v_i = variables[i];
@@ -440,28 +437,17 @@ function betaReduce(gEF, expr_list) {
 
 
 function checkVariable(variable, nextNewVariableIndex) {
-  if (/^v[0-9]+$/.test(variable.name)) {
-    nextNewVariableIndex = Math.max(nextNewVariableIndex, parseInt(variable.name.slice(1)) + 1);
+  var name = _openmathApi.Exprs.getVariableName(variable);
+
+  if (/^v[0-9]+$/.test(name)) {
+    nextNewVariableIndex = Math.max(nextNewVariableIndex, parseInt(name.slice(1)) + 1);
   }
 
   return nextNewVariableIndex;
 }
 /**
- * Helper function used when adding pairs to a constraint list.
- * Returns the list of variables that appear in a given expression.
- * @param {OM} expression - the expression to be checked
- * @returns a list containing any variables in the given expression
- */
-
-
-function getVariablesIn(expression) {
-  return expression.descendantsSatisfying(function (d) {
-    return d.type == 'v';
-  });
-}
-/**
  * Takes a new variable (relative to some constraint list) and an expression
- * and returns a gEF which has the meaning λv_n.expr where v_n is the new
+ * and returns an EF which has the meaning λv_n.expr where v_n is the new
  * variable and expr is the expression.
  * I.e. creates a constant expression function.
  * @param {OM} new_variable - an OM variable
@@ -470,15 +456,15 @@ function getVariablesIn(expression) {
 
 
 function makeConstantExpression(new_variable, expression) {
-  if (new_variable instanceof _openmath.OM && expression instanceof _openmath.OM) {
-    return makeGeneralExpressionFunction(new_variable.copy(), expression.copy());
+  if (_openmathApi.Exprs.isExpression(new_variable) && _openmathApi.Exprs.isExpression(expression)) {
+    return makeExpressionFunction(_openmathApi.Exprs.copy(new_variable), _openmathApi.Exprs.copy(expression));
   }
 
   return null;
 }
 /**
  * Takes a list of variables v_1,...,v_k and a single variable (a point)
- * v_i and returns a gEF with the meaning λv_1,...,v_k.v_i.
+ * v_i and returns an EF with the meaning λv_1,...,v_k.v_i.
  * I.e. returns a projection expression function for v_i with k arguments.
  * @param {OM[]} variables - a list of OM variables
  * @param {OM} point -  a single OM variable
@@ -486,18 +472,12 @@ function makeConstantExpression(new_variable, expression) {
 
 
 function makeProjectionExpression(variables, point) {
-  if (variables.every(function (v) {
-    return v instanceof _openmath.OM;
-  }) && point instanceof _openmath.OM) {
-    if (!variables.map(function (v) {
-      return v.name;
-    }).includes(point.name)) {
+  if (variables.every(_openmathApi.Exprs.isExpression) && _openmathApi.Exprs.isExpression(point)) {
+    if (!variables.map(_openmathApi.Exprs.getVariableName).includes(_openmathApi.Exprs.getVariableName(point))) {
       throw "When making a projection function, the point must occur in the list of variables";
     }
 
-    return makeGeneralExpressionFunction(variables.map(function (v) {
-      return v.copy();
-    }), point.copy());
+    return makeExpressionFunction(variables.map(_openmathApi.Exprs.copy), _openmathApi.Exprs.copy(point));
   }
 
   return null;
@@ -507,17 +487,17 @@ function makeProjectionExpression(variables, point) {
  * which is denoted `g(e1,...,em)`, and a list of temporary
  * metavariables.
  *
- * For an application, returns a gEF with the meaning
+ * For an application, returns an EF with the meaning
  * `λv_1,...,v_k.g(H_1(v_1,...,v_k),...,H_m(v_1,...,v_k))`
- * where each `H_i` denotes a temporary gEFA as well as a list of the
+ * where each `H_i` denotes a temporary EFA as well as a list of the
  * newly created temporary metavariables `[H_1,...,H_m]`.
  *
  * I.e. it returns an 'imitation' expression function where
  * the body is the original expression with each argument
- * replaced by a temporary gEFA.
+ * replaced by a temporary EFA.
  * @param {OM} variables - a list of OM variables
  * @param {OM} expr - an OM application
- * @returns a gEF which is the imitation expression described above
+ * @returns an EF which is the imitation expression described above
  */
 
 
@@ -530,28 +510,28 @@ function makeImitationExpression(variables, expr, temp_metavars) {
    * of the imitation function. This is an application of the form:
    * `head(temp_metavars[0](bound_vars),...,temp_metavars[len-1](bound_vars))`
    */
-  function createBody(head, bound_vars, temp_metavars, type, binding_variables) {
+  function createBody(head, bound_vars, temp_metavars, bind, binding_variables) {
     var args = [];
 
     for (var i = 0; i < temp_metavars.length; i++) {
       var temp_metavar = temp_metavars[i];
-      args.push(makeGeneralExpressionFunctionApplication(temp_metavar, bound_vars));
+      args.push(makeExpressionFunctionApplication(temp_metavar, bound_vars));
     }
 
-    if (type == 'a') {
-      return _openmath.OM.app.apply(_openmath.OM, args);
-    } else if (type == 'bi') {
-      return _openmath.OM.bin.apply(_openmath.OM, [head].concat((0, _toConsumableArray2["default"])(binding_variables), args));
+    if (bind) {
+      // should be only one arg in this case
+      return _openmathApi.Exprs.binding(head, binding_variables, args[0]);
+    } else {
+      return _openmathApi.Exprs.application(args);
     }
   }
 
   var imitationExpr = null;
 
-  if (variables.every(function (v) {
-    return v instanceof _openmath.OM;
-  }) && expr instanceof _openmath.OM) {
-    var type = expr.type;
-    imitationExpr = makeGeneralExpressionFunction(variables, createBody(type == 'a' ? expr.children[0] : expr.symbol, variables, temp_metavars, type, type == 'bi' ? expr.variables : null));
+  if (variables.every(_openmathApi.Exprs.isExpression) && _openmathApi.Exprs.isExpression(expr)) {
+    var bind = _openmathApi.Exprs.isBinding(expr);
+
+    imitationExpr = makeExpressionFunction(variables, createBody(bind ? _openmathApi.Exprs.bindingHead(expr) : _openmathApi.Exprs.getChildren(expr)[0], variables, temp_metavars, bind, bind ? _openmathApi.Exprs.bindingVariables(expr) : null));
   }
 
   return imitationExpr;
