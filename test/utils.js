@@ -27,7 +27,7 @@ export function quick(string) {
             variable.replaceWith(efa(quick(match[1]), quick(match[2])));
         } else if (/^_/.test(variable.name)) {
             variable.replaceWith(OM.simple(variable.name.slice(1)));
-            M.Exprs.setMetavariable(variable);
+            M.API.setMetavariable(variable);
         }
     }
     var symbols = tree.descendantsSatisfying((x) => { return x.type == 'sy' });
@@ -36,7 +36,7 @@ export function quick(string) {
         if (/^_/.test(sym.cd)) {
             var replacement_string = sym.cd.slice(1) + '.' + sym.name;
             sym.replaceWith(OM.simple(replacement_string));
-            M.Exprs.setMetavariable(sym);
+            M.API.setMetavariable(sym);
         }
     }
     return tree;

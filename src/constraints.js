@@ -8,7 +8,7 @@
 
 // Import everything from the language module and expose it as well.
 import {
-    Exprs, isExpressionFunction, makeExpressionFunction,
+    API, isExpressionFunction, makeExpressionFunction,
     isExpressionFunctionApplication, makeExpressionFunctionApplication,
     canApplyExpressionFunctionApplication,
     applyExpressionFunctionApplication, getNewVariableRelativeTo,
@@ -17,7 +17,7 @@ import {
     makeImitationExpression
 } from './language.js';
 export {
-    Exprs, isExpressionFunction, makeExpressionFunction,
+    API, isExpressionFunction, makeExpressionFunction,
     isExpressionFunctionApplication, makeExpressionFunctionApplication,
     canApplyExpressionFunctionApplication,
     applyExpressionFunctionApplication, getNewVariableRelativeTo,
@@ -74,7 +74,7 @@ export class Constraint {
      * @param {OM} expression - an expression which must not contain a metavariable
      */
     constructor(pattern, expression) {
-        if (!Exprs.isExpression(pattern) || !Exprs.isExpression(expression)) {
+        if (!API.isExpression(pattern) || !API.isExpression(expression)) {
             throw Error( 'Both arguments must be expressions' );
         }
         this.pattern = pattern;
@@ -106,7 +106,7 @@ export class Constraint {
      * @returns true if the pattern is a metavariable, false otherwise.
      */
     isSubstitution() {
-        return Exprs.isMetavariable(this.pattern);
+        return API.isMetavariable(this.pattern);
     }
 
     /**
@@ -118,7 +118,7 @@ export class Constraint {
     getCase(pattern, expression) {
         if (pattern.equals(expression)) {
             return CASES.IDENTITY;
-        } else if (Exprs.isMetavariable(pattern)) {
+        } else if (API.isMetavariable(pattern)) {
             return CASES.BINDING;
         } else if (
                 (
@@ -142,7 +142,7 @@ export class Constraint {
             ) {
             return CASES.SIMPLIFICATION;
         } else if (isExpressionFunctionApplication(pattern)
-            || Exprs.isMetavariable(pattern.children[1])
+            || API.isMetavariable(pattern.children[1])
             ) {
             return CASES.EFA;
         } else {
@@ -255,7 +255,7 @@ export class ConstraintList {
      * @returns a new variable starting at `vN` (see constructor for definition of `vN`).
      */
     nextNewVariable() {
-        return Exprs.variable('v' + this.nextNewVariableIndex++);
+        return API.variable('v' + this.nextNewVariableIndex++);
     }
 
     /**
@@ -289,11 +289,11 @@ export class ConstraintList {
             // Don't add if it's already in the list
             if (this.indexAtWhich((c) => c.equals(constraint)) == -1) {
                 // Set the next new var index
-                var p_vars = Exprs.getVariablesIn(constraint.pattern);
+                var p_vars = API.getVariablesIn(constraint.pattern);
                 for (let j = 0; j < p_vars.length; j++) {
                     this.nextNewVariableIndex = checkVariable(p_vars[j], this.nextNewVariableIndex);
                 }
-                var e_vars = Exprs.getVariablesIn(constraint.expression);
+                var e_vars = API.getVariablesIn(constraint.expression);
                 for (let k = 0; k < e_vars.length; k++) {
                     this.nextNewVariableIndex = checkVariable(e_vars[k], this.nextNewVariableIndex);
                 }
@@ -405,9 +405,9 @@ export class ConstraintList {
      *   the variable, null otherwise.
      */
     lookup(variable) {
-        if (!Exprs.isExpression(variable)) {
-            variable = Exprs.variable(variable);
-            Exprs.setMetavariable(variable);
+        if (!API.isExpression(variable)) {
+            variable = API.variable(variable);
+            API.setMetavariable(variable);
         }
         for (let i = 0; i < this.contents.length; i++) {
             var constraint = this.contents[i];
@@ -445,7 +445,7 @@ export class ConstraintList {
     computeBindingConstraints() {
         this.contents.forEach(constraint =>
             constraint.pattern.descendantsSatisfying(d => d.type == 'bi').forEach(binding =>
-                binding.descendantsSatisfying(Exprs.isMetavariable).forEach(innerMV => {
+                binding.descendantsSatisfying(API.isMetavariable).forEach(innerMV => {
                     if (innerMV.isFree(binding)) {
                         binding.variables.forEach(outerMV => {
                             if (!this.bindingConstraints.find(existing =>

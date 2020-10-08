@@ -49,7 +49,7 @@ describe('Generalized Expression Functions', () => {
         expect(M.isExpressionFunctionApplication(EFA1)).toBe(true);
 
         var v1 = OM.var('P');
-        M.Exprs.setMetavariable(v1);
+        M.API.setMetavariable(v1);
         var EFA2 = M.makeExpressionFunctionApplication(
             v1,
             OM.simple('sq.uare(v1)')
@@ -57,7 +57,7 @@ describe('Generalized Expression Functions', () => {
 
         expect(M.isExpressionFunctionApplication(EFA2)).toBe(true);
 
-        M.Exprs.clearMetavariable(v1);
+        M.API.clearMetavariable(v1);
 
         expect(() => {
             M.makeExpressionFunctionApplication(v1, OM.simple('sq.uare(v1)'))

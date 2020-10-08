@@ -17,20 +17,20 @@ describe('Metavariables', () => {
     test('should reliably mark metavariables', () => {
         // Check that functions work correctly
         var x = OM.var('x');
-        expect(M.Exprs.isMetavariable(x)).toBe(false);
-        M.Exprs.setMetavariable(x);
-        expect(M.Exprs.isMetavariable(x)).toBe(true);
-        M.Exprs.clearMetavariable(x);
-        expect(M.Exprs.isMetavariable(x)).toBe(false);
+        expect(M.API.isMetavariable(x)).toBe(false);
+        M.API.setMetavariable(x);
+        expect(M.API.isMetavariable(x)).toBe(true);
+        M.API.clearMetavariable(x);
+        expect(M.API.isMetavariable(x)).toBe(false);
         // We should only be able to mark variables and symbols
         var one = OM.int(1);
         var fofx = OM.simple('f(x)');
-        expect(M.Exprs.isMetavariable(one)).toBe(false);
-        expect(M.Exprs.isMetavariable(fofx)).toBe(false);
-        expect(M.Exprs.setMetavariable(one)).toBe(null);
-        expect(M.Exprs.setMetavariable(fofx)).toBe(null);
-        expect(M.Exprs.isMetavariable(one)).toBe(false);
-        expect(M.Exprs.isMetavariable(fofx)).toBe(false);
+        expect(M.API.isMetavariable(one)).toBe(false);
+        expect(M.API.isMetavariable(fofx)).toBe(false);
+        expect(M.API.setMetavariable(one)).toBe(null);
+        expect(M.API.setMetavariable(fofx)).toBe(null);
+        expect(M.API.isMetavariable(one)).toBe(false);
+        expect(M.API.isMetavariable(fofx)).toBe(false);
     });
 });
 

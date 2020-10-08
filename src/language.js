@@ -8,8 +8,8 @@
 
 "use strict"
 
-import { OM, Exprs } from './openmath-api.js';
-export { OM, Exprs };
+import { API } from './openmath-api.js';
+export { API };
 
 ////////////////////////////////////////////////////////////////////////////////
 // An expression function is a type of expression that is intended to be
@@ -17,8 +17,8 @@ export { OM, Exprs };
 // We define here two symbols that will be used to represent such things.
 ////////////////////////////////////////////////////////////////////////////////
 
-const expressionFunctionSymbol = Exprs.symbol('EF');
-const expressionFunctionApplicationSymbol = Exprs.symbol('EFA');
+const expressionFunctionSymbol = API.symbol('EF');
+const expressionFunctionApplicationSymbol = API.symbol('EFA');
 
 /**
  * Makes a new expression function with the meaning
@@ -32,12 +32,12 @@ export function makeExpressionFunction(variables, body) {
     }
     for (let i = 0; i < variables.length; i++) {
         var variable = variables[i];
-        if (!Exprs.isVariable(variable)) {
+        if (!API.isVariable(variable)) {
             throw 'When making a general expression function,\
 all elements of first argument must have type variable';
         }
     }
-    return Exprs.binding(expressionFunctionSymbol, variables, body);
+    return API.binding(expressionFunctionSymbol, variables, body);
 }
 
 /**
@@ -46,9 +46,9 @@ all elements of first argument must have type variable';
  */
 export function isExpressionFunction(expression) {
     return (
-        Exprs.isExpression(expression)
-        && Exprs.isBinding(expression)
-        && Exprs.equal(Exprs.bindingHead(expression),expressionFunctionSymbol)
+        API.isExpression(expression)
+        && API.isBinding(expression)
+        && API.equal(API.bindingHead(expression),expressionFunctionSymbol)
     );
 }
 
@@ -62,13 +62,13 @@ export function isExpressionFunction(expression) {
  * @param {OM[]} arguments - a list of OM expressions
  */
 export function makeExpressionFunctionApplication(func, args) {
-    if (!(isExpressionFunction(func) || Exprs.isMetavariable(func))) {
+    if (!(isExpressionFunction(func) || API.isMetavariable(func))) {
         throw 'When making EFAs, the func must be either an EF or a metavariable'
     }
     if (!(args instanceof Array)) {
         args = [args]
     }
-    return Exprs.application([expressionFunctionApplicationSymbol, func, ...args]);
+    return API.application([expressionFunctionApplicationSymbol, func, ...args]);
 }
 
 /**
@@ -76,9 +76,9 @@ export function makeExpressionFunctionApplication(func, args) {
  */
 export function isExpressionFunctionApplication(expression) {
     return (
-        Exprs.isExpression(expression)
-        && Exprs.isApplication(expression)
-        && Exprs.equal(Exprs.getChildren(expression)[0],expressionFunctionApplicationSymbol)
+        API.isExpression(expression)
+        && API.isApplication(expression)
+        && API.equal(API.getChildren(expression)[0],expressionFunctionApplicationSymbol)
     );
 }
 
@@ -91,7 +91,7 @@ export function isExpressionFunctionApplication(expression) {
 export function canApplyExpressionFunctionApplication(EFA) {
     if (
         isExpressionFunctionApplication(EFA)
-        && isExpressionFunction(Exprs.getChildren(EFA)[1])
+        && isExpressionFunction(API.getChildren(EFA)[1])
     ) {
         return true;
     }
@@ -105,7 +105,7 @@ export function canApplyExpressionFunctionApplication(EFA) {
  */
 export function getExpressionFunctionFromApplication(EFA) {
     if (canApplyExpressionFunctionApplication(EFA)) {
-        return Exprs.getChildren(EFA)[1];
+        return API.getChildren(EFA)[1];
     }
     return null;
 }
@@ -117,7 +117,7 @@ export function getExpressionFunctionFromApplication(EFA) {
  */
 export function getExpressionArgumentsFromApplication(EFA) {
     if (canApplyExpressionFunctionApplication(EFA)) {
-        return Exprs.getChildren(EFA).slice(2);
+        return API.getChildren(EFA).slice(2);
     }
     return null;
 }
@@ -151,20 +151,20 @@ export function applyExpressionFunctionApplication(EFA) {
 export function getNewVariableRelativeTo(...exprs) {
     let all_vars = [ ]
     for (let i = 0; i < exprs.length; i++) {
-        all_vars.push(...Exprs.getVariablesIn(exprs[i]));
+        all_vars.push(...API.getVariablesIn(exprs[i]));
     }
     let index = 0;
     for (let i = 0; i < all_vars.length; i++) {
         let next_var = all_vars[i];
-        if (/^x[0-9]+$/.test(Exprs.getVariableName(next_var))) {
+        if (/^x[0-9]+$/.test(API.getVariableName(next_var))) {
             index = Math.max(
                 index,
-                parseInt(Exprs.getVariableName(next_var).slice(1)) + 1
+                parseInt(API.getVariableName(next_var).slice(1)) + 1
             );
         }
     }
     let var_name = 'x' + index;
-    return Exprs.variable(var_name);
+    return API.variable(var_name);
 }
 
 /**
@@ -177,20 +177,20 @@ export function getNewVariableRelativeTo(...exprs) {
  * @returns a copy of the alpha converted binding
  */
 export function alphaConvert(binding, which_var, replace_var) {
-    var result = Exprs.copy(binding);
-    var bound_vars = Exprs.bindingVariables(result);
+    var result = API.copy(binding);
+    var bound_vars = API.bindingVariables(result);
 
-    if (!bound_vars.map(Exprs.getVariableName).includes(Exprs.getVariableName(which_var))) {
+    if (!bound_vars.map(API.getVariableName).includes(API.getVariableName(which_var))) {
         throw 'which_var must be bound in binding'
     }
 
     for (let i = 0; i < bound_vars.length; i++) {
         var variable = bound_vars[i];
-        if (Exprs.equal(variable,which_var)) {
-            Exprs.replace(variable,Exprs.copy(replace_var));
+        if (API.equal(variable,which_var)) {
+            API.replace(variable,API.copy(replace_var));
         }
     }
-    replaceWithoutCapture(Exprs.bindingBody(result), which_var, replace_var);
+    replaceWithoutCapture(API.bindingBody(result), which_var, replace_var);
     return result;
 }
 
@@ -213,61 +213,61 @@ export function alphaConvert(binding, which_var, replace_var) {
  * @param {OM} replacement - an OM expression
  */
 export function replaceWithoutCapture(expr, variable, replacement) {
-    if (!Exprs.isExpression(expr)
-        || !Exprs.isExpression(variable)
-        || !Exprs.isExpression(replacement)) {
+    if (!API.isExpression(expr)
+        || !API.isExpression(variable)
+        || !API.isExpression(replacement)) {
         throw 'all arguments must be expressions';
     }
-    if (!Exprs.isBinding(expr)) {
+    if (!API.isBinding(expr)) {
         // Case 1: expr is a variable that we must replace, so do it
-        if (Exprs.isVariable(expr) && Exprs.equal(expr,variable)) {
-            Exprs.replace(expr,Exprs.copy(replacement));
+        if (API.isVariable(expr) && API.equal(expr,variable)) {
+            API.replace(expr,API.copy(replacement));
         // Case 2: expr is any other non-binding, so recur on its
         // children (of which there may be none, meaning this is some
         // type of atomic other than a variable, which is fine; do nothing)
         } else {
-            var children = Exprs.getChildren(expr);
+            var children = API.getChildren(expr);
             for (let i = 0; i < children.length; i++) {
                 var ch = children[i];
                 replaceWithoutCapture(ch, variable, replacement);
             }
         }
     } else {
-        const variables = Exprs.bindingVariables(expr);
-        const varidx = variables.map(Exprs.getVariableName).indexOf(Exprs.getVariableName(variable));
+        const variables = API.bindingVariables(expr);
+        const varidx = variables.map(API.getVariableName).indexOf(API.getVariableName(variable));
         if (varidx > -1) {
             // Case 3: expr is a binding and it binds the variable to be replaced,
             // but the replacement is a non-variable.  This is illegal, because
             // OpenMath bound variable positions can be occupied only by variables.
-            if (!Exprs.isVariable(replacement)) {
+            if (!API.isVariable(replacement)) {
                 throw 'Cannot replace a bound variable with a non-varible';
             // Case 4: expr is a binding and it binds the variable to be replaced,
             // and the replacement is also a variable.  We can go ahead and replace
             // as requested, knowing that this is just a special case of alpha
             // conversion.
             } else {
-                Exprs.replace(variables[varidx],Exprs.copy(replacement));
-                replaceWithoutCapture(Exprs.bindingBody(expr), variable, replacement);
+                API.replace(variables[varidx],API.copy(replacement));
+                replaceWithoutCapture(API.bindingBody(expr), variable, replacement);
             }
         } else {
             // Case 5: expr is a binding and it does not bind the variable to be replaced,
             // but the replacement may include capture, so we prevent that.
             // If any bound var would capture the replacement, apply alpha conversion
             // so that the bound var in question becomes an entirely new bound var.
-            if (Exprs.occursFreeIn(variable,Exprs.bindingBody(expr))) {
+            if (API.occursFreeIn(variable,API.bindingBody(expr))) {
                 variables.forEach(bound_var => {
-                    if (Exprs.occursFreeIn(bound_var,replacement)) {
+                    if (API.occursFreeIn(bound_var,replacement)) {
                         // FIXME: this doesn't seem like the best way to get new variables, but works for now.
                         //      need some way of generating global new variables
                         //      E.g. a class called new variable stream
-                        Exprs.replace(expr,alphaConvert(expr, bound_var,
+                        API.replace(expr,alphaConvert(expr, bound_var,
                             getNewVariableRelativeTo(expr)));
                     }
                 } );
             }
             // now after any needed alpha conversions have made it safe,
             // we can actually do the replacement in the body.
-            replaceWithoutCapture(Exprs.bindingBody(expr), variable, replacement);
+            replaceWithoutCapture(API.bindingBody(expr), variable, replacement);
         }
     }
 }
@@ -284,20 +284,20 @@ export function replaceWithoutCapture(expr, variable, replacement) {
  */
 export function alphaEquivalent(expr1, expr2, firstcall=true) {
     var possible_types = ['a', 'bi'];
-    if (!Exprs.sameType(expr1,expr2)) {
+    if (!API.sameType(expr1,expr2)) {
         return false;
     }
     if (
         firstcall && (
-            !(Exprs.isApplication(expr1) || Exprs.isBinding(expr1))
-         || !(Exprs.isApplication(expr1) || Exprs.isBinding(expr2))
+            !(API.isApplication(expr1) || API.isBinding(expr1))
+         || !(API.isApplication(expr1) || API.isBinding(expr2))
         )
     ) {
         return false;
     }
-    if (Exprs.isApplication(expr1)) {
-        var expr1_children = Exprs.getChildren(expr1);
-        var expr2_children = Exprs.getChildren(expr2);
+    if (API.isApplication(expr1)) {
+        var expr1_children = API.getChildren(expr1);
+        var expr2_children = API.getChildren(expr2);
         if (expr1_children.length != expr2_children.length) {
             return false;
         }
@@ -309,26 +309,26 @@ export function alphaEquivalent(expr1, expr2, firstcall=true) {
             }
         }
         return true;
-    } else if (Exprs.isBinding(expr1)) {
-        const expr1_vars = Exprs.bindingVariables(expr1);
-        const expr2_vars = Exprs.bindingVariables(expr2);
+    } else if (API.isBinding(expr1)) {
+        const expr1_vars = API.bindingVariables(expr1);
+        const expr2_vars = API.bindingVariables(expr2);
         if ((expr1_vars.length != expr2_vars.length)
-            || !(Exprs.bindingHead(expr1).equals(Exprs.bindingHead(expr2)))) {
+            || !(API.bindingHead(expr1).equals(API.bindingHead(expr2)))) {
             return false;
         }
         // Alpha convert all bound variables in both expressions to
         // new variables, which appear nowhere in either expression.
         // This avoids the problem of 'overwriting' a previous alpha conversion.
-        var expr1conv = Exprs.copy(expr1);
-        var expr2conv = Exprs.copy(expr2);
+        var expr1conv = API.copy(expr1);
+        var expr2conv = API.copy(expr2);
         for (let i = 0; i < expr1_vars.length; i++) {
             let new_var = getNewVariableRelativeTo(expr1conv, expr2conv);
             expr1conv = alphaConvert(expr1conv, expr1_vars[i], new_var);
             expr2conv = alphaConvert(expr2conv, expr2_vars[i], new_var);
         }
-        return alphaEquivalent(Exprs.bindingBody(expr1conv), Exprs.bindingBody(expr2conv), false);
+        return alphaEquivalent(API.bindingBody(expr1conv), API.bindingBody(expr2conv), false);
     } else {
-        return Exprs.equal(expr1,expr2);
+        return API.equal(expr1,expr2);
     }
 }
 
@@ -352,12 +352,12 @@ export function betaReduce(EF, expr_list) {
     if (!(expr_list instanceof Array)) {
         throw 'In beta reduction,, the second argument must be a list of expressions'
     }
-    const variables = Exprs.bindingVariables(EF);
+    const variables = API.bindingVariables(EF);
     if (variables.length != expr_list.length) {
         throw 'In beta reduction, the number of expressions must match number of variables'
     }
 
-    var result = Exprs.copy(Exprs.bindingBody(EF));
+    var result = API.copy(API.bindingBody(EF));
     for (let i = 0; i < expr_list.length; i++) {
         var v_i = variables[i];
         var e_i = expr_list[i];
@@ -374,7 +374,7 @@ export function betaReduce(EF, expr_list) {
  * @param {Number} nextNewVariableIndex - the number to check against
  */
 export function checkVariable(variable, nextNewVariableIndex) {
-    const name = Exprs.getVariableName(variable);
+    const name = API.getVariableName(variable);
     if (/^v[0-9]+$/.test(name)) {
         nextNewVariableIndex = Math.max(
             nextNewVariableIndex,
@@ -393,9 +393,9 @@ export function checkVariable(variable, nextNewVariableIndex) {
  * @param {OM} expression - an OM expression
  */
 export function makeConstantExpression(new_variable, expression) {
-    if (Exprs.isExpression(new_variable) && Exprs.isExpression(expression)) {
+    if (API.isExpression(new_variable) && API.isExpression(expression)) {
         return makeExpressionFunction(
-            Exprs.copy(new_variable),Exprs.copy(expression));
+            API.copy(new_variable),API.copy(expression));
     }
     return null;
 }
@@ -408,12 +408,12 @@ export function makeConstantExpression(new_variable, expression) {
  * @param {OM} point -  a single OM variable
  */
 export function makeProjectionExpression(variables, point) {
-    if (variables.every(Exprs.isExpression) && Exprs.isExpression(point)) {
-        if (!(variables.map(Exprs.getVariableName).includes(Exprs.getVariableName(point)))) {
+    if (variables.every(API.isExpression) && API.isExpression(point)) {
+        if (!(variables.map(API.getVariableName).includes(API.getVariableName(point)))) {
             throw "When making a projection function, the point must occur in the list of variables"
         }
         return makeExpressionFunction(
-            variables.map(Exprs.copy),Exprs.copy(point));
+            variables.map(API.copy),API.copy(point));
     }
     return null;
 }
@@ -457,24 +457,24 @@ export function makeImitationExpression(variables, expr, temp_metavars) {
         }
         if (bind) {
             // should be only one arg in this case
-            return Exprs.binding(head,binding_variables,args[0]);
+            return API.binding(head,binding_variables,args[0]);
         } else {
-            return Exprs.application(args);
+            return API.application(args);
         }
     }
 
     var imitationExpr = null;
 
-    if (variables.every(Exprs.isExpression) && Exprs.isExpression(expr)) {
-        const bind = Exprs.isBinding(expr);
+    if (variables.every(API.isExpression) && API.isExpression(expr)) {
+        const bind = API.isBinding(expr);
         imitationExpr = makeExpressionFunction(
             variables,
             createBody(
-                (bind ? Exprs.bindingHead(expr) : Exprs.getChildren(expr)[0]),
+                (bind ? API.bindingHead(expr) : API.getChildren(expr)[0]),
                 variables,
                 temp_metavars,
                 bind,
-                (bind ? Exprs.bindingVariables(expr) : null)
+                (bind ? API.bindingVariables(expr) : null)
             )
         );
     }

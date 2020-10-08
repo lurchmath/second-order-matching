@@ -14,7 +14,7 @@ const trueValue = OM.string('true');
  * implementation of OpenMath to store and manipulate mathematical expressions.
  * @namespace OpenMathAPI
  */
-const Exprs = {
+export const API = {
 
     ////////////////////////////////////////////////////////////////////////////////
     // What is an expression?
@@ -87,7 +87,7 @@ const Exprs = {
      * @param {OM} variable - an OM instance of type variable
      * @memberof OpenMathAPI
      */
-    getVariableName : (variable) => Exprs.isVariable(variable) ? variable.name : null,
+    getVariableName : (variable) => API.isVariable(variable) ? variable.name : null,
 
     /**
      * Construct an expression that is just a variable, with the given name
@@ -120,7 +120,7 @@ const Exprs = {
      * @returns a list containing any variables in the given expression
      * @memberof OpenMathAPI
      */
-    getVariablesIn : (expression) => expression.descendantsSatisfying(Exprs.isVariable),
+    getVariablesIn : (expression) => expression.descendantsSatisfying(API.isVariable),
 
     ////////////////////////////////////////////////////////////////////////////////
     // Which expressions are function applications?
@@ -192,7 +192,7 @@ const Exprs = {
      * @param {OM} expr - the expression whose operator is to be returned
      * @memberof OpenMathAPI
      */
-    bindingHead : (binding) => Exprs.isBinding(binding) ? binding.symbol : null,
+    bindingHead : (binding) => API.isBinding(binding) ? binding.symbol : null,
 
     /**
      * Return a list of the bound variables in the given expression, or null if the
@@ -201,7 +201,7 @@ const Exprs = {
      * @param {OM} binding - the expression whose bound variables are to be returned
      * @memberof OpenMathAPI
      */
-    bindingVariables : (binding) => Exprs.isBinding(binding) ? binding.variables : null,
+    bindingVariables : (binding) => API.isBinding(binding) ? binding.variables : null,
 
     /**
      * Return the body bound by a binding expression, or null if the given
@@ -211,7 +211,7 @@ const Exprs = {
      *   original body, not a copy)
      * @memberof OpenMathAPI
      */
-    bindingBody : (binding) => Exprs.isBinding(binding) ? binding.body : null,
+    bindingBody : (binding) => API.isBinding(binding) ? binding.body : null,
 
     /**
      * Return true if a structural copy of the given inner (sub)expression occurs
@@ -236,7 +236,7 @@ const Exprs = {
      * @memberof OpenMathAPI
      */
     isMetavariable : (variable) =>
-        Exprs.isExpression(variable)
+        API.isExpression(variable)
      && ['v', 'sy'].includes(variable.type)
      && variable.getAttribute(metavariableSymbol) != undefined
      && variable.getAttribute(metavariableSymbol).equals(trueValue),
@@ -249,7 +249,7 @@ const Exprs = {
      * @memberof OpenMathAPI
      */
     setMetavariable : (variable) => 
-        Exprs.isExpression(variable) && ['v', 'sy'].includes(variable.type) ?
+        API.isExpression(variable) && ['v', 'sy'].includes(variable.type) ?
         variable.setAttribute(metavariableSymbol, trueValue.copy()) : null,
 
     /**
@@ -261,5 +261,3 @@ const Exprs = {
     clearMetavariable : (metavariable) => metavariable.removeAttribute(metavariableSymbol),
 
 };
-
-export { OM, Exprs };

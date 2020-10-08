@@ -11,7 +11,7 @@ import {
     DEBUG_PRINT_CONSTRAINTLIST, DEBUG_PRINT_SOLS, newConstraintObject,
     newConstraints, newMC, lambdaString, newSolutions, checkSolutions
 } from './utils';
-const OM = M.OM;
+import { OM } from '../src/openmath.js';
 
 describe('checkSolutions helper function', () => {
     test('should perform correctly on example tasks', () => {
@@ -108,7 +108,7 @@ describe('Expression Function Creators', () => {
         var nv2 = quick('_X');
         expect(e2.type).toBe('a');
         expect(nv2.type).toBe('v');
-        expect(M.Exprs.isMetavariable(nv2)).toBe(true);
+        expect(M.API.isMetavariable(nv2)).toBe(true);
         expect(M.makeConstantExpression(nv2, e2).equals(ef('_X', 'pl.us(a,b,c,d)'))).toBe(true);
 
         expect(M.makeConstantExpression('v1', 'pl.us(a,b)')).toBeNull();
