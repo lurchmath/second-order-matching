@@ -24,11 +24,6 @@
 
 ## Moving beyond OpenMath
 
-- Copy `matching.js` to `matching-without-om.js`.  Change that file so that,
-  rather than importing OM, it exposes a function by which it expects to be
-  provided such an API, just as `constraints.js` does.  It should then pass that
-  API to `constraints.js` as well.  Create a new file, `matching.js`, that
-  imports `matching-without-om.js` and OM and passes the latter to the former.
 - Create a new test file in which you import only `matching-without-om.js` and
   provide a simple OM alternative, then ensure that a subset of the original
   test suite still passes in that new paradigm.
