@@ -1150,6 +1150,144 @@ If it is of this form, it returns X + 1 if it is greater than the given index.
     
 
     
+    <h4 class="name" id="getExpressionArgumentsFromApplication"><span class="type-signature"></span>getExpressionArgumentsFromApplication<span class="signature">(EFA)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    If this is an EFA, extract and return the array of arguments to which the
+function is to be applied.  Otherwise return null.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>EFA</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">an expression function application</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line118">line 118</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="getExpressionFunctionFromApplication"><span class="type-signature"></span>getExpressionFunctionFromApplication<span class="signature">(EFA)</span><span class="type-signature"></span></h4>
     
 
@@ -1253,144 +1391,6 @@ that is to be applied.  Otherwise return null.
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="language.js.html">language.js</a>, <a href="language.js.html#line106">line 106</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="getGeneralExpressionArgumentsFromApplication"><span class="type-signature"></span>getGeneralExpressionArgumentsFromApplication<span class="signature">(EFA)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    If this is an EFA, extract and return the array of arguments to which the
-function is to be applied.  Otherwise return null.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>EFA</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">OM</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">an expression function application</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line118">line 118</a>
     </li></ul></dd>
     
 
@@ -2840,13 +2840,13 @@ may sit in a parent above expr.
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="OpenMathAPI.html">OpenMathAPI</a></li></ul><h3>Classes</h3><ul><li><a href="Constraint.html">Constraint</a></li><li><a href="ConstraintList.html">ConstraintList</a></li><li><a href="MatchingChallenge.html">MatchingChallenge</a></li></ul><h3>Global</h3><ul><li><a href="global.html#alphaConvert">alphaConvert</a></li><li><a href="global.html#alphaEquivalent">alphaEquivalent</a></li><li><a href="global.html#applyExpressionFunctionApplication">applyExpressionFunctionApplication</a></li><li><a href="global.html#betaReduce">betaReduce</a></li><li><a href="global.html#canApplyExpressionFunctionApplication">canApplyExpressionFunctionApplication</a></li><li><a href="global.html#CASES">CASES</a></li><li><a href="global.html#checkVariable">checkVariable</a></li><li><a href="global.html#getExpressionFunctionFromApplication">getExpressionFunctionFromApplication</a></li><li><a href="global.html#getGeneralExpressionArgumentsFromApplication">getGeneralExpressionArgumentsFromApplication</a></li><li><a href="global.html#getNewVariableRelativeTo">getNewVariableRelativeTo</a></li><li><a href="global.html#isExpressionFunction">isExpressionFunction</a></li><li><a href="global.html#isExpressionFunctionApplication">isExpressionFunctionApplication</a></li><li><a href="global.html#makeConstantExpression">makeConstantExpression</a></li><li><a href="global.html#makeExpressionFunction">makeExpressionFunction</a></li><li><a href="global.html#makeExpressionFunctionApplication">makeExpressionFunctionApplication</a></li><li><a href="global.html#makeImitationExpression">makeImitationExpression</a></li><li><a href="global.html#makeProjectionExpression">makeProjectionExpression</a></li><li><a href="global.html#replaceWithoutCapture">replaceWithoutCapture</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="OpenMathAPI.html">OpenMathAPI</a></li></ul><h3>Classes</h3><ul><li><a href="Constraint.html">Constraint</a></li><li><a href="ConstraintList.html">ConstraintList</a></li><li><a href="MatchingChallenge.html">MatchingChallenge</a></li></ul><h3>Global</h3><ul><li><a href="global.html#alphaConvert">alphaConvert</a></li><li><a href="global.html#alphaEquivalent">alphaEquivalent</a></li><li><a href="global.html#applyExpressionFunctionApplication">applyExpressionFunctionApplication</a></li><li><a href="global.html#betaReduce">betaReduce</a></li><li><a href="global.html#canApplyExpressionFunctionApplication">canApplyExpressionFunctionApplication</a></li><li><a href="global.html#CASES">CASES</a></li><li><a href="global.html#checkVariable">checkVariable</a></li><li><a href="global.html#getExpressionArgumentsFromApplication">getExpressionArgumentsFromApplication</a></li><li><a href="global.html#getExpressionFunctionFromApplication">getExpressionFunctionFromApplication</a></li><li><a href="global.html#getNewVariableRelativeTo">getNewVariableRelativeTo</a></li><li><a href="global.html#isExpressionFunction">isExpressionFunction</a></li><li><a href="global.html#isExpressionFunctionApplication">isExpressionFunctionApplication</a></li><li><a href="global.html#makeConstantExpression">makeConstantExpression</a></li><li><a href="global.html#makeExpressionFunction">makeExpressionFunction</a></li><li><a href="global.html#makeExpressionFunctionApplication">makeExpressionFunctionApplication</a></li><li><a href="global.html#makeImitationExpression">makeImitationExpression</a></li><li><a href="global.html#makeProjectionExpression">makeProjectionExpression</a></li><li><a href="global.html#replaceWithoutCapture">replaceWithoutCapture</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu Oct 08 2020 11:24:28 GMT-0400 (Eastern Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu Oct 08 2020 11:28:25 GMT-0400 (Eastern Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
