@@ -10,7 +10,7 @@
 import {
     isExpressionFunction, makeExpressionFunction,
     isExpressionFunctionApplication, makeExpressionFunctionApplication,
-    canApplyExpressionFunctionApplication,
+    canApplyExpressionFunctionApplication, getVariablesIn, occursFree, isFree,
     applyExpressionFunctionApplication, getNewVariableRelativeTo,
     replaceWithoutCapture, alphaConvert, alphaEquivalent, betaReduce,
     checkVariable, makeConstantExpression, makeProjectionExpression,
@@ -19,7 +19,7 @@ import {
 export {
     setAPI, getAPI, isExpressionFunction, makeExpressionFunction,
     isExpressionFunctionApplication, makeExpressionFunctionApplication,
-    canApplyExpressionFunctionApplication,
+    canApplyExpressionFunctionApplication, getVariablesIn, occursFree, isFree,
     applyExpressionFunctionApplication, getNewVariableRelativeTo,
     replaceWithoutCapture, alphaConvert, alphaEquivalent, betaReduce,
     makeConstantExpression, makeProjectionExpression, makeImitationExpression
@@ -86,7 +86,8 @@ export class Constraint {
      * @returns a deep copy
      */
     copy() {
-        return new Constraint(this.pattern.copy(), this.expression.copy());
+        return new Constraint(getAPI().copy(this.pattern),
+                              getAPI().copy(this.expression));
     }
 
     /**
@@ -96,9 +97,13 @@ export class Constraint {
      */
     equals(other) {
         return (
-            (this.pattern.equals(other.pattern) || alphaEquivalent(this.pattern, other.pattern))
-            &&
-            (this.expression.equals(other.expression) || alphaEquivalent(this.expression, other.expression))
+            (
+                getAPI().equal(this.pattern,other.pattern)
+             || alphaEquivalent(this.pattern,other.pattern)
+            ) && (
+                getAPI().equal(this.expression,other.expression)
+             || alphaEquivalent(this.expression,other.expression)
+            )
         );
     }
 
@@ -116,7 +121,7 @@ export class Constraint {
      * @param {OM} expression
      */
     getCase(pattern, expression) {
-        if (pattern.equals(expression)) {
+        if (getAPI().equal(pattern,expression)) {
             return CASES.IDENTITY;
         } else if (getAPI().isMetavariable(pattern)) {
             return CASES.BINDING;
@@ -124,26 +129,23 @@ export class Constraint {
                 (
                     (
                         (
-                            pattern.type == 'a'
+                            getAPI().isApplication(pattern)
                             && !(isExpressionFunctionApplication(pattern))
                         )
-                        && expression.type == 'a'
+                        && getAPI().isApplication(expression)
                     )
-                    && pattern.children.length == expression.children.length
+                    && getAPI().getChildren(pattern).length == getAPI().getChildren(expression).length
                 )
                 ||
                 (
-                    (   pattern.type == 'bi'
-                        && expression.type == 'bi'
-                    )
-                    && pattern.symbol.equals(expression.symbol)
-                    && pattern.variables.length == expression.variables.length
+                    ( getAPI().isBinding(pattern) && getAPI().isBinding(expression) )
+                    && getAPI().equal(pattern.symbol,expression.symbol)
+                    && getAPI().bindingVariables(pattern).length == getAPI().bindingVariables(expression).length
                 )
             ) {
             return CASES.SIMPLIFICATION;
         } else if (isExpressionFunctionApplication(pattern)
-            || getAPI().isMetavariable(pattern.children[1])
-            ) {
+                || getAPI().isMetavariable(getAPI().getChildren(pattern)[1])) {
             return CASES.EFA;
         } else {
             return CASES.FAILURE;
@@ -164,10 +166,10 @@ export class Constraint {
      * @returns a copy of the pattern with any substitutions
      */
     applyInstantiation(target) {
-        var result = target.copy();
+        var result = getAPI().copy(target);
         replaceWithoutCapture(result, this.pattern, this.expression);
-        result.descendantsSatisfying(canApplyExpressionFunctionApplication).forEach(x =>
-            x.replaceWith(applyExpressionFunctionApplication(x))
+        getAPI().filterSubexpressions(result,canApplyExpressionFunctionApplication).forEach(x =>
+            getAPI().replace(x,applyExpressionFunctionApplication(x))
         );
         return result;
     }
@@ -182,37 +184,37 @@ export class Constraint {
      */
     breakIntoArgPairs() {
         var arg_pairs = [];
-        if (this.pattern.type == 'a' && this.expression.type == 'a') {
-            let pattern_children = this.pattern.children;
-            let expression_children = this.expression.children;
+        if (getAPI().isApplication(this.pattern) && getAPI().isApplication(this.expression)) {
+            let pattern_children = getAPI().getChildren(this.pattern);
+            let expression_children = getAPI().getChildren(this.expression);
             // In getting the case, we checked that the length of children was the same
             for (let i = 0; i < pattern_children.length; i++) {
                 arg_pairs.push(
                     new Constraint(
-                        pattern_children[i].copy(),
-                        expression_children[i].copy()
+                        getAPI().copy(pattern_children[i]),
+                        getAPI().copy(expression_children[i])
                     )
                 );
             }
-        } else if (this.pattern.type == 'bi' && this.expression.type == 'bi') {
-            let pattern_vars = this.pattern.variables;
-            let expression_vars = this.expression.variables;
-            let pattern_body = this.pattern.body;
-            let expression_body = this.expression.body;
+        } else if (getAPI().isBinding(this.pattern) && getAPI().isBinding(this.expression)) {
+            let pattern_vars = getAPI().bindingVariables(this.pattern);
+            let expression_vars = getAPI().bindingVariables(this.expression);
+            let pattern_body = getAPI().bindingBody(this.pattern);
+            let expression_body = getAPI().bindingBody(this.expression);
             // In getting the case, we checked that the length of variables was the same
             for (let i = 0; i < pattern_vars.length; i++) {
                 arg_pairs.push(
                     new Constraint(
-                        pattern_vars[i].copy(),
-                        expression_vars[i].copy()
+                        getAPI().copy(pattern_vars[i]),
+                        getAPI().copy(expression_vars[i])
                     )
                 );
             }
             // Also push the body of each binding to arg pairs
             arg_pairs.push(
                 new Constraint(
-                    pattern_body.copy(),
-                    expression_body.copy()
+                    getAPI().copy(pattern_body),
+                    getAPI().copy(expression_body)
                 )
             );
         }
@@ -262,9 +264,12 @@ export class ConstraintList {
      * @returns a deep copy of the list.
      */
     copy() {
-        var contents_copy = this.contents.map(c => c.copy());
+        var contents_copy = this.contents.map(c=>c.copy());
         var result = new ConstraintList(...contents_copy);
-        result.bindingConstraints = this.bindingConstraints.map(bc => {return {inner: bc.inner.copy(), outer: bc.outer.copy()}})
+        result.bindingConstraints = this.bindingConstraints.map(bc => {
+            return { inner: getAPI().copy(bc.inner),
+                     outer: getAPI().copy(bc.outer) };
+        } )
         result.nextNewVariableIndex = this.nextNewVariableIndex;
         return result;
     }
@@ -289,11 +294,11 @@ export class ConstraintList {
             // Don't add if it's already in the list
             if (this.indexAtWhich((c) => c.equals(constraint)) == -1) {
                 // Set the next new var index
-                var p_vars = getAPI().getVariablesIn(constraint.pattern);
+                var p_vars = getVariablesIn(constraint.pattern);
                 for (let j = 0; j < p_vars.length; j++) {
                     this.nextNewVariableIndex = checkVariable(p_vars[j], this.nextNewVariableIndex);
                 }
-                var e_vars = getAPI().getVariablesIn(constraint.expression);
+                var e_vars = getVariablesIn(constraint.expression);
                 for (let k = 0; k < e_vars.length; k++) {
                     this.nextNewVariableIndex = checkVariable(e_vars[k], this.nextNewVariableIndex);
                 }
@@ -313,7 +318,7 @@ export class ConstraintList {
     remove(...constraints) {
         for (let i = 0; i < constraints.length; i++) {
             var constraint = constraints[i];
-            var index = this.indexAtWhich((c) => { return c.equals(constraint); });
+            var index = this.indexAtWhich((c) => c.equals(constraint));
             if (index > -1) {
                 this.contents.splice(index, 1);
             }
@@ -390,10 +395,10 @@ export class ConstraintList {
             if (!constraint.isSubstitution()) {
                 return false;
             }
-            if (seen_so_far.includes(constraint.pattern.name)) {
+            if (seen_so_far.includes(getAPI().getVariableName(constraint.pattern))) {
                 return false;
             }
-            seen_so_far.push(constraint.pattern.name);
+            seen_so_far.push(getAPI().getVariableName(constraint.pattern));
         }
         return true;
     }
@@ -411,7 +416,7 @@ export class ConstraintList {
         }
         for (let i = 0; i < this.contents.length; i++) {
             var constraint = this.contents[i];
-            if (constraint.pattern.equals(variable)) {
+            if (getAPI().equal(constraint.pattern,variable)) {
                 return constraint.expression;
             }
         }
@@ -424,13 +429,13 @@ export class ConstraintList {
     equals(other) {
         for (let i = 0; i < this.contents.length; i++) {
             let constraint = this.contents[i];
-            if (!other.firstSatisfying((c) => { return c.equals(constraint) })) {
+            if (!other.firstSatisfying((c) => c.equals(constraint))) {
                 return false;
             }
         }
         for (let i = 0; i < other.contents.length; i++) {
             let constraint = other.contents[i];
-            if (!this.firstSatisfying((c) => { return c.equals(constraint) })) {
+            if (!this.firstSatisfying((c) => c.equals(constraint))) {
                 return false;
             }
         }
@@ -444,12 +449,13 @@ export class ConstraintList {
      */
     computeBindingConstraints() {
         this.contents.forEach(constraint =>
-            constraint.pattern.descendantsSatisfying(d => d.type == 'bi').forEach(binding =>
-                binding.descendantsSatisfying(getAPI().isMetavariable).forEach(innerMV => {
-                    if (innerMV.isFree(binding)) {
-                        binding.variables.forEach(outerMV => {
+            getAPI().filterSubexpressions(constraint.pattern,getAPI().isBinding).forEach(binding =>
+                getAPI().filterSubexpressions(binding,getAPI().isMetavariable).forEach(innerMV => {
+                    if (getAPI().variableIsFree(innerMV,binding)) {
+                        getAPI().bindingVariables(binding).forEach(outerMV => {
                             if (!this.bindingConstraints.find(existing =>
-                                    existing.outer.equals(outerMV) && existing.inner.equals(innerMV))
+                                    getAPI().equal(existing.outer,outerMV)
+                                 && getAPI().equal(existing.inner,innerMV))
                                 ) {
                                 this.bindingConstraints.push({ inner: innerMV, outer: outerMV });
                             }

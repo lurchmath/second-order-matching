@@ -5,7 +5,7 @@
 import {
     getAPI, setAPI, isExpressionFunction, makeExpressionFunction,
     isExpressionFunctionApplication, makeExpressionFunctionApplication,
-    canApplyExpressionFunctionApplication,
+    canApplyExpressionFunctionApplication, getVariablesIn, occursFree, isFree,
     applyExpressionFunctionApplication, getNewVariableRelativeTo,
     replaceWithoutCapture, alphaConvert, alphaEquivalent, betaReduce,
     makeConstantExpression, makeProjectionExpression, makeImitationExpression,
@@ -14,7 +14,7 @@ import {
 export {
     setAPI, isExpressionFunction, makeExpressionFunction,
     isExpressionFunctionApplication, makeExpressionFunctionApplication,
-    canApplyExpressionFunctionApplication,
+    canApplyExpressionFunctionApplication, getVariablesIn, occursFree, isFree,
     applyExpressionFunctionApplication, getNewVariableRelativeTo,
     replaceWithoutCapture, alphaConvert, alphaEquivalent, betaReduce,
     makeConstantExpression, makeProjectionExpression, makeImitationExpression,
@@ -127,7 +127,7 @@ export class MatchingChallenge {
                 if (!inner) return true; // metavariable not instantiated yet; can't violate any constraints
                 const outer = getAPI().isMetavariable(binding_constraint.outer) ? solution.lookup(binding_constraint.outer) : binding_constraint.outer;
                 if (!outer) return true; // metavariable not instantiated yet; can't violate any constraints
-                return !inner.occursFree(outer);
+                return !occursFree(outer,inner);
             })
         );
     }
@@ -252,9 +252,10 @@ export class MatchingChallenge {
                     // DEBUG( indent+'SIMPLIFICATION' )
                     mc.challengeList.remove(current_constraint);
                     // Do any necessary alpha conversion before breaking into argument paits
-                    if (current_constraint.pattern.type == 'bi' && current_constraint.expression.type == 'bi') {
-                        let pattern_vars = current_constraint.pattern.variables;
-                        let expression_vars = current_constraint.expression.variables;
+                    if (getAPI().isBinding(current_constraint.pattern)
+                     && getAPI().isBinding(current_constraint.expression)) {
+                        let pattern_vars = getAPI().bindingVariables(current_constraint.pattern);
+                        let expression_vars = getAPI().bindingVariables(current_constraint.expression);
                         // Get case checks number of arguments
                         for (let i = 0; i < pattern_vars.length; i++) {
                             let variable = pattern_vars[i];
@@ -283,7 +284,7 @@ export class MatchingChallenge {
                     // DEBUG( indent+'EFA-1: constant function' )
                     let temp_mc_A = mc.clone();
                     let const_sub = new Constraint(
-                        current_constraint.pattern.children[1],
+                        getAPI().getChildren(current_constraint.pattern)[1],
                         makeConstantExpression(temp_mc_A.challengeList.nextNewVariable(), current_constraint.expression)
                     );
                     // DEBUG( indent+'maybe add:', DEBUG_CONSTRAINT( const_sub ) )
@@ -296,10 +297,10 @@ export class MatchingChallenge {
 
                     // Subcase B, the function may be a projection function
                     // DEBUG( indent+'EFA-2: projection function' )
-                    var head = current_constraint.pattern.children[1];
-                    for (let i = 2; i < current_constraint.pattern.children.length; i++) {
+                    var head = getAPI().getChildren(current_constraint.pattern)[1];
+                    for (let i = 2; i < getAPI().getChildren(current_constraint.pattern).length; i++) {
                         let temp_mc_B = mc.clone();
-                        let new_vars = current_constraint.pattern.children.slice(2).map(()=>temp_mc_B.challengeList.nextNewVariable());
+                        let new_vars = getAPI().getChildren(current_constraint.pattern).slice(2).map(()=>temp_mc_B.challengeList.nextNewVariable());
                         let proj_sub = new Constraint(
                             head,
                             makeProjectionExpression(new_vars, new_vars[i - 2])
@@ -314,15 +315,15 @@ export class MatchingChallenge {
 
                     // Subcase C, the function may be more complex
                     // DEBUG( indent+'EFA-3: imitation expression' )
-                    if (expression.type == 'a' || expression.type == 'bi') {
+                    if (getAPI().isApplication(expression) || getAPI().isBinding(expression)) {
                         let temp_mc_C = mc.clone();
 
-                        let new_vars = current_constraint.pattern.children.slice(2).map(()=>temp_mc_C.challengeList.nextNewVariable());
+                        let new_vars = getAPI().getChildren(current_constraint.pattern).slice(2).map(()=>temp_mc_C.challengeList.nextNewVariable());
 
                         // Get the temporary metavariables
                         let temp_metavars = [];
-                        if (expression.type == 'a') {
-                            temp_metavars = expression.children.map(() => {
+                        if (getAPI().isApplication(expression)) {
+                            temp_metavars = getAPI().getChildren(expression).map(() => {
                                 let new_var = temp_mc_C.challengeList.nextNewVariable();
                                 getAPI().setMetavariable(new_var);
                                 return new_var;
@@ -337,8 +338,8 @@ export class MatchingChallenge {
                         let imitation_expr = makeImitationExpression(new_vars, expression, temp_metavars);
 
                         let imitation_sub = new Constraint(
-                                current_constraint.pattern.children[1],
-                                imitation_expr
+                            getAPI().getChildren(current_constraint.pattern)[1],
+                            imitation_expr
                         );
                         // DEBUG( indent+'maybe add:', DEBUG_CONSTRAINT( imitation_expr ) )
                         if(!temp_mc_C.addSolutionAndCheckBindingConstraints(imitation_sub)) break;
@@ -347,14 +348,13 @@ export class MatchingChallenge {
                         for ( let sol of temp_mc_C.solutionsIterator(/*indent+tab*/) ) {
                             for (let i = 0; i < temp_metavars.length; i++) {
                                 let metavar = temp_metavars[i];
-                                let metavar_sub = sol.firstSatisfying(c => c.pattern.equals(metavar));
+                                let metavar_sub = sol.firstSatisfying(c => getAPI().equal(c.pattern,metavar));
                                 if (metavar_sub != null) {
                                     sol.remove(metavar_sub);
                                     for (let i = 0; i < sol.length; i++) {
                                         let constraint = sol.contents[i];
-                                        constraint.expression.replaceWith(
-                                            metavar_sub.applyInstantiation(constraint.expression)
-                                        );
+                                        getAPI().replace(constraint.expression,
+                                            metavar_sub.applyInstantiation(constraint.expression));
                                         constraint.reEvalCase();
                                     }
                                 }

@@ -31,6 +31,16 @@ export const API = {
     isExpression : (expr) => expr instanceof OM,
 
     /**
+     * Return an array of all subexpressions of the given expression (including
+     * that expression itself, possibly) that satisfy the predicate provided in
+     * the second parameter.
+     * @param {OM} expr - the expression in which to search
+     * @param {function} filter - the unary binary function to use as the
+     *   filtering predicate
+     */
+    filterSubexpressions : (expr,filter) => expr.descendantsSatisfying(filter),
+
+    /**
      * Return true iff the two expressions have the same type (e.g., both are
      * variables, or both are bindings, or both are function applications, etc.)
      * @function sameType
@@ -111,16 +121,6 @@ export const API = {
      * @memberof OpenMathAPI
      */
     symbol : (name) => OM.sym(name,'SecondOrderMatching'),
-
-    /**
-     * Helper function used when adding pairs to a constraint list.
-     * Returns the list of variables that appear in a given expression.
-     * @function getVariablesIn
-     * @param {OM} expression - the expression to be checked
-     * @returns a list containing any variables in the given expression
-     * @memberof OpenMathAPI
-     */
-    getVariablesIn : (expression) => expression.descendantsSatisfying(API.isVariable),
 
     ////////////////////////////////////////////////////////////////////////////////
     // Which expressions are function applications?
@@ -214,14 +214,15 @@ export const API = {
     bindingBody : (binding) => API.isBinding(binding) ? binding.body : null,
 
     /**
-     * Return true if a structural copy of the given inner (sub)expression occurs
-     * free in the given outer expression.
-     * @function occursFreeIn
-     * @param {OM} outer - the expression in which to seek subexpressions
-     * @param {OM} inner - the subexpression to seek
+     * Return true if the given variable is free in the given expression.
+     * @function variableIsFree
+     * @param {OM} variable - the variable (not its name, but the actual
+     *   instance) whose freeness will be tested
+     * @param {OM} expression - the ancestor expression containing the variable,
+     *   and in which we are asking whether it is free
      * @memberof OpenMathAPI
      */
-    occursFreeIn : (inner,outer) => outer.occursFree(inner),
+    variableIsFree : (variable,expression) => variable.isFree(expression),
 
     ////////////////////////////////////////////////////////////////////////////////
     // A metavariable is a variable that will be used for substitution.

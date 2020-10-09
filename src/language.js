@@ -156,6 +156,18 @@ export function applyExpressionFunctionApplication(EFA) {
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+ * Helper function used when adding pairs to a constraint list.
+ * Returns the list of variables that appear in a given expression.
+ * @function getVariablesIn
+ * @param {OM} expression - the expression to be checked
+ * @returns a list containing any variables in the given expression
+ * @memberof OpenMathAPI
+ */
+export function getVariablesIn (expression) {
+    return API.filterSubexpressions(expression,API.isVariable);
+}
+
+/**
  * Helper function for other expression manipulation functions.
  * @param {OM} expr - an OM expression, more expr arguments are accepted.
  * @returns the first variable of the form xN
@@ -164,7 +176,7 @@ export function applyExpressionFunctionApplication(EFA) {
 export function getNewVariableRelativeTo(...exprs) {
     let all_vars = [ ]
     for (let i = 0; i < exprs.length; i++) {
-        all_vars.push(...API.getVariablesIn(exprs[i]));
+        all_vars.push(...getVariablesIn(exprs[i]));
     }
     let index = 0;
     for (let i = 0; i < all_vars.length; i++) {
@@ -205,6 +217,35 @@ export function alphaConvert(binding, which_var, replace_var) {
     }
     replaceWithoutCapture(API.bindingBody(result), which_var, replace_var);
     return result;
+}
+
+/**
+ * Is the given expression free in its topmost ancestor?  That is, are all
+ * variables free within this expression still free within that topmost
+ * ancestor?
+ * @param {OM} expr - the expression to test
+ */
+export function isFree ( expr ) {
+    return API.filterSubexpressions( expr, subexpr =>
+        API.isVariable(subexpr) && API.variableIsFree(subexpr,expr) ).every(
+            API.variableIsFree );
+}
+
+/**
+ * Return true iff an instance (i.e., copy) of the inner expression occurs in
+ * the outer expression and that occurrence is free (not just in outer, but
+ * absolutely)
+ * @param {OM} inner - the expression to seek a free occurrence of
+ * @param {OM} outer - the expression in which to search
+ */
+export function occursFree(inner, outer) {
+    if (API.equal(inner,outer) && isFree(outer)) return true;
+    if (API.isBinding(outer))
+        return occursFree(inner,API.bindingHead(outer))
+            || occursFree(inner,API.bindingBody(outer));
+    for ( const child of API.getChildren(outer) )
+        if (occursFree(inner,child)) return true;
+    return false;
 }
 
 /**
@@ -267,9 +308,9 @@ export function replaceWithoutCapture(expr, variable, replacement) {
             // but the replacement may include capture, so we prevent that.
             // If any bound var would capture the replacement, apply alpha conversion
             // so that the bound var in question becomes an entirely new bound var.
-            if (API.occursFreeIn(variable,API.bindingBody(expr))) {
+            if (occursFree(variable,API.bindingBody(expr))) {
                 variables.forEach(bound_var => {
-                    if (API.occursFreeIn(bound_var,replacement)) {
+                    if (occursFree(bound_var,replacement)) {
                         // FIXME: this doesn't seem like the best way to get new variables, but works for now.
                         //      need some way of generating global new variables
                         //      E.g. a class called new variable stream
@@ -326,7 +367,7 @@ export function alphaEquivalent(expr1, expr2, firstcall=true) {
         const expr1_vars = API.bindingVariables(expr1);
         const expr2_vars = API.bindingVariables(expr2);
         if ((expr1_vars.length != expr2_vars.length)
-            || !(API.bindingHead(expr1).equals(API.bindingHead(expr2)))) {
+            || !API.equal(API.bindingHead(expr1),API.bindingHead(expr2))) {
             return false;
         }
         // Alpha convert all bound variables in both expressions to
