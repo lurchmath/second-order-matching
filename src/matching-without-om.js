@@ -1,48 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>JSDoc: Source: matching.js</title>
 
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
-</head>
-
-<body>
-
-<div id="main">
-
-    <h1 class="page-title">Source: matching.js</h1>
-
-    
-
-
-
-    
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>
 "use strict"
 
 // Import everything from the constraints module and expose it as well.
 import {
-    Exprs, isExpressionFunction, makeExpressionFunction,
+    getAPI, setAPI, isExpressionFunction, makeExpressionFunction,
     isExpressionFunctionApplication, makeExpressionFunctionApplication,
-    canApplyExpressionFunctionApplication,
+    canApplyExpressionFunctionApplication, getVariablesIn, occursFree, isFree,
     applyExpressionFunctionApplication, getNewVariableRelativeTo,
     replaceWithoutCapture, alphaConvert, alphaEquivalent, betaReduce,
     makeConstantExpression, makeProjectionExpression, makeImitationExpression,
     CASES, Constraint, ConstraintList
 } from './constraints.js';
 export {
-    Exprs, isExpressionFunction, makeExpressionFunction,
+    setAPI, isExpressionFunction, makeExpressionFunction,
     isExpressionFunctionApplication, makeExpressionFunctionApplication,
-    canApplyExpressionFunctionApplication,
+    canApplyExpressionFunctionApplication, getVariablesIn, occursFree, isFree,
     applyExpressionFunctionApplication, getNewVariableRelativeTo,
     replaceWithoutCapture, alphaConvert, alphaEquivalent, betaReduce,
     makeConstantExpression, makeProjectionExpression, makeImitationExpression,
@@ -86,7 +58,7 @@ export class MatchingChallenge {
         this.solutions = [ ];//new ConstraintList();
         this.solvable = undefined;
 
-        for (let i = 0; i &lt; constraints.length; i++) {
+        for (let i = 0; i < constraints.length; i++) {
             let constraint = constraints[i];
             this.addConstraint(constraint[0], constraint[1]);
         }
@@ -118,7 +90,7 @@ export class MatchingChallenge {
      * @param {Array} constraints
      */
     addConstraints(...constraints) {
-        for (let i = 0; i &lt; constraints.length; i++) {
+        for (let i = 0; i < constraints.length; i++) {
             let constraint = constraints[i];
             this.addConstraint(constraint[0], constraint[1]);
         }
@@ -153,9 +125,9 @@ export class MatchingChallenge {
             this.challengeList.bindingConstraints.every(binding_constraint => {
                 const inner = solution.lookup(binding_constraint.inner);
                 if (!inner) return true; // metavariable not instantiated yet; can't violate any constraints
-                const outer = Exprs.isMetavariable(binding_constraint.outer) ? solution.lookup(binding_constraint.outer) : binding_constraint.outer;
+                const outer = getAPI().isMetavariable(binding_constraint.outer) ? solution.lookup(binding_constraint.outer) : binding_constraint.outer;
                 if (!outer) return true; // metavariable not instantiated yet; can't violate any constraints
-                return !inner.occursFree(outer);
+                return !occursFree(outer,inner);
             })
         );
     }
@@ -200,8 +172,8 @@ export class MatchingChallenge {
      */
     getOneSolution() {
         if ( this.solvable === false ) return undefined
-        if ( this.solvable === true &amp;&amp; this.solutions !== undefined
-          &amp;&amp; this.solutions.length > 0 )
+        if ( this.solvable === true && this.solutions !== undefined
+          && this.solutions.length > 0 )
             return this.solutions[0]
         // then, to ensure that later this class doesn't get confused and think
         // that we've computed all solutions just because we've computed
@@ -280,13 +252,14 @@ export class MatchingChallenge {
                     // DEBUG( indent+'SIMPLIFICATION' )
                     mc.challengeList.remove(current_constraint);
                     // Do any necessary alpha conversion before breaking into argument paits
-                    if (current_constraint.pattern.type == 'bi' &amp;&amp; current_constraint.expression.type == 'bi') {
-                        let pattern_vars = current_constraint.pattern.variables;
-                        let expression_vars = current_constraint.expression.variables;
+                    if (getAPI().isBinding(current_constraint.pattern)
+                     && getAPI().isBinding(current_constraint.expression)) {
+                        let pattern_vars = getAPI().bindingVariables(current_constraint.pattern);
+                        let expression_vars = getAPI().bindingVariables(current_constraint.expression);
                         // Get case checks number of arguments
-                        for (let i = 0; i &lt; pattern_vars.length; i++) {
+                        for (let i = 0; i < pattern_vars.length; i++) {
                             let variable = pattern_vars[i];
-                            if (!Exprs.isMetavariable(variable)) {
+                            if (!getAPI().isMetavariable(variable)) {
                                 var new_var = mc.challengeList.nextNewVariable();
                                 current_constraint.expression = alphaConvert(
                                     current_constraint.expression,
@@ -311,7 +284,7 @@ export class MatchingChallenge {
                     // DEBUG( indent+'EFA-1: constant function' )
                     let temp_mc_A = mc.clone();
                     let const_sub = new Constraint(
-                        current_constraint.pattern.children[1],
+                        getAPI().getChildren(current_constraint.pattern)[1],
                         makeConstantExpression(temp_mc_A.challengeList.nextNewVariable(), current_constraint.expression)
                     );
                     // DEBUG( indent+'maybe add:', DEBUG_CONSTRAINT( const_sub ) )
@@ -324,10 +297,10 @@ export class MatchingChallenge {
 
                     // Subcase B, the function may be a projection function
                     // DEBUG( indent+'EFA-2: projection function' )
-                    var head = current_constraint.pattern.children[1];
-                    for (let i = 2; i &lt; current_constraint.pattern.children.length; i++) {
+                    var head = getAPI().getChildren(current_constraint.pattern)[1];
+                    for (let i = 2; i < getAPI().getChildren(current_constraint.pattern).length; i++) {
                         let temp_mc_B = mc.clone();
-                        let new_vars = current_constraint.pattern.children.slice(2).map(()=>temp_mc_B.challengeList.nextNewVariable());
+                        let new_vars = getAPI().getChildren(current_constraint.pattern).slice(2).map(()=>temp_mc_B.challengeList.nextNewVariable());
                         let proj_sub = new Constraint(
                             head,
                             makeProjectionExpression(new_vars, new_vars[i - 2])
@@ -342,22 +315,22 @@ export class MatchingChallenge {
 
                     // Subcase C, the function may be more complex
                     // DEBUG( indent+'EFA-3: imitation expression' )
-                    if (expression.type == 'a' || expression.type == 'bi') {
+                    if (getAPI().isApplication(expression) || getAPI().isBinding(expression)) {
                         let temp_mc_C = mc.clone();
 
-                        let new_vars = current_constraint.pattern.children.slice(2).map(()=>temp_mc_C.challengeList.nextNewVariable());
+                        let new_vars = getAPI().getChildren(current_constraint.pattern).slice(2).map(()=>temp_mc_C.challengeList.nextNewVariable());
 
                         // Get the temporary metavariables
                         let temp_metavars = [];
-                        if (expression.type == 'a') {
-                            temp_metavars = expression.children.map(() => {
+                        if (getAPI().isApplication(expression)) {
+                            temp_metavars = getAPI().getChildren(expression).map(() => {
                                 let new_var = temp_mc_C.challengeList.nextNewVariable();
-                                Exprs.setMetavariable(new_var);
+                                getAPI().setMetavariable(new_var);
                                 return new_var;
                             });
                         } else {
                             let new_var = temp_mc_C.challengeList.nextNewVariable();
-                            Exprs.setMetavariable(new_var);
+                            getAPI().setMetavariable(new_var);
                             temp_metavars.push(new_var);
                         }
 
@@ -365,24 +338,23 @@ export class MatchingChallenge {
                         let imitation_expr = makeImitationExpression(new_vars, expression, temp_metavars);
 
                         let imitation_sub = new Constraint(
-                                current_constraint.pattern.children[1],
-                                imitation_expr
+                            getAPI().getChildren(current_constraint.pattern)[1],
+                            imitation_expr
                         );
                         // DEBUG( indent+'maybe add:', DEBUG_CONSTRAINT( imitation_expr ) )
                         if(!temp_mc_C.addSolutionAndCheckBindingConstraints(imitation_sub)) break;
 
                         // Remove any temporary metavariables from the solutions, after making substitutions
                         for ( let sol of temp_mc_C.solutionsIterator(/*indent+tab*/) ) {
-                            for (let i = 0; i &lt; temp_metavars.length; i++) {
+                            for (let i = 0; i < temp_metavars.length; i++) {
                                 let metavar = temp_metavars[i];
-                                let metavar_sub = sol.firstSatisfying(c => c.pattern.equals(metavar));
+                                let metavar_sub = sol.firstSatisfying(c => getAPI().equal(c.pattern,metavar));
                                 if (metavar_sub != null) {
                                     sol.remove(metavar_sub);
-                                    for (let i = 0; i &lt; sol.length; i++) {
+                                    for (let i = 0; i < sol.length; i++) {
                                         let constraint = sol.contents[i];
-                                        constraint.expression.replaceWith(
-                                            metavar_sub.applyInstantiation(constraint.expression)
-                                        );
+                                        const changed = metavar_sub.applyInstantiation(constraint.expression);
+                                        constraint.expression = changed;
                                         constraint.reEvalCase();
                                     }
                                 }
@@ -413,26 +385,3 @@ export class MatchingChallenge {
     }
 
 }
-</code></pre>
-        </article>
-    </section>
-
-
-
-
-</div>
-
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="OpenMathAPI.html">OpenMathAPI</a></li></ul><h3>Classes</h3><ul><li><a href="Constraint.html">Constraint</a></li><li><a href="ConstraintList.html">ConstraintList</a></li><li><a href="MatchingChallenge.html">MatchingChallenge</a></li></ul><h3>Global</h3><ul><li><a href="global.html#alphaConvert">alphaConvert</a></li><li><a href="global.html#alphaEquivalent">alphaEquivalent</a></li><li><a href="global.html#applyExpressionFunctionApplication">applyExpressionFunctionApplication</a></li><li><a href="global.html#betaReduce">betaReduce</a></li><li><a href="global.html#canApplyExpressionFunctionApplication">canApplyExpressionFunctionApplication</a></li><li><a href="global.html#CASES">CASES</a></li><li><a href="global.html#checkVariable">checkVariable</a></li><li><a href="global.html#getExpressionArgumentsFromApplication">getExpressionArgumentsFromApplication</a></li><li><a href="global.html#getExpressionFunctionFromApplication">getExpressionFunctionFromApplication</a></li><li><a href="global.html#getNewVariableRelativeTo">getNewVariableRelativeTo</a></li><li><a href="global.html#isExpressionFunction">isExpressionFunction</a></li><li><a href="global.html#isExpressionFunctionApplication">isExpressionFunctionApplication</a></li><li><a href="global.html#makeConstantExpression">makeConstantExpression</a></li><li><a href="global.html#makeExpressionFunction">makeExpressionFunction</a></li><li><a href="global.html#makeExpressionFunctionApplication">makeExpressionFunctionApplication</a></li><li><a href="global.html#makeImitationExpression">makeImitationExpression</a></li><li><a href="global.html#makeProjectionExpression">makeProjectionExpression</a></li><li><a href="global.html#replaceWithoutCapture">replaceWithoutCapture</a></li></ul>
-</nav>
-
-<br class="clear">
-
-<footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu Oct 08 2020 11:38:19 GMT-0400 (Eastern Daylight Time)
-</footer>
-
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
-</body>
-</html>

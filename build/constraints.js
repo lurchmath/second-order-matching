@@ -4,67 +4,51 @@
  */
 "use strict"; // Import everything from the language module and expose it as well.
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-Object.defineProperty(exports, "OM", {
+Object.defineProperty(exports, "Exprs", {
   enumerable: true,
   get: function get() {
-    return _language.OM;
+    return _language.Exprs;
   }
 });
-Object.defineProperty(exports, "isMetavariable", {
+Object.defineProperty(exports, "isExpressionFunction", {
   enumerable: true,
   get: function get() {
-    return _language.isMetavariable;
+    return _language.isExpressionFunction;
   }
 });
-Object.defineProperty(exports, "setMetavariable", {
+Object.defineProperty(exports, "makeExpressionFunction", {
   enumerable: true,
   get: function get() {
-    return _language.setMetavariable;
+    return _language.makeExpressionFunction;
   }
 });
-Object.defineProperty(exports, "clearMetavariable", {
+Object.defineProperty(exports, "isExpressionFunctionApplication", {
   enumerable: true,
   get: function get() {
-    return _language.clearMetavariable;
+    return _language.isExpressionFunctionApplication;
   }
 });
-Object.defineProperty(exports, "isGeneralExpressionFunction", {
+Object.defineProperty(exports, "makeExpressionFunctionApplication", {
   enumerable: true,
   get: function get() {
-    return _language.isGeneralExpressionFunction;
+    return _language.makeExpressionFunctionApplication;
   }
 });
-Object.defineProperty(exports, "makeGeneralExpressionFunction", {
+Object.defineProperty(exports, "canApplyExpressionFunctionApplication", {
   enumerable: true,
   get: function get() {
-    return _language.makeGeneralExpressionFunction;
+    return _language.canApplyExpressionFunctionApplication;
   }
 });
-Object.defineProperty(exports, "isGeneralExpressionFunctionApplication", {
+Object.defineProperty(exports, "applyExpressionFunctionApplication", {
   enumerable: true,
   get: function get() {
-    return _language.isGeneralExpressionFunctionApplication;
-  }
-});
-Object.defineProperty(exports, "makeGeneralExpressionFunctionApplication", {
-  enumerable: true,
-  get: function get() {
-    return _language.makeGeneralExpressionFunctionApplication;
-  }
-});
-Object.defineProperty(exports, "canApplyGeneralExpressionFunctionApplication", {
-  enumerable: true,
-  get: function get() {
-    return _language.canApplyGeneralExpressionFunctionApplication;
-  }
-});
-Object.defineProperty(exports, "applyGeneralExpressionFunctionApplication", {
-  enumerable: true,
-  get: function get() {
-    return _language.applyGeneralExpressionFunctionApplication;
+    return _language.applyExpressionFunctionApplication;
   }
 });
 Object.defineProperty(exports, "getNewVariableRelativeTo", {
@@ -117,29 +101,17 @@ Object.defineProperty(exports, "makeImitationExpression", {
 });
 exports.ConstraintList = exports.Constraint = exports.CASES = void 0;
 
+var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
+
+var _construct2 = _interopRequireDefault(require("@babel/runtime/helpers/construct"));
+
+var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
+
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
+
+var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
+
 var _language = require("./language.js");
-
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
-
-function _construct(Parent, args, Class) { if (isNativeReflectConstruct()) { _construct = Reflect.construct; } else { _construct = function _construct(Parent, args, Class) { var a = [null]; a.push.apply(a, args); var Constructor = Function.bind.apply(Parent, a); var instance = new Constructor(); if (Class) _setPrototypeOf(instance, Class.prototype); return instance; }; } return _construct.apply(null, arguments); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
 ////////////////////////////////////////////////////////////////////////////////
 // * The classes below allow us to represent constraints.
@@ -165,7 +137,7 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
  * and the expression are functions and the 'head' of the pattern function is
  * not a metavariable
  *
- * EFA represents the case in which the pattern is gEFA,
+ * EFA represents the case in which the pattern is an expression function application,
  * or a function with a metavariable as its 'head', and `SIMPLIFICATION`
  * does not hold
  *
@@ -187,14 +159,14 @@ Object.freeze(CASES);
 var Constraint = /*#__PURE__*/function () {
   /**
    * Creates a new constraint with given pattern and expression.
-   * @param {OM} pattern - an OM expression which should contain a metavariable (but may not)
-   * @param {OM} expression - an OM expression which must not contain a metavariable
+   * @param {OM} pattern - an expression which should contain a metavariable (but may not)
+   * @param {OM} expression - an expression which must not contain a metavariable
    */
   function Constraint(pattern, expression) {
-    _classCallCheck(this, Constraint);
+    (0, _classCallCheck2["default"])(this, Constraint);
 
-    if (!(pattern instanceof _language.OM) || !(expression instanceof _language.OM)) {
-      throw Error('Both arguments must be instances of OMNode');
+    if (!_language.Exprs.isExpression(pattern) || !_language.Exprs.isExpression(expression)) {
+      throw Error('Both arguments must be expressions');
     }
 
     this.pattern = pattern;
@@ -206,7 +178,7 @@ var Constraint = /*#__PURE__*/function () {
    */
 
 
-  _createClass(Constraint, [{
+  (0, _createClass2["default"])(Constraint, [{
     key: "copy",
     value: function copy() {
       return new Constraint(this.pattern.copy(), this.expression.copy());
@@ -229,7 +201,7 @@ var Constraint = /*#__PURE__*/function () {
   }, {
     key: "isSubstitution",
     value: function isSubstitution() {
-      return (0, _language.isMetavariable)(this.pattern);
+      return _language.Exprs.isMetavariable(this.pattern);
     }
     /**
      * Returns the case, as described in the corresponding paper
@@ -243,11 +215,11 @@ var Constraint = /*#__PURE__*/function () {
     value: function getCase(pattern, expression) {
       if (pattern.equals(expression)) {
         return CASES.IDENTITY;
-      } else if ((0, _language.isMetavariable)(pattern)) {
+      } else if (_language.Exprs.isMetavariable(pattern)) {
         return CASES.BINDING;
-      } else if (pattern.type == 'a' && !(0, _language.isGeneralExpressionFunctionApplication)(pattern) && expression.type == 'a' && pattern.children.length == expression.children.length || pattern.type == 'bi' && expression.type == 'bi' && pattern.symbol.equals(expression.symbol) && pattern.variables.length == expression.variables.length) {
+      } else if (pattern.type == 'a' && !(0, _language.isExpressionFunctionApplication)(pattern) && expression.type == 'a' && pattern.children.length == expression.children.length || pattern.type == 'bi' && expression.type == 'bi' && pattern.symbol.equals(expression.symbol) && pattern.variables.length == expression.variables.length) {
         return CASES.SIMPLIFICATION;
-      } else if ((0, _language.isGeneralExpressionFunctionApplication)(pattern) || (0, _language.isMetavariable)(pattern.children[1])) {
+      } else if ((0, _language.isExpressionFunctionApplication)(pattern) || _language.Exprs.isMetavariable(pattern.children[1])) {
         return CASES.EFA;
       } else {
         return CASES.FAILURE;
@@ -274,8 +246,8 @@ var Constraint = /*#__PURE__*/function () {
     value: function applyInstantiation(target) {
       var result = target.copy();
       (0, _language.replaceWithoutCapture)(result, this.pattern, this.expression);
-      result.descendantsSatisfying(_language.canApplyGeneralExpressionFunctionApplication).forEach(function (x) {
-        return x.replaceWith((0, _language.applyGeneralExpressionFunctionApplication)(x));
+      result.descendantsSatisfying(_language.canApplyExpressionFunctionApplication).forEach(function (x) {
+        return x.replaceWith((0, _language.applyExpressionFunctionApplication)(x));
       });
       return result;
     }
@@ -317,7 +289,6 @@ var Constraint = /*#__PURE__*/function () {
       return arg_pairs;
     }
   }]);
-
   return Constraint;
 }();
 /**
@@ -340,8 +311,7 @@ var ConstraintList = /*#__PURE__*/function () {
   function ConstraintList() {
     var _this = this;
 
-    _classCallCheck(this, ConstraintList);
-
+    (0, _classCallCheck2["default"])(this, ConstraintList);
     this.contents = [];
     this.nextNewVariableIndex = 0;
     this.bindingConstraints = [];
@@ -359,14 +329,14 @@ var ConstraintList = /*#__PURE__*/function () {
    */
 
 
-  _createClass(ConstraintList, [{
+  (0, _createClass2["default"])(ConstraintList, [{
     key: "nextNewVariable",
 
     /**
      * @returns a new variable starting at `vN` (see constructor for definition of `vN`).
      */
     value: function nextNewVariable() {
-      return _language.OM.simple('v' + this.nextNewVariableIndex++);
+      return _language.Exprs.variable('v' + this.nextNewVariableIndex++);
     }
     /**
      * @returns a deep copy of the list.
@@ -378,9 +348,7 @@ var ConstraintList = /*#__PURE__*/function () {
       var contents_copy = this.contents.map(function (c) {
         return c.copy();
       });
-
-      var result = _construct(ConstraintList, _toConsumableArray(contents_copy));
-
+      var result = (0, _construct2["default"])(ConstraintList, (0, _toConsumableArray2["default"])(contents_copy));
       result.bindingConstraints = this.bindingConstraints.map(function (bc) {
         return {
           inner: bc.inner.copy(),
@@ -424,13 +392,13 @@ var ConstraintList = /*#__PURE__*/function () {
           return c.equals(constraint);
         }) == -1) {
           // Set the next new var index
-          var p_vars = (0, _language.getVariablesIn)(constraint.pattern);
+          var p_vars = _language.Exprs.getVariablesIn(constraint.pattern);
 
           for (var j = 0; j < p_vars.length; j++) {
             _this2.nextNewVariableIndex = (0, _language.checkVariable)(p_vars[j], _this2.nextNewVariableIndex);
           }
 
-          var e_vars = (0, _language.getVariablesIn)(constraint.expression);
+          var e_vars = _language.Exprs.getVariablesIn(constraint.expression);
 
           for (var k = 0; k < e_vars.length; k++) {
             _this2.nextNewVariableIndex = (0, _language.checkVariable)(e_vars[k], _this2.nextNewVariableIndex);
@@ -572,17 +540,18 @@ var ConstraintList = /*#__PURE__*/function () {
     }
     /**
      * If the constraint list is a function, this routine returns the expression associated with a given metavariable.
-     * @param variable - a string or OM object
-     * @returns the OM object that is the expression of the constraint
-     * with the pattern that equals the variable, null otherwise.
+     * @param variable - a string or expression
+     * @returns the expression of the constraint with the pattern that equals
+     *   the variable, null otherwise.
      */
 
   }, {
     key: "lookup",
     value: function lookup(variable) {
-      if (!(variable instanceof _language.OM)) {
-        variable = _language.OM["var"](variable);
-        (0, _language.setMetavariable)(variable);
+      if (!_language.Exprs.isExpression(variable)) {
+        variable = _language.Exprs.variable(variable);
+
+        _language.Exprs.setMetavariable(variable);
       }
 
       for (var i = 0; i < this.contents.length; i++) {
@@ -619,7 +588,7 @@ var ConstraintList = /*#__PURE__*/function () {
       for (var i = 0; i < this.contents.length; i++) {
         var _ret = _loop(i);
 
-        if (_typeof(_ret) === "object") return _ret.v;
+        if ((0, _typeof2["default"])(_ret) === "object") return _ret.v;
       }
 
       var _loop2 = function _loop2(_i2) {
@@ -637,7 +606,7 @@ var ConstraintList = /*#__PURE__*/function () {
       for (var _i2 = 0; _i2 < other.contents.length; _i2++) {
         var _ret2 = _loop2(_i2);
 
-        if (_typeof(_ret2) === "object") return _ret2.v;
+        if ((0, _typeof2["default"])(_ret2) === "object") return _ret2.v;
       }
 
       return true;
@@ -657,7 +626,7 @@ var ConstraintList = /*#__PURE__*/function () {
         return constraint.pattern.descendantsSatisfying(function (d) {
           return d.type == 'bi';
         }).forEach(function (binding) {
-          return binding.descendantsSatisfying(_language.isMetavariable).forEach(function (innerMV) {
+          return binding.descendantsSatisfying(_language.Exprs.isMetavariable).forEach(function (innerMV) {
             if (innerMV.isFree(binding)) {
               binding.variables.forEach(function (outerMV) {
                 if (!_this4.bindingConstraints.find(function (existing) {
@@ -702,7 +671,6 @@ var ConstraintList = /*#__PURE__*/function () {
       return this.contents.length;
     }
   }]);
-
   return ConstraintList;
 }();
 

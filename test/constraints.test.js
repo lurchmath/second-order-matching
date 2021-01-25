@@ -10,7 +10,7 @@ import {
     DEBUG_PRINT_CONSTRAINTLIST, DEBUG_PRINT_SOLS, newConstraintObject,
     newConstraints, newMC, lambdaString, newSolutions, checkSolutions
 } from './utils';
-const OM = M.OM;
+import { OM } from '../src/openmath.js';
 
 describe('The Constraint class', () => {
     test('should construct new instances correctly', () => {

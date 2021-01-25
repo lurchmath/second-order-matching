@@ -50,28 +50,72 @@ algorithm <a href="https://dl.acm.org/doi/10.1145/1637837.1637839">in this paper
 and a summary of that paper in <a href="https://github.com/lurchmath/second-order-matching/blob/master/Summary%20of%20Moore%20on%20Huet-Lang.pdf">a PDF file in this repository</a>.</p>
 <p>This implementation was written by George Tillisch in Summer 2019 and is
 maintained by Nathan Carter since then.</p>
-<p>Working with this code assumes knowledge of the JavaScript implementation of
-<a href="https://www.openmath.org/standard/om20-2019-07-01/">the OpenMath standard</a>,
-which you can find <a href="https://github.com/lurchmath/openmath-js">here</a>.</p>
+<p>Working with this code requires that you have some class defined for representing
+expressions.  If you don't have one, you can use an implementation of
+<a href="https://www.openmath.org/standard/om20-2019-07-01/">the OpenMath standard</a>
+that is included with this package and is published and documented separately
+<a href="https://github.com/lurchmath/openmath-js">here</a>.</p>
+<p>If you have your own expression class already, you can connect it to this package
+by writing a few functions that connect your API to ours.  See the second example
+below for details and a link to further documentation.
+Doing so makes it so you do not need to learn or import the OpenMath tools.</p>
 <p>See the classes and files listed on the right for more information on each.</p>
-<p>Example usage:</p>
-<pre class="prettyprint source lang-js"><code>import * as M from './index.js';
+<h3>Example usage with OpenMath:</h3>
+<pre class="prettyprint source lang-js"><code>import * as Matching from './index.js';
+const OpenMath = Matching.OM;
 
-const pattern = M.OM.simple( 'f(x,y)' )
-M.setMetavariable( pattern.children[2] ) // y is now a metavariable
+const pattern = OpenMath.simple( 'f(x,y)' )
+Matching.setMetavariable( pattern.children[2] ) // y is now a metavariable
 
-const expression = M.OM.simple( 'f(x,3)' )
+const expression = OpenMath.simple( 'f(x,3)' )
 
-const MC = new M.MatchingChallenge( [ pattern, expression ] )
-const sols = MC.getSolutions()
-console.log( sols.length ) // prints 1
-const sol = sols[0]
-console.log( sol.contents.length ) // prints 1
-const pair = sol.contents[0]
+const MC = new Matching.MatchingChallenge( [ pattern, expression ] )
+const solutions = MC.getSolutions()
+console.log( solutions.length ) // prints: 1
+const solution = solutions[0]
+console.log( solution.contents.length ) // prints: 1
+const pair = solution.contents[0]
 
 console.log( pair.pattern.simpleEncode(), 'maps to',
-             pair.expression.simpleEncode() ) // prints y maps to 3
-</code></pre></article>
+             pair.expression.simpleEncode() ) // prints: y maps to 3
+</code></pre>
+<h3>Example usage with a custom expression class:</h3>
+<pre class="prettyprint source lang-js"><code>import * as Matching from './src/matching-without-om.js';
+import MyCustomExpression from 'path/to/your/library.js'; // change this line
+
+CustomAPI = {
+    isExpression : obj => obj instanceof MyCustomExpression,
+    filterSubexpressions : (expr,func) => {
+        // write code here
+    },
+    // And so on for about 20 API functions...
+    // See docs link below for details on how to write these.
+};
+Matching.setAPI( CustomAPI );
+
+const pattern = MyCustonExpression( /* however you construct f(x,y) */ )
+Matching.setMetavariable( API.getChildren( pattern )[2] ) // y is now a metavariable
+
+const expression = MyCustonExpression( /* however you construct f(x,3) */ )
+
+const MC = new Matching.MatchingChallenge( [ pattern, expression ] )
+const solutions = MC.getSolutions()
+console.log( solutions.length ) // prints: 1
+const solution = solutions[0]
+console.log( solution.contents.length ) // prints: 1
+const pair = solution.contents[0]
+
+// Let's assume your MyCustomExpression class has a toString() method...
+console.log( pair.pattern.toString(), 'maps to',
+             pair.expression.toString() ) // prints something like: y maps to 3
+</code></pre>
+<p>What API functions must you provide in the <code>CustomAPI</code> object?  See the
+documentation for <a href="OpenMathAPI.html">the OpenMath namespace</a>.  It is a wrapper
+around the <code>OpenMath</code> class whose repo is linked to above, and which we import
+<a href="https://www.npmjs.com/package/openmath-js">from npm</a>.
+You must provide a similar wrapper around your expression class.  Each function
+in the API is documented in detail in the documentation for
+<a href="OpenMathAPI.html">the OpenMath namespace</a>.</p></article>
     </section>
 
 
@@ -82,13 +126,13 @@ console.log( pair.pattern.simpleEncode(), 'maps to',
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Constraint.html">Constraint</a></li><li><a href="ConstraintList.html">ConstraintList</a></li><li><a href="MatchingChallenge.html">MatchingChallenge</a></li></ul><h3>Global</h3><ul><li><a href="global.html#alphaConvert">alphaConvert</a></li><li><a href="global.html#alphaEquivalent">alphaEquivalent</a></li><li><a href="global.html#applyGeneralExpressionFunctionApplication">applyGeneralExpressionFunctionApplication</a></li><li><a href="global.html#betaReduce">betaReduce</a></li><li><a href="global.html#canApplyGeneralExpressionFunctionApplication">canApplyGeneralExpressionFunctionApplication</a></li><li><a href="global.html#CASES">CASES</a></li><li><a href="global.html#checkVariable">checkVariable</a></li><li><a href="global.html#clearMetavariable">clearMetavariable</a></li><li><a href="global.html#getNewVariableRelativeTo">getNewVariableRelativeTo</a></li><li><a href="global.html#getVariablesIn">getVariablesIn</a></li><li><a href="global.html#isGeneralExpressionFunction">isGeneralExpressionFunction</a></li><li><a href="global.html#isGeneralExpressionFunctionApplication">isGeneralExpressionFunctionApplication</a></li><li><a href="global.html#isMetavariable">isMetavariable</a></li><li><a href="global.html#makeConstantExpression">makeConstantExpression</a></li><li><a href="global.html#makeGeneralExpressionFunction">makeGeneralExpressionFunction</a></li><li><a href="global.html#makeGeneralExpressionFunctionApplication">makeGeneralExpressionFunctionApplication</a></li><li><a href="global.html#makeImitationExpression">makeImitationExpression</a></li><li><a href="global.html#makeProjectionExpression">makeProjectionExpression</a></li><li><a href="global.html#replaceWithoutCapture">replaceWithoutCapture</a></li><li><a href="global.html#setMetavariable">setMetavariable</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="OpenMathAPI.html">OpenMathAPI</a></li></ul><h3>Classes</h3><ul><li><a href="Constraint.html">Constraint</a></li><li><a href="ConstraintList.html">ConstraintList</a></li><li><a href="MatchingChallenge.html">MatchingChallenge</a></li></ul><h3>Global</h3><ul><li><a href="global.html#alphaConvert">alphaConvert</a></li><li><a href="global.html#alphaEquivalent">alphaEquivalent</a></li><li><a href="global.html#applyExpressionFunctionApplication">applyExpressionFunctionApplication</a></li><li><a href="global.html#betaReduce">betaReduce</a></li><li><a href="global.html#canApplyExpressionFunctionApplication">canApplyExpressionFunctionApplication</a></li><li><a href="global.html#CASES">CASES</a></li><li><a href="global.html#checkVariable">checkVariable</a></li><li><a href="global.html#getAPI">getAPI</a></li><li><a href="global.html#getExpressionArgumentsFromApplication">getExpressionArgumentsFromApplication</a></li><li><a href="global.html#getExpressionFunctionFromApplication">getExpressionFunctionFromApplication</a></li><li><a href="global.html#getNewVariableRelativeTo">getNewVariableRelativeTo</a></li><li><a href="global.html#isExpressionFunction">isExpressionFunction</a></li><li><a href="global.html#isExpressionFunctionApplication">isExpressionFunctionApplication</a></li><li><a href="global.html#isFree">isFree</a></li><li><a href="global.html#makeConstantExpression">makeConstantExpression</a></li><li><a href="global.html#makeExpressionFunction">makeExpressionFunction</a></li><li><a href="global.html#makeExpressionFunctionApplication">makeExpressionFunctionApplication</a></li><li><a href="global.html#makeImitationExpression">makeImitationExpression</a></li><li><a href="global.html#makeProjectionExpression">makeProjectionExpression</a></li><li><a href="global.html#occursFree">occursFree</a></li><li><a href="global.html#replace">replace</a></li><li><a href="global.html#replaceWithoutCapture">replaceWithoutCapture</a></li><li><a href="global.html#setAPI">setAPI</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Mon Feb 24 2020 09:10:56 GMT-0500 (Eastern Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Mon Jan 25 2021 14:50:46 GMT-0500 (Eastern Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

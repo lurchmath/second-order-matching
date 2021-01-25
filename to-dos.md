@@ -1,6 +1,8 @@
 
 # To-dos
 
+## General
+
 - Ensure that this package can be loaded as an ES6 module in the browser
   and a WebWorker. Currently, it works as an ES6 module in Node, but
   has not been tested in those other two environments. This may require upgrading
@@ -9,8 +11,6 @@
   now assumes ES6.  Consequently, a lot of code that was written in ES5 style
   can be made much slicker (for example, lots of `for` loops with actual
   index-based counters, etc.).
-- Proofread all documentation strings to see if the docs we're generating with
-  JSDoc look good.
 - Publish this repository to npm so it's easy to use in other projects.
 - The `replaceWithoutCapture` function in [language.js](src/language.js) has a
   "FIXME" comment in case 5. It generates new variables relative to an

@@ -11,7 +11,7 @@ import {
     DEBUG_PRINT_CONSTRAINTLIST, DEBUG_PRINT_SOLS, newConstraintObject,
     newConstraints, newMC, lambdaString, newSolutions, checkSolutions
 } from './utils';
-const OM = M.OM;
+import { OM } from '../src/openmath.js';
 
 describe('checkSolutions helper function', () => {
     test('should perform correctly on example tasks', () => {
@@ -108,7 +108,7 @@ describe('Expression Function Creators', () => {
         var nv2 = quick('_X');
         expect(e2.type).toBe('a');
         expect(nv2.type).toBe('v');
-        expect(M.isMetavariable(nv2)).toBe(true);
+        expect(M.API.isMetavariable(nv2)).toBe(true);
         expect(M.makeConstantExpression(nv2, e2).equals(ef('_X', 'pl.us(a,b,c,d)'))).toBe(true);
 
         expect(M.makeConstantExpression('v1', 'pl.us(a,b)')).toBeNull();
@@ -146,7 +146,7 @@ describe('Expression Function Creators', () => {
         temps = [quick('_H1'), quick('_H2'), quick('_H3')];
         imit = M.makeImitationExpression(vars, expr, temps);
         expect(imit.equals(
-            quick('SecondOrderMatching.gEF[v1,v2,v3,SecondOrderMatching.gEFA(_H1,v1,v2,v3)(SecondOrderMatching.gEFA(_H2,v1,v2,v3),SecondOrderMatching.gEFA(_H3,v1,v2,v3))]'))
+            quick('SecondOrderMatching.EF[v1,v2,v3,SecondOrderMatching.EFA(_H1,v1,v2,v3)(SecondOrderMatching.EFA(_H2,v1,v2,v3),SecondOrderMatching.EFA(_H3,v1,v2,v3))]'))
         ).toBe(true);
     });
 });

@@ -8,61 +8,30 @@
 
 "use strict"
 
-// TODO: handle the case of this module running in the browser
-// Import openmath-js for testing purposes
-import { OM } from './openmath.js';
-export { OM };
-
-////////////////////////////////////////////////////////////////////////////////
-// * The following are functions and constants related to metavariables.
-// * A metavariable is a variable that will be used for substitution.
-////////////////////////////////////////////////////////////////////////////////
-
-// Define the metavariable symbol to be used as an attribute key, and its corresponding value
-const metavariableSymbol = OM.symbol('metavariable', 'SecondOrderMatching');
-const trueValue = OM.string('true');
-
+let API, expressionFunctionSymbol, expressionFunctionApplicationSymbol;
 /**
- * Marks a variable as a metavariable.
- * Does nothing if the given input is not an OMNode of type variable or type symbol.
- * @param {OM} variable - the variable to be marked
+ * Provide an API by which this module can deal with expressions.  More needs
+ * to be documented about this; the only existing API is the OpenMath API.
+ * See openmath-api.js for details.
+ * @param {Object} APIObject - the namespace containing all expression-related
+ *   functions
  */
-export function setMetavariable(variable) {
-    if (variable instanceof OM && ['v', 'sy'].includes(variable.type)) {
-        return variable.setAttribute(metavariableSymbol, trueValue.copy());
-    } else return null;
+export function setAPI ( APIObject ) {
+    API = APIObject;
+    expressionFunctionSymbol = API.symbol('EF');
+    expressionFunctionApplicationSymbol = API.symbol('EFA')
 }
-
 /**
- * Removes the metavariable attribute if it is present.
- * @param {OM} metavariable - the metavariable to be unmarked
+ * Get the API stored in the global variable in this module, as set by
+ * setAPI().
  */
-export function clearMetavariable(metavariable) {
-    return metavariable.removeAttribute(metavariableSymbol);
-}
-
-/**
- * Tests whether the given variable has the metavariable attribute.
- * @param {OM} variable - the variable to be checked
- */
-export function isMetavariable(variable) {
-    return (
-        variable instanceof OM
-        && ['v', 'sy'].includes(variable.type)
-        && variable.getAttribute(metavariableSymbol) != undefined
-        && variable.getAttribute(metavariableSymbol).equals(trueValue)
-    );
-}
+export const getAPI = () => API;
 
 ////////////////////////////////////////////////////////////////////////////////
-// * The following are generalised versions expression functions.
-// * When P: E -> E, P is an expression function.
-// * This generalisation allows us to have expression functions
-// * with more than one variable.
+// An expression function is a type of expression that is intended to be
+// applied as a function mapping expressions to expressions.
+// We define here two symbols that will be used to represent such things.
 ////////////////////////////////////////////////////////////////////////////////
-
-const generalExpressionFunction = OM.symbol('gEF', 'SecondOrderMatching');
-const generalExpressionFunctionApplication = OM.symbol('gEFA', 'SecondOrderMatching');
 
 /**
  * Makes a new expression function with the meaning
@@ -70,72 +39,72 @@ const generalExpressionFunctionApplication = OM.symbol('gEFA', 'SecondOrderMatch
  * @param {OM[]} variables - a list of OM variables
  * @param {OM} body - any OM expression
  */
-export function makeGeneralExpressionFunction(variables, body) {
+export function makeExpressionFunction(variables, body) {
     if (!(variables instanceof Array)) {
         variables = [variables];
     }
     for (let i = 0; i < variables.length; i++) {
         var variable = variables[i];
-        if (variable.type !== 'v') {
-            throw 'When making a general expression function,\
+        if (!API.isVariable(variable)) {
+            throw 'When making an expression function,\
 all elements of first argument must have type variable';
         }
     }
-    return OM.bin(generalExpressionFunction, ...variables, body);
+    return API.binding(expressionFunctionSymbol, variables, body);
 }
 
 /**
- * Tests whether an expression is a general expression function.
+ * Tests whether an expression is an expression function.
  * @param {OM} expression - the expression to be checked
  */
-export function isGeneralExpressionFunction(expression) {
+export function isExpressionFunction(expression) {
     return (
-        expression instanceof OM
-        && expression.type == 'bi'
-        && expression.symbol.equals(generalExpressionFunction)
+        API.isExpression(expression)
+        && API.isBinding(expression)
+        && API.equal(API.bindingHead(expression),expressionFunctionSymbol)
     );
 }
 
 /**
  * Makes a new expression function application with the meaning
- * F(arg) where F is either a general expression function (gEF), or a
- * metavariable which is expected to be replaced by a gEF.
- * In the case that F is a gEF, the expression function can be applied
- * to the argument see `applyGeneralExpressionFunctionApplication`.
- * @param {OM} func - either a gEF or something which can be instantiated as a gEF.
+ * F(arg) where F is either an expression function (EF), or a
+ * metavariable which is expected to be replaced by an EF.
+ * In the case that F is an EF, the expression function can be applied
+ * to the argument see <code>applyExpressionFunctionApplication</code>.
+ * @param {OM} func - either an EF or something which can be instantiated as an EF.
  * @param {OM[]} arguments - a list of OM expressions
  */
-export function makeGeneralExpressionFunctionApplication(func, args) {
-    if (!(isGeneralExpressionFunction(func) || isMetavariable(func))) {
-        throw 'When making gEFAs, the func must be either a EF or a metavariable'
+export function makeExpressionFunctionApplication(func, args) {
+    if (!(isExpressionFunction(func) || API.isMetavariable(func))) {
+        throw 'When making EFAs, the func must be either an EF or a metavariable'
     }
     if (!(args instanceof Array)) {
         args = [args]
     }
-    return OM.app(generalExpressionFunctionApplication, func, ...args);
+    return API.application([expressionFunctionApplicationSymbol, func, ...args]);
 }
 
 /**
- * @returns true if the supplied expression is a gEFA
+ * @returns true if the supplied expression is an EFA
  */
-export function isGeneralExpressionFunctionApplication(expression) {
+export function isExpressionFunctionApplication(expression) {
     return (
-        expression instanceof OM
-        && expression.type === 'a'
-        && expression.children[0].equals(generalExpressionFunctionApplication)
+        API.isExpression(expression)
+        && API.isApplication(expression)
+        && API.equal(API.getChildren(expression)[0],expressionFunctionApplicationSymbol)
     );
 }
 
 /**
- * Tests whether a gEFA is of the form gEF(args).
- * If the gEFA is of this form, `applyGeneralExpressionFunctionApplication`
- * can be called with this gEFA as an argument.
- * @param {OM} gEFA - a general expression function application
+ * Tests whether an EFA is of the form EF(args).
+ * If the EFA is of this form, <code>applyExpressionFunctionApplication</code>
+ * can be called with this EFA as an argument.
+ * @param {OM} EFA - an expression function application
  */
-export function canApplyGeneralExpressionFunctionApplication(gEFA) {
+export function canApplyExpressionFunctionApplication(EFA) {
     if (
-        isGeneralExpressionFunctionApplication(gEFA)
-        && isGeneralExpressionFunction(gEFA.children[1])
+        isExpressionFunctionApplication(EFA)
+        && isExpressionFunction(API.getChildren(EFA)[1])
     ) {
         return true;
     }
@@ -143,13 +112,40 @@ export function canApplyGeneralExpressionFunctionApplication(gEFA) {
 }
 
 /**
- * If `canApplyGeneralExpressionFunctionApplication` is true,
- * returns the beta reduction of the gEF and the arguments it is applied to.
- * @param {OM} gEFA - a general expression function application
+ * If this is an EFA, extract and return the expression function application
+ * that is to be applied.  Otherwise return null.
+ * @param {OM} EFA - an expression function application
  */
-export function applyGeneralExpressionFunctionApplication(gEFA) {
-    if (canApplyGeneralExpressionFunctionApplication(gEFA)) {
-        return betaReduce(gEFA.children[1], gEFA.children.slice(2));
+export function getExpressionFunctionFromApplication(EFA) {
+    if (canApplyExpressionFunctionApplication(EFA)) {
+        return API.getChildren(EFA)[1];
+    }
+    return null;
+}
+
+/**
+ * If this is an EFA, extract and return the array of arguments to which the
+ * function is to be applied.  Otherwise return null.
+ * @param {OM} EFA - an expression function application
+ */
+export function getExpressionArgumentsFromApplication(EFA) {
+    if (canApplyExpressionFunctionApplication(EFA)) {
+        return API.getChildren(EFA).slice(2);
+    }
+    return null;
+}
+
+/**
+ * If <code>canApplyExpressionFunctionApplication</code> is true,
+ * returns the beta reduction of the EF and the arguments it is applied to.
+ * @param {OM} EFA - an expression function application
+ */
+export function applyExpressionFunctionApplication(EFA) {
+    if (canApplyExpressionFunctionApplication(EFA)) {
+        return betaReduce(
+            getExpressionFunctionFromApplication(EFA),
+            getExpressionArgumentsFromApplication(EFA)
+        );
     }
     return null;
 }
@@ -160,28 +156,56 @@ export function applyGeneralExpressionFunctionApplication(gEFA) {
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+ * The API provides a function for replacing an expression, wherever it sits in
+ * its parent tree, with another expression.  But the behavior can vary from one
+ * API implementation to another:  Does the function return the replaced
+ * expression, the replacement, or neither?  Does the variable that referred to
+ * the replaced expression now refer to the replacement, or not?  We standardize
+ * that here by creating this wrapper, which always returns the replacement, and
+ * can thus be used to update variables if needed.
+ * @param {OM} toReplace The expression to be replaced
+ * @param {OM} withThis The expression with which to replace it
+ */
+export function replace (toReplace, withThis) {
+    API.replace(toReplace,withThis);
+    return withThis
+}
+
+/**
+ * Helper function used when adding pairs to a constraint list.
+ * Returns the list of variables that appear in a given expression.
+ * @function getVariablesIn
+ * @param {OM} expression - the expression to be checked
+ * @returns a list containing any variables in the given expression
+ * @memberof OpenMathAPI
+ */
+export function getVariablesIn (expression) {
+    return API.filterSubexpressions(expression,API.isVariable);
+}
+
+/**
  * Helper function for other expression manipulation functions.
  * @param {OM} expr - an OM expression, more expr arguments are accepted.
  * @returns the first variable of the form xN
  * which appears nowhere in the supplied expression(s).
  */
-export function getNewVariableRelativeTo(expr /*, expr2, ... */) {
-    let all_vars = getVariablesIn(expr);
-    for (let i = 1; i < arguments.length; i++) {
-        all_vars.push(...getVariablesIn(arguments[i]));
+export function getNewVariableRelativeTo(...exprs) {
+    let all_vars = [ ]
+    for (let i = 0; i < exprs.length; i++) {
+        all_vars.push(...getVariablesIn(exprs[i]));
     }
     let index = 0;
     for (let i = 0; i < all_vars.length; i++) {
         let next_var = all_vars[i];
-        if (/^x[0-9]+$/.test(next_var.name)) {
+        if (/^x[0-9]+$/.test(API.getVariableName(next_var))) {
             index = Math.max(
                 index,
-                parseInt(next_var.name.slice(1)) + 1
+                parseInt(API.getVariableName(next_var).slice(1)) + 1
             );
         }
     }
     let var_name = 'x' + index;
-    return OM.var(var_name);
+    return API.variable(var_name);
 }
 
 /**
@@ -194,21 +218,50 @@ export function getNewVariableRelativeTo(expr /*, expr2, ... */) {
  * @returns a copy of the alpha converted binding
  */
 export function alphaConvert(binding, which_var, replace_var) {
-    var result = binding.copy();
-    var bound_vars = result.variables
+    var result = API.copy(binding);
+    var bound_vars = API.bindingVariables(result);
 
-    if (!bound_vars.map(x => x.name).includes(which_var.name)) {
+    if (!bound_vars.map(API.getVariableName).includes(API.getVariableName(which_var))) {
         throw 'which_var must be bound in binding'
     }
 
     for (let i = 0; i < bound_vars.length; i++) {
         var variable = bound_vars[i];
-        if (variable.equals(which_var)) {
-            variable.replaceWith(replace_var.copy());
+        if (API.equal(variable,which_var)) {
+            replace(variable,API.copy(replace_var));
         }
     }
-    replaceWithoutCapture(result.body, which_var, replace_var);
+    replaceWithoutCapture(API.bindingBody(result), which_var, replace_var);
     return result;
+}
+
+/**
+ * Is the given expression free in its topmost ancestor?  That is, are all
+ * variables free within this expression still free within that topmost
+ * ancestor?
+ * @param {OM} expr - the expression to test
+ */
+export function isFree ( expr ) {
+    return API.filterSubexpressions( expr, subexpr =>
+        API.isVariable(subexpr) && API.variableIsFree(subexpr,expr) ).every(
+            API.variableIsFree );
+}
+
+/**
+ * Return true iff an instance (i.e., copy) of the inner expression occurs in
+ * the outer expression and that occurrence is free (not just in outer, but
+ * absolutely)
+ * @param {OM} inner - the expression to seek a free occurrence of
+ * @param {OM} outer - the expression in which to search
+ */
+export function occursFree(inner, outer) {
+    if (API.equal(inner,outer) && isFree(outer)) return true;
+    if (API.isBinding(outer))
+        return occursFree(inner,API.bindingHead(outer))
+            || occursFree(inner,API.bindingBody(outer));
+    for ( const child of API.getChildren(outer) )
+        if (occursFree(inner,child)) return true;
+    return false;
 }
 
 /**
@@ -230,66 +283,68 @@ export function alphaConvert(binding, which_var, replace_var) {
  * @param {OM} replacement - an OM expression
  */
 export function replaceWithoutCapture(expr, variable, replacement) {
-    if (!(expr instanceof OM)
-        || !(variable instanceof OM)
-        || !(replacement instanceof OM)) {
-        throw 'all arguments must be instances of OMNode';
+    if (!API.isExpression(expr)
+        || !API.isExpression(variable)
+        || !API.isExpression(replacement)) {
+        throw 'all arguments must be expressions';
     }
-    if (expr.type != 'bi') {
+    if (!API.isBinding(expr)) {
         // Case 1: expr is a variable that we must replace, so do it
-        if (expr.type == 'v' && expr.equals(variable)) {
-            expr.replaceWith(replacement.copy());
+        if (API.isVariable(expr) && API.equal(expr,variable)) {
+            replace(expr,API.copy(replacement));
         // Case 2: expr is any other non-binding, so recur on its
         // children (of which there may be none, meaning this is some
         // type of atomic other than a variable, which is fine; do nothing)
         } else {
-            var children = expr.children;
+            var children = API.getChildren(expr);
             for (let i = 0; i < children.length; i++) {
                 var ch = children[i];
                 replaceWithoutCapture(ch, variable, replacement);
             }
         }
     } else {
-        const varidx = expr.variables.map( v => v.name ).indexOf(variable.name);
+        const variables = API.bindingVariables(expr);
+        const varidx = variables.map(API.getVariableName).indexOf(API.getVariableName(variable));
         if (varidx > -1) {
             // Case 3: expr is a binding and it binds the variable to be replaced,
             // but the replacement is a non-variable.  This is illegal, because
             // OpenMath bound variable positions can be occupied only by variables.
-            if (replacement.type != 'v') {
-                throw 'Cannot replace a bound variable with a non-varible';
+            if (!API.isVariable(replacement)) {
+                throw 'Cannot replace a bound variable with a non-variable';
             // Case 4: expr is a binding and it binds the variable to be replaced,
             // and the replacement is also a variable.  We can go ahead and replace
             // as requested, knowing that this is just a special case of alpha
             // conversion.
             } else {
-                expr.variables[varidx].replaceWith(replacement.copy());
-                replaceWithoutCapture(expr.body, variable, replacement);
+                replace(variables[varidx],API.copy(replacement));
+                replaceWithoutCapture(API.bindingBody(expr), variable, replacement);
             }
         } else {
             // Case 5: expr is a binding and it does not bind the variable to be replaced,
             // but the replacement may include capture, so we prevent that.
             // If any bound var would capture the replacement, apply alpha conversion
             // so that the bound var in question becomes an entirely new bound var.
-            if (expr.body.occursFree(variable)) {
-                expr.variables.forEach(bound_var => {
-                    if (replacement.occursFree(bound_var)) {
+            if (occursFree(variable,API.bindingBody(expr))) {
+                variables.forEach(bound_var => {
+                    if (occursFree(bound_var,replacement)) {
                         // FIXME: this doesn't seem like the best way to get new variables, but works for now.
                         //      need some way of generating global new variables
                         //      E.g. a class called new variable stream
-                        expr.replaceWith(alphaConvert(expr, bound_var, getNewVariableRelativeTo(expr)));
+                        expr = replace(expr,alphaConvert(expr, bound_var,
+                            getNewVariableRelativeTo(expr)));
                     }
                 } );
             }
             // now after any needed alpha conversions have made it safe,
             // we can actually do the replacement in the body.
-            replaceWithoutCapture(expr.body, variable, replacement);
+            replaceWithoutCapture(API.bindingBody(expr), variable, replacement);
         }
     }
 }
 
 /**
  * Checks if two expressions are alpha equivalent.
- * Two expresssions are alpha equivalent if one can be transformed into the other
+ * Two expressions are alpha equivalent if one can be transformed into the other
  * by the renaming of bound variables.
  * If called when neither expr1 nor expr2 are applications or bindings, this function
  * returns false because alpha equivalence is not defined for free variables or constants.
@@ -298,17 +353,18 @@ export function replaceWithoutCapture(expr, variable, replacement) {
  * @returns true if the two expressions are alpha equivalent, false otherwise
  */
 export function alphaEquivalent(expr1, expr2, firstcall=true) {
-    var possible_types = ['a', 'bi'];
-    if (expr1.type != expr2.type) {
+    if (!API.sameType(expr1,expr2)) {
         return false;
     }
-    if (firstcall &&
-        (!possible_types.includes(expr1.type) || !possible_types.includes(expr2.type))) {
+    if ( firstcall && (
+            !(API.isApplication(expr1) || API.isBinding(expr1))
+         || !(API.isApplication(expr2) || API.isBinding(expr2)) )
+    ) {
         return false;
     }
-    if (expr1.type == 'a') {
-        var expr1_children = expr1.children;
-        var expr2_children = expr2.children;
+    if (API.isApplication(expr1)) {
+        var expr1_children = API.getChildren(expr1);
+        var expr2_children = API.getChildren(expr2);
         if (expr1_children.length != expr2_children.length) {
             return false;
         }
@@ -320,139 +376,136 @@ export function alphaEquivalent(expr1, expr2, firstcall=true) {
             }
         }
         return true;
-    } else if (expr1.type == 'bi') {
-        if ((expr1.variables.length != expr2.variables.length)
-            || !(expr1.symbol.equals(expr2.symbol))) {
+    } else if (API.isBinding(expr1)) {
+        const expr1_vars = API.bindingVariables(expr1);
+        const expr2_vars = API.bindingVariables(expr2);
+        if ((expr1_vars.length != expr2_vars.length)
+            || !API.equal(API.bindingHead(expr1),API.bindingHead(expr2))) {
             return false;
         }
         // Alpha convert all bound variables in both expressions to
         // new variables, which appear nowhere in either expression.
         // This avoids the problem of 'overwriting' a previous alpha conversion.
-        var expr1conv = expr1.copy();
-        var expr2conv = expr2.copy();
-        for (let i = 0; i < expr1.variables.length; i++) {
+        var expr1conv = API.copy(expr1);
+        var expr2conv = API.copy(expr2);
+        for (let i = 0; i < expr1_vars.length; i++) {
             let new_var = getNewVariableRelativeTo(expr1conv, expr2conv);
-            expr1conv = alphaConvert(expr1conv, expr1.variables[i], new_var);
-            expr2conv = alphaConvert(expr2conv, expr2.variables[i], new_var);
+            expr1conv = alphaConvert(expr1conv, expr1_vars[i], new_var);
+            expr2conv = alphaConvert(expr2conv, expr2_vars[i], new_var);
         }
-        return alphaEquivalent(expr1conv.body, expr2conv.body, false);
+        return alphaEquivalent(API.bindingBody(expr1conv),
+                               API.bindingBody(expr2conv), false);
     } else {
-        return expr1.equals(expr2);
+        return API.equal(expr1,expr2);
     }
 }
 
 /**
- * Takes a general expression function representing λv_1,...,v_k.B
+ * Takes an expression function representing λv_1,...,v_k.B
  * and a list of expressions e_1,...,e_k and returns the beta reduction
  * of ((λv_1,...,v_k.B)(e_1,...,e_k)) which is the expression B
  * with all v_i replaced by the corresponding e_i.
  *
  * This beta reduction is capture avoiding.
- * See `replaceWithoutCapture` for details.
- * @param {OM} gEF - a general expression function with n variables
+ * See <code>replaceWithoutCapture</code> for details.
+ * @param {OM} EF - an expression function with n variables
  * @param {OM[]} expr_list - a list of expressions of length n
  * @returns an expression manipulated as described above
  */
-export function betaReduce(gEF, expr_list) {
+export function betaReduce(EF, expr_list) {
     // Check we can actually do a beta reduction
-    if (!isGeneralExpressionFunction(gEF)) {
-        throw 'In beta reduction, the first argument must be a general expression function'
+    if (!isExpressionFunction(EF)) {
+        throw 'In beta reduction, the first argument must be an expression function'
     }
     if (!(expr_list instanceof Array)) {
         throw 'In beta reduction,, the second argument must be a list of expressions'
     }
-    if (gEF.variables.length != expr_list.length) {
+    const variables = API.bindingVariables(EF);
+    if (variables.length != expr_list.length) {
         throw 'In beta reduction, the number of expressions must match number of variables'
     }
 
-    var variables = gEF.variables
-    var result = gEF.body.copy();
+    var result = API.copy(API.bindingBody(EF));
     for (let i = 0; i < expr_list.length; i++) {
         var v_i = variables[i];
         var e_i = expr_list[i];
-        replaceWithoutCapture(result, v_i, e_i);
+        if (API.equal(result,v_i)) {
+            result = API.copy(e_i);
+        } else {
+            replaceWithoutCapture(result, v_i, e_i);
+        }
     }
     return result;
 }
 
 /**
  * Helper function used when adding pairs to a constraint list.
- * Takes a variable and checks if it of the form, `vX` where `X` is some number.
+ * Takes a variable and checks if it of the form, <code>vX</code> where <code>X</code> is some number.
  * If it is of this form, it returns X + 1 if it is greater than the given index.
  * @param {OM} variable - the variable to be checked
  * @param {Number} nextNewVariableIndex - the number to check against
  */
 export function checkVariable(variable, nextNewVariableIndex) {
-    if (/^v[0-9]+$/.test(variable.name)) {
+    const name = API.getVariableName(variable);
+    if (/^v[0-9]+$/.test(name)) {
         nextNewVariableIndex = Math.max(
             nextNewVariableIndex,
-            parseInt(variable.name.slice(1)) + 1
+            parseInt(name.slice(1)) + 1
         );
     }
     return nextNewVariableIndex;
 }
 
 /**
- * Helper function used when adding pairs to a constraint list.
- * Returns the list of variables that appear in a given expression.
- * @param {OM} expression - the expression to be checked
- * @returns a list containing any variables in the given expression
- */
-export function getVariablesIn(expression) {
-    return expression.descendantsSatisfying((d) => { return d.type == 'v'; });
-}
-
-/**
  * Takes a new variable (relative to some constraint list) and an expression
- * and returns a gEF which has the meaning λv_n.expr where v_n is the new
+ * and returns an EF which has the meaning λv_n.expr where v_n is the new
  * variable and expr is the expression.
  * I.e. creates a constant expression function.
  * @param {OM} new_variable - an OM variable
  * @param {OM} expression - an OM expression
  */
 export function makeConstantExpression(new_variable, expression) {
-    if (new_variable instanceof OM && expression instanceof OM) {
-        return makeGeneralExpressionFunction(new_variable.copy(), expression.copy());
+    if (API.isExpression(new_variable) && API.isExpression(expression)) {
+        return makeExpressionFunction(
+            API.copy(new_variable),API.copy(expression));
     }
     return null;
 }
 
 /**
  * Takes a list of variables v_1,...,v_k and a single variable (a point)
- * v_i and returns a gEF with the meaning λv_1,...,v_k.v_i.
+ * v_i and returns an EF with the meaning λv_1,...,v_k.v_i.
  * I.e. returns a projection expression function for v_i with k arguments.
  * @param {OM[]} variables - a list of OM variables
  * @param {OM} point -  a single OM variable
  */
 export function makeProjectionExpression(variables, point) {
-    if (variables.every((v) => v instanceof OM) && point instanceof OM) {
-        if (!(variables.map((v) => v.name).includes(point.name))) {
+    if (variables.every(API.isExpression) && API.isExpression(point)) {
+        if (!(variables.map(API.getVariableName).includes(API.getVariableName(point)))) {
             throw "When making a projection function, the point must occur in the list of variables"
         }
-        return makeGeneralExpressionFunction(
-            variables.map((v) => v.copy()),
-            point.copy()
-        );
+        return makeExpressionFunction(
+            variables.map(API.copy),API.copy(point));
     }
     return null;
 }
 
 /**
- * Takes a list of variables, denoted `v1,...,vk`, an expression
- * which is denoted `g(e1,...,em)`, and a list of temporary
+ * Takes a list of variables, denoted <code>v1,...,vk</code>, an expression
+ * which is denoted <code>g(e1,...,em)</code>, and a list of temporary
  * metavariables.
  *
- * For an application, returns a gEF with the meaning
- * `λv_1,...,v_k.g(H_1(v_1,...,v_k),...,H_m(v_1,...,v_k))`
- * where each `H_i` denotes a temporary gEFA as well as a list of the
- * newly created temporary metavariables `[H_1,...,H_m]`.
+ * For an application, returns an EF with the meaning
+ * <code>λv_1,...,v_k.g(H_1(v_1,...,v_k),...,H_m(v_1,...,v_k))</code>
+ * where each <code>H_i</code> denotes a temporary EFA as well as a list of the
+ * newly created temporary metavariables <code>[H_1,...,H_m]</code>.
  *
  * I.e. it returns an 'imitation' expression function where
  * the body is the original expression with each argument
- * replaced by a temporary gEFA.
+ * replaced by a temporary EFA.
  * @param {OM} variables - a list of OM variables
  * @param {OM} expr - an OM application
- * @returns a gEF which is the imitation expression described above
+ * @returns an EF which is the imitation expression described above
  */
 export function makeImitationExpression(variables, expr, temp_metavars) {
     /**
@@ -461,38 +514,39 @@ export function makeImitationExpression(variables, expr, temp_metavars) {
      * parent function, and a list of temporary metavariables.
      * Returns an expression which will become the body
      * of the imitation function. This is an application of the form:
-     * `head(temp_metavars[0](bound_vars),...,temp_metavars[len-1](bound_vars))`
+     * <code>head(temp_metavars[0](bound_vars),...,temp_metavars[len-1](bound_vars))</code>
      */
-    function createBody(head, bound_vars, temp_metavars, type, binding_variables) {
+    function createBody(head, bound_vars, temp_metavars, bind, binding_variables) {
         let args = [];
         for (let i = 0; i < temp_metavars.length; i++) {
             let temp_metavar = temp_metavars[i];
             args.push(
-                makeGeneralExpressionFunctionApplication(
+                makeExpressionFunctionApplication(
                     temp_metavar,
                     bound_vars
                 )
             );
         }
-        if (type == 'a') {
-            return OM.app(...args);
-        } else if (type == 'bi') {
-            return OM.bin(head, ...binding_variables, ...args);
+        if (bind) {
+            // should be only one arg in this case
+            return API.binding(head,binding_variables,args[0]);
+        } else {
+            return API.application(args);
         }
     }
 
     var imitationExpr = null;
 
-    if (variables.every((v) => v instanceof OM) && expr instanceof OM) {
-        let type = expr.type;
-        imitationExpr = makeGeneralExpressionFunction(
+    if (variables.every(API.isExpression) && API.isExpression(expr)) {
+        const bind = API.isBinding(expr);
+        imitationExpr = makeExpressionFunction(
             variables,
             createBody(
-                (type=='a' ? expr.children[0]: expr.symbol),
+                (bind ? API.bindingHead(expr) : API.getChildren(expr)[0]),
                 variables,
                 temp_metavars,
-                type,
-                (type=='bi' ? expr.variables : null)
+                bind,
+                (bind ? API.bindingVariables(expr) : null)
             )
         );
     }

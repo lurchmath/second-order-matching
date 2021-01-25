@@ -3,8 +3,8 @@
  *  Functions useful to have around when running tests
  */
 
-import * as M from '../index';
-const OM = M.OM;
+import * as M from '../index.js';
+import { OM } from '../src/openmath.js';
 
 /**
  * Takes strings for OM.simple, any variable begginning with an underscore
@@ -19,7 +19,7 @@ export function quick(string) {
     if (typeof tree === 'string') {
         throw ('Error calling quick on ' + string + ' : ' + tree);
     }
-    var variables = tree.descendantsSatisfying((x) => { return x.type == 'v'; });
+    var variables = tree.descendantsSatisfying((x) => x.type == 'v');
     for (let i = 0; i < variables.length; i++) {
         var variable = variables[i];
         var match = /^(.+)_of_(.+)$/.exec(variable.name);
@@ -27,16 +27,16 @@ export function quick(string) {
             variable.replaceWith(efa(quick(match[1]), quick(match[2])));
         } else if (/^_/.test(variable.name)) {
             variable.replaceWith(OM.simple(variable.name.slice(1)));
-            M.setMetavariable(variable);
+            M.API.setMetavariable(variable);
         }
     }
-    var symbols = tree.descendantsSatisfying((x) => { return x.type == 'sy' });
+    var symbols = tree.descendantsSatisfying((x) => x.type == 'sy');
     for (let i = 0; i < symbols.length; i++) {
         var sym = symbols[i];
         if (/^_/.test(sym.cd)) {
             var replacement_string = sym.cd.slice(1) + '.' + sym.name;
             sym.replaceWith(OM.simple(replacement_string));
-            M.setMetavariable(sym);
+            M.API.setMetavariable(sym);
         }
     }
     return tree;
@@ -57,7 +57,7 @@ export function ef(variables, body) {
     if (!(body instanceof OM)) {
         body = quick(body);
     }
-    return M.makeGeneralExpressionFunction(variables, body);
+    return M.makeExpressionFunction(variables, body);
 }
 
 /**
@@ -75,7 +75,7 @@ export function efa(func, params) {
             params[i] = quick(params[i]);
         }
     }
-    return M.makeGeneralExpressionFunctionApplication(func, params);
+    return M.makeExpressionFunctionApplication(func, params);
 }
 
 /**
@@ -152,12 +152,12 @@ export const newMC = (constraints) => {
 /**
  * Helper to use notation similar to test paper.
  * Takes a string like `'v.f(1,2)'`, splits it
- * on the first `.`, and makes a corresponding gEF.
+ * on the first `.`, and makes a corresponding EF.
  * @param {string} s
  */
 export const lambdaString = (s) => {
     let [v, body] = s.split(/\.(.+)/);
-    return ('SecondOrderMatching.gEF[' + v + "," + body + ']');
+    return ('SecondOrderMatching.EF[' + v + "," + body + ']');
 }
 
 /**
@@ -190,9 +190,21 @@ export const newSolutions = (...solutions) => {
  * and every solution in the actual solutions list must equal some solution in
  * the expected solutions list.
  */
-export const checkSolutions = (actual_solutions, expected_solutions) => {
-    if (actual_solutions.length != expected_solutions.length) {
+export const checkSolutions = (actual_solutions, expected_solutions, verbose=false) => {
+    const show = sols => sols instanceof Array ?
+        '[\n' + sols.map(s => CLToString(s)).join(',\n\n') + '\n]' : sols
+    const bad = () => {
+        if ( verbose ) console.log(`
+==== CHECKING SOLUTIONS:
+==   ACTUAL:
+${show(actual_solutions)}
+==   EXPECTED:
+${show(expected_solutions)}
+`)
         return false;
+    }
+    if (actual_solutions.length != expected_solutions.length) {
+        return bad();//false;
     }
 
     for (let i = 0; i < actual_solutions.length; i++) {
@@ -200,7 +212,7 @@ export const checkSolutions = (actual_solutions, expected_solutions) => {
         if (!expected_solutions.some(expected_solution =>
             actual_solution.length == expected_solution.length
          && actual_solution.equals(expected_solution) )) {
-            return false;
+            return bad();//false;
         }
     }
     return true;
