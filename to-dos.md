@@ -24,7 +24,4 @@
 
 ## Moving beyond OpenMath
 
-- Create a new test file in which you import only `matching-without-om.js` and
-  provide a simple OM alternative, then ensure that a subset of the original
-  test suite still passes in that new paradigm.
 - Update all docs to describe this new paradigm.
