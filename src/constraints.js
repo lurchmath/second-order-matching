@@ -172,9 +172,13 @@ export class Constraint {
     applyInstantiation(target) {
         var result = getAPI().copy(target);
         replaceWithoutCapture(result, this.pattern, this.expression);
-        getAPI().filterSubexpressions(result,canApplyExpressionFunctionApplication).forEach(x =>
+        const properSubExprToChange = x =>
+            x != result && canApplyExpressionFunctionApplication(x)
+        getAPI().filterSubexpressions(result,properSubExprToChange).forEach(x =>
             getAPI().replace(x,applyExpressionFunctionApplication(x))
         );
+        if ( canApplyExpressionFunctionApplication(result) )
+            result = applyExpressionFunctionApplication(result);
         return result;
     }
 
