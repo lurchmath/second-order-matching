@@ -6,7 +6,7 @@
   "dependencies": {},
   "type": "module",
   "devDependencies": {
-    "@babel/cli": "^7.8.4",
+    "@babel/cli": "^7.12.10",
     "@babel/core": "^7.8.6",
     "@babel/plugin-transform-runtime": "^7.8.3",
     "@babel/preset-env": "^7.11.5",
