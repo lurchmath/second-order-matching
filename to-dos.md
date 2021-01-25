@@ -21,7 +21,3 @@
   `solve` function calls `alphaConvert` (in the `SIMPLIFICATION` case) with a
   guaranteed new variable relative to the current constraint list, so
   investigate to determine whether this needs fixing or not.
-
-## Moving beyond OpenMath
-
-- Update all docs to describe this new paradigm.
