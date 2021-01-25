@@ -11,7 +11,7 @@ import {
     CASES, Constraint, ConstraintList, MatchingChallenge
 } from './src/matching-without-om.js';
 
-import { API } from './src/openmath-api.js';
+import { API, OpenMath } from './src/openmath-api.js';
 setAPI( API );
 
 export {
@@ -21,5 +21,5 @@ export {
     applyExpressionFunctionApplication, getNewVariableRelativeTo,
     replaceWithoutCapture, alphaConvert, alphaEquivalent, betaReduce,
     makeConstantExpression, makeProjectionExpression, makeImitationExpression,
-    CASES, Constraint, ConstraintList, MatchingChallenge
+    CASES, Constraint, ConstraintList, MatchingChallenge, OpenMath
 };

@@ -2,6 +2,7 @@
 "use strict"
 
 import { OM } from './openmath.js';
+export const OpenMath = OM;
 
 // Define the metavariable symbol to be used as an attribute key, and its corresponding value
 const metavariableSymbol = OM.symbol('metavariable', 'SecondOrderMatching');

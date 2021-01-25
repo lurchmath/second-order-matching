@@ -25,11 +25,12 @@ See the classes and files listed on the right for more information on each.
 ### Example usage with OpenMath:
 
 ```js
-import * as Matching from './index.js';
-const OpenMath = Matching.OM;
+import * as Matching from 'second-order-matching'
+
+const OpenMath = Matching.OpenMath;
 
 const pattern = OpenMath.simple( 'f(x,y)' )
-Matching.setMetavariable( pattern.children[2] ) // y is now a metavariable
+Matching.API.setMetavariable( pattern.children[2] ) // y is now a metavariable
 
 const expression = OpenMath.simple( 'f(x,3)' )
 
@@ -47,7 +48,7 @@ console.log( pair.pattern.simpleEncode(), 'maps to',
 ### Example usage with a custom expression class:
 
 ```js
-import * as Matching from './src/matching-without-om.js';
+import * as Matching from './node_modules/second-order-matching/src/matching-without-om.js'
 import MyCustomExpression from 'path/to/your/library.js'; // change this line
 
 CustomAPI = {
@@ -61,7 +62,7 @@ CustomAPI = {
 Matching.setAPI( CustomAPI );
 
 const pattern = MyCustonExpression( /* however you construct f(x,y) */ )
-Matching.setMetavariable( API.getChildren( pattern )[2] ) // y is now a metavariable
+Matching.API.setMetavariable( API.getChildren( pattern )[2] ) // y is now a metavariable
 
 const expression = MyCustonExpression( /* however you construct f(x,3) */ )
 
