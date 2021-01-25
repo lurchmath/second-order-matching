@@ -353,8 +353,8 @@ export class MatchingChallenge {
                                     sol.remove(metavar_sub);
                                     for (let i = 0; i < sol.length; i++) {
                                         let constraint = sol.contents[i];
-                                        getAPI().replace(constraint.expression,
-                                            metavar_sub.applyInstantiation(constraint.expression));
+                                        const changed = metavar_sub.applyInstantiation(constraint.expression);
+                                        constraint.expression = changed;
                                         constraint.reEvalCase();
                                     }
                                 }

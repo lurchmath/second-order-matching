@@ -156,6 +156,22 @@ export function applyExpressionFunctionApplication(EFA) {
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+ * The API provides a function for replacing an expression, wherever it sits in
+ * its parent tree, with another expression.  But the behavior can vary from one
+ * API implementation to another:  Does the function return the replaced
+ * expression, the replacement, or neither?  Does the variable that referred to
+ * the replaced expression now refer to the replacement, or not?  We standardize
+ * that here by creating this wrapper, which always returns the replacement, and
+ * can thus be used to update variables if needed.
+ * @param {OM} toReplace The expression to be replaced
+ * @param {OM} withThis The expression with which to replace it
+ */
+export function replace (toReplace, withThis) {
+    API.replace(toReplace,withThis);
+    return withThis
+}
+
+/**
  * Helper function used when adding pairs to a constraint list.
  * Returns the list of variables that appear in a given expression.
  * @function getVariablesIn
@@ -212,7 +228,7 @@ export function alphaConvert(binding, which_var, replace_var) {
     for (let i = 0; i < bound_vars.length; i++) {
         var variable = bound_vars[i];
         if (API.equal(variable,which_var)) {
-            API.replace(variable,API.copy(replace_var));
+            replace(variable,API.copy(replace_var));
         }
     }
     replaceWithoutCapture(API.bindingBody(result), which_var, replace_var);
@@ -275,7 +291,7 @@ export function replaceWithoutCapture(expr, variable, replacement) {
     if (!API.isBinding(expr)) {
         // Case 1: expr is a variable that we must replace, so do it
         if (API.isVariable(expr) && API.equal(expr,variable)) {
-            API.replace(expr,API.copy(replacement));
+            replace(expr,API.copy(replacement));
         // Case 2: expr is any other non-binding, so recur on its
         // children (of which there may be none, meaning this is some
         // type of atomic other than a variable, which is fine; do nothing)
@@ -300,7 +316,7 @@ export function replaceWithoutCapture(expr, variable, replacement) {
             // as requested, knowing that this is just a special case of alpha
             // conversion.
             } else {
-                API.replace(variables[varidx],API.copy(replacement));
+                replace(variables[varidx],API.copy(replacement));
                 replaceWithoutCapture(API.bindingBody(expr), variable, replacement);
             }
         } else {
@@ -314,7 +330,7 @@ export function replaceWithoutCapture(expr, variable, replacement) {
                         // FIXME: this doesn't seem like the best way to get new variables, but works for now.
                         //      need some way of generating global new variables
                         //      E.g. a class called new variable stream
-                        API.replace(expr,alphaConvert(expr, bound_var,
+                        expr = replace(expr,alphaConvert(expr, bound_var,
                             getNewVariableRelativeTo(expr)));
                     }
                 } );
@@ -337,15 +353,12 @@ export function replaceWithoutCapture(expr, variable, replacement) {
  * @returns true if the two expressions are alpha equivalent, false otherwise
  */
 export function alphaEquivalent(expr1, expr2, firstcall=true) {
-    var possible_types = ['a', 'bi'];
     if (!API.sameType(expr1,expr2)) {
         return false;
     }
-    if (
-        firstcall && (
+    if ( firstcall && (
             !(API.isApplication(expr1) || API.isBinding(expr1))
-         || !(API.isApplication(expr1) || API.isBinding(expr2))
-        )
+         || !(API.isApplication(expr2) || API.isBinding(expr2)) )
     ) {
         return false;
     }
@@ -380,7 +393,8 @@ export function alphaEquivalent(expr1, expr2, firstcall=true) {
             expr1conv = alphaConvert(expr1conv, expr1_vars[i], new_var);
             expr2conv = alphaConvert(expr2conv, expr2_vars[i], new_var);
         }
-        return alphaEquivalent(API.bindingBody(expr1conv), API.bindingBody(expr2conv), false);
+        return alphaEquivalent(API.bindingBody(expr1conv),
+                               API.bindingBody(expr2conv), false);
     } else {
         return API.equal(expr1,expr2);
     }
@@ -415,7 +429,11 @@ export function betaReduce(EF, expr_list) {
     for (let i = 0; i < expr_list.length; i++) {
         var v_i = variables[i];
         var e_i = expr_list[i];
-        replaceWithoutCapture(result, v_i, e_i);
+        if (API.equal(result,v_i)) {
+            result = API.copy(e_i);
+        } else {
+            replaceWithoutCapture(result, v_i, e_i);
+        }
     }
     return result;
 }
