@@ -4,7 +4,7 @@
 Setup:
 
 - Clone/Download the repo and run `npm install`. To run tests use
-  `npm run test`.
+  `npm test`.
 
 ## Current state (February 2020)
 
