@@ -1,6 +1,8 @@
 
 # Second-Order Matching
 
+An implementation of the Huet-Lang algorithm in JavaScript
+
 ## Usage
 
 - Install with `npm i second-order-matching`.
