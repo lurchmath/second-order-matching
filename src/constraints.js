@@ -127,25 +127,29 @@ export class Constraint {
             return CASES.BINDING;
         } else if (
                 (
-                    (
-                        (
-                            getAPI().isApplication(pattern)
-                            && !(isExpressionFunctionApplication(pattern))
-                        )
-                        && getAPI().isApplication(expression)
-                    )
+                    getAPI().isApplication(pattern)
+                    && !isExpressionFunctionApplication(pattern)
+                    && getAPI().isApplication(expression)
                     && getAPI().getChildren(pattern).length == getAPI().getChildren(expression).length
                 )
                 ||
                 (
-                    ( getAPI().isBinding(pattern) && getAPI().isBinding(expression) )
-                    && getAPI().equal(pattern.symbol,expression.symbol)
+                    getAPI().isBinding(pattern)
+                    && getAPI().isBinding(expression)
+                    && getAPI().equal(getAPI().bindingHead(pattern),
+                                      getAPI().bindingHead(expression))
                     && getAPI().bindingVariables(pattern).length == getAPI().bindingVariables(expression).length
                 )
             ) {
             return CASES.SIMPLIFICATION;
-        } else if (isExpressionFunctionApplication(pattern)
-                || getAPI().isMetavariable(getAPI().getChildren(pattern)[1])) {
+        } else if (
+                isExpressionFunctionApplication(pattern)
+                ||
+                (
+                    getAPI().isApplication(pattern)
+                    && getAPI().isMetavariable(getAPI().getChildren(pattern)[1])
+                )
+            ) {
             return CASES.EFA;
         } else {
             return CASES.FAILURE;
