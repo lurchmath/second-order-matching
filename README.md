@@ -1,16 +1,24 @@
 
 # Second-Order Matching
 
-Setup:
+## Documentation
 
-- Clone/Download the repo and run `npm install`. To run tests use
-  `npm test`.
+[See online JSDoc stuff here.](https://lurchmath.github.io/second-order-matching/docs/)
 
-## Current state (February 2020)
+## Current state (January 2021)
 
-As far as testing has revealed, this module works as intended. New instances of
-the `MatchingChallenge` can be constructed, constraints can be added, and
-`getSolutions` will return the result of running the Huet-Lang algorithm on the
-matching challenge.
+- As far as the rather extensive test suite has revealed, this module works as intended.
+- The code assumes you want to use OpenMath expressions by default, but you can import
+  just the matching portion of the code and provide your own expression class if you are
+  willing to write a thin API to connect your class to this package.  See the docs linked
+  to above for details.
+- [To-do list of small remaining tasks.](to-dos.md)
 
-[See to-do list for what still needs to be done.](to-dos.md)
+## Developing
+
+1. Clone/download the repo and set up with `npm install`.
+2. After making changes, run `npm test` to ensure they didn't break anything.
+   (And, of course, add tests of any new functionality.)
+3. If changes were made to source code documentation, run `npm run docs` to rebuild the
+   docs, which are also part of the repo, because they are served online by GitHub,
+   as you can see at the link above.
