@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Namespace: API</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Namespace: API</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>API</h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description"><p>This namespace creates an API by which this package can use a simple JavaScriptimplementation of OpenMath to store and manipulate mathematical expressions.</p><p>As documented on the main page, it is not necessary for you touse OpenMath.  If you have your own class, you can create an object that wrapsyour expression class in an API spoken by this module, so that you need not convertyour custom expression types to/from OpenMath.</p><p>To do so, create a single object that maps names of functions in this module's APIto their implementations using your custom expression class.  To see how to getstarted, and how to connect the resulting object to this module, see the second codeexample on the main page of this documentation.</p><p>Every function documented below is explained in two ways: First, the generalrequirement of that element of the API is described without reference to OpenMathspecifically, so that those who are reading this for the purposes of writing theirown expression API have that information in general terms.  Secondly, the specificsof the OpenMath implementation in this file is described.</p><p>To enable you to write an API like the one below, your custom expression class musthave the following features.</p><ul><li>It must be a hierarchical structure (as in    <a href="API.html#.filterSubexpressions">filterSubexpressions</a>) of objects that can    be variables (or at least identifiers more broadly), function applications,    bindings (that is, the application of quantifiers or quantifier-like symbols),    and optionally other atomic expressions as well.</li><li>It must be possible to tell when an instance is each of these things, so that you    can write the essential functions    isVariable,    isApplication, and    isBinding.</li><li>It must be possible to construct instances of each type, so that you can write    the essential functions    variable,    application, and    binding.  You will also need to write the function    symbol, but if your expressions do not distinguish    variables from other types of symbols, but consider all identifiers equal, you    can use some prefix internally to distinguish them without exposing that detail    outside of the API.  See the documentation for symbol for    more specifics on this idea.</li><li>It must be possible to mark a variable with the "is a metavariable" boolean flag.    If your expression class does not support attributes on expressions, you can do    this using, for example, a prefix used only internally, as in the previous point.    See the documentation for setMetavariable for    more specifics on this idea.    This enables you to write    isMetavariable,    setMetavariable, and    clearMetavariable.</li><li>It must be possible to query the essential details of each type of expression:    <ul>    <li>For a variable, you must be able to write        getVariableName.    <li>For an application, you must be able to write        getChildren.  This treates the function application        like a LISP S-expression.  For example, <code>3+5</code> would be seen as <code>(+ 3 5)</code> and        should therefore return three children.    <li>For a binding, you must be able to write       bindingHead (the quantifier or other head symbol),       bindingVariables (the array of bound variables),       bindingBody (the body inside the expression).       For example, in the expression "for all x and y, x+y=y+x," the head is the       universal quantifier (the "for all" symbol), the bound variables are x and y,       and the body is the expression x+y=y+x.    </ul></li><li>You must be able to write a function that checks whether a given instance of a given    variable appears free in an ancestor expression.  This should be do-able if your    expression class can do all of the above things.  See the documentation for    variableIsFree for details.</li></ul></div>
+        
+
+        
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line87">line 87</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".filterSubexpressions"><span class="type-signature">(static) </span>filterSubexpressions<span class="signature">(expr, filter)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>The <code>filterSubexpressions</code> function must return the set of subexpressionsof a given expression that satisfy a given predicate (the "filter").The result must be an array.  An expression does count as its own subexpression,and should be returned if it passes the filter.</p><p>The OpenMath library used by this package provides a function called<code>descendantsSatisfying</code> that fulfills this need.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>expr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the expression in which to search</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>filter</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the unary boolean function to use as the  filtering predicate</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line119">line 119</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="API.html">API</a></li></ul><h3>Classes</h3><ul><li><a href="Constraint.html">Constraint</a></li><li><a href="ConstraintList.html">ConstraintList</a></li><li><a href="MatchingChallenge.html">MatchingChallenge</a></li></ul><h3>Global</h3><ul><li><a href="global.html#alphaConvert">alphaConvert</a></li><li><a href="global.html#alphaEquivalent">alphaEquivalent</a></li><li><a href="global.html#applyExpressionFunctionApplication">applyExpressionFunctionApplication</a></li><li><a href="global.html#betaReduce">betaReduce</a></li><li><a href="global.html#canApplyExpressionFunctionApplication">canApplyExpressionFunctionApplication</a></li><li><a href="global.html#CASES">CASES</a></li><li><a href="global.html#checkVariable">checkVariable</a></li><li><a href="global.html#getAPI">getAPI</a></li><li><a href="global.html#getExpressionArgumentsFromApplication">getExpressionArgumentsFromApplication</a></li><li><a href="global.html#getExpressionFunctionFromApplication">getExpressionFunctionFromApplication</a></li><li><a href="global.html#getNewVariableRelativeTo">getNewVariableRelativeTo</a></li><li><a href="global.html#isExpressionFunction">isExpressionFunction</a></li><li><a href="global.html#isExpressionFunctionApplication">isExpressionFunctionApplication</a></li><li><a href="global.html#isFree">isFree</a></li><li><a href="global.html#makeConstantExpression">makeConstantExpression</a></li><li><a href="global.html#makeExpressionFunction">makeExpressionFunction</a></li><li><a href="global.html#makeExpressionFunctionApplication">makeExpressionFunctionApplication</a></li><li><a href="global.html#makeImitationExpression">makeImitationExpression</a></li><li><a href="global.html#makeProjectionExpression">makeProjectionExpression</a></li><li><a href="global.html#occursFree">occursFree</a></li><li><a href="global.html#replace">replace</a></li><li><a href="global.html#replaceWithoutCapture">replaceWithoutCapture</a></li><li><a href="global.html#setAPI">setAPI</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Mon Jan 25 2021 14:41:43 GMT-0500 (Eastern Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

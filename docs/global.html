@@ -155,6 +155,68 @@
 
 
         
+            
+<h4 class="name" id="getAPI"><span class="type-signature">(constant) </span>getAPI<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    Get the API stored in the global variable in this module, as set bysetAPI().
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line28">line 28</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
     
 
     
@@ -174,9 +236,7 @@
 
 
 <div class="description">
-    Takes a binding, a bound variable in that binding, and a replacement variable.
-Returns the result of replacing (without capture) all instances of the bound
-variable with the replacement variable.
+    Takes a binding, a bound variable in that binding, and a replacement variable.Returns the result of replacing (without capture) all instances of the boundvariable with the replacement variable.
 </div>
 
 
@@ -315,7 +375,7 @@ variable with the replacement variable.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line179">line 179</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line220">line 220</a>
     </li></ul></dd>
     
 
@@ -369,11 +429,7 @@ variable with the replacement variable.
 
 
 <div class="description">
-    Checks if two expressions are alpha equivalent.
-Two expresssions are alpha equivalent if one can be transformed into the other
-by the renaming of bound variables.
-If called when neither expr1 nor expr2 are applications or bindings, this function
-returns false because alpha equivalence is not defined for free variables or constants.
+    Checks if two expressions are alpha equivalent.Two expresssions are alpha equivalent if one can be transformed into the otherby the renaming of bound variables.If called when neither expr1 nor expr2 are applications or bindings, this functionreturns false because alpha equivalence is not defined for free variables or constants.
 </div>
 
 
@@ -489,7 +545,7 @@ returns false because alpha equivalence is not defined for free variables or con
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line285">line 285</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line355">line 355</a>
     </li></ul></dd>
     
 
@@ -543,8 +599,7 @@ returns false because alpha equivalence is not defined for free variables or con
 
 
 <div class="description">
-    If `canApplyExpressionFunctionApplication` is true,
-returns the beta reduction of the EF and the arguments it is applied to.
+    If `canApplyExpressionFunctionApplication` is true,returns the beta reduction of the EF and the arguments it is applied to.
 </div>
 
 
@@ -637,7 +692,7 @@ returns the beta reduction of the EF and the arguments it is applied to.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line130">line 130</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line143">line 143</a>
     </li></ul></dd>
     
 
@@ -681,13 +736,7 @@ returns the beta reduction of the EF and the arguments it is applied to.
 
 
 <div class="description">
-    Takes a general expression function representing λv_1,...,v_k.B
-and a list of expressions e_1,...,e_k and returns the beta reduction
-of ((λv_1,...,v_k.B)(e_1,...,e_k)) which is the expression B
-with all v_i replaced by the corresponding e_i.
-
-This beta reduction is capture avoiding.
-See `replaceWithoutCapture` for details.
+    Takes an expression function representing λv_1,...,v_k.Band a list of expressions e_1,...,e_k and returns the beta reductionof ((λv_1,...,v_k.B)(e_1,...,e_k)) which is the expression Bwith all v_i replaced by the corresponding e_i.This beta reduction is capture avoiding.See `replaceWithoutCapture` for details.
 </div>
 
 
@@ -803,7 +852,7 @@ See `replaceWithoutCapture` for details.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line347">line 347</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line415">line 415</a>
     </li></ul></dd>
     
 
@@ -857,9 +906,7 @@ See `replaceWithoutCapture` for details.
 
 
 <div class="description">
-    Tests whether an EFA is of the form EF(args).
-If the EFA is of this form, `applyExpressionFunctionApplication`
-can be called with this EFA as an argument.
+    Tests whether an EFA is of the form EF(args).If the EFA is of this form, `applyExpressionFunctionApplication`can be called with this EFA as an argument.
 </div>
 
 
@@ -952,7 +999,7 @@ can be called with this EFA as an argument.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line91">line 91</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line104">line 104</a>
     </li></ul></dd>
     
 
@@ -996,9 +1043,7 @@ can be called with this EFA as an argument.
 
 
 <div class="description">
-    Helper function used when adding pairs to a constraint list.
-Takes a variable and checks if it of the form, `vX` where `X` is some number.
-If it is of this form, it returns X + 1 if it is greater than the given index.
+    Helper function used when adding pairs to a constraint list.Takes a variable and checks if it of the form, `vX` where `X` is some number.If it is of this form, it returns X + 1 if it is greater than the given index.
 </div>
 
 
@@ -1114,7 +1159,7 @@ If it is of this form, it returns X + 1 if it is greater than the given index.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line376">line 376</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line448">line 448</a>
     </li></ul></dd>
     
 
@@ -1158,8 +1203,7 @@ If it is of this form, it returns X + 1 if it is greater than the given index.
 
 
 <div class="description">
-    If this is an EFA, extract and return the array of arguments to which the
-function is to be applied.  Otherwise return null.
+    If this is an EFA, extract and return the array of arguments to which thefunction is to be applied.  Otherwise return null.
 </div>
 
 
@@ -1252,7 +1296,7 @@ function is to be applied.  Otherwise return null.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line118">line 118</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line131">line 131</a>
     </li></ul></dd>
     
 
@@ -1296,8 +1340,7 @@ function is to be applied.  Otherwise return null.
 
 
 <div class="description">
-    If this is an EFA, extract and return the expression function application
-that is to be applied.  Otherwise return null.
+    If this is an EFA, extract and return the expression function applicationthat is to be applied.  Otherwise return null.
 </div>
 
 
@@ -1390,7 +1433,7 @@ that is to be applied.  Otherwise return null.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line106">line 106</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line119">line 119</a>
     </li></ul></dd>
     
 
@@ -1527,7 +1570,7 @@ that is to be applied.  Otherwise return null.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line151">line 151</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line192">line 192</a>
     </li></ul></dd>
     
 
@@ -1556,8 +1599,7 @@ that is to be applied.  Otherwise return null.
 
         
 <div class="param-desc">
-    the first variable of the form xN
-which appears nowhere in the supplied expression(s).
+    the first variable of the form xNwhich appears nowhere in the supplied expression(s).
 </div>
 
 
@@ -1582,7 +1624,7 @@ which appears nowhere in the supplied expression(s).
 
 
 <div class="description">
-    Tests whether an expression is a general expression function.
+    Tests whether an expression is an expression function.
 </div>
 
 
@@ -1675,7 +1717,7 @@ which appears nowhere in the supplied expression(s).
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line47">line 47</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line60">line 60</a>
     </li></ul></dd>
     
 
@@ -1759,7 +1801,7 @@ which appears nowhere in the supplied expression(s).
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line77">line 77</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line90">line 90</a>
     </li></ul></dd>
     
 
@@ -1805,6 +1847,143 @@ which appears nowhere in the supplied expression(s).
     
 
     
+    <h4 class="name" id="isFree"><span class="type-signature"></span>isFree<span class="signature">(expr)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Is the given expression free in its topmost ancestor?  That is, are allvariables free within this expression still free within that topmostancestor?
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>expr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the expression to test</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line244">line 244</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="makeConstantExpression"><span class="type-signature"></span>makeConstantExpression<span class="signature">(new_variable, expression)</span><span class="type-signature"></span></h4>
     
 
@@ -1813,10 +1992,7 @@ which appears nowhere in the supplied expression(s).
 
 
 <div class="description">
-    Takes a new variable (relative to some constraint list) and an expression
-and returns an EF which has the meaning λv_n.expr where v_n is the new
-variable and expr is the expression.
-I.e. creates a constant expression function.
+    Takes a new variable (relative to some constraint list) and an expressionand returns an EF which has the meaning λv_n.expr where v_n is the newvariable and expr is the expression.I.e. creates a constant expression function.
 </div>
 
 
@@ -1932,7 +2108,7 @@ I.e. creates a constant expression function.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line395">line 395</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line467">line 467</a>
     </li></ul></dd>
     
 
@@ -1976,8 +2152,7 @@ I.e. creates a constant expression function.
 
 
 <div class="description">
-    Makes a new expression function with the meaning
-λv1,...,vk.B where v1,...,vk are the variables and B is any OM expression.
+    Makes a new expression function with the meaningλv1,...,vk.B where v1,...,vk are the variables and B is any OM expression.
 </div>
 
 
@@ -2093,7 +2268,7 @@ I.e. creates a constant expression function.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line29">line 29</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line42">line 42</a>
     </li></ul></dd>
     
 
@@ -2137,11 +2312,7 @@ I.e. creates a constant expression function.
 
 
 <div class="description">
-    Makes a new expression function application with the meaning
-F(arg) where F is either an expression function (EF), or a
-metavariable which is expected to be replaced by an EF.
-In the case that F is an EF, the expression function can be applied
-to the argument see `applyExpressionFunctionApplication`.
+    Makes a new expression function application with the meaningF(arg) where F is either an expression function (EF), or ametavariable which is expected to be replaced by an EF.In the case that F is an EF, the expression function can be appliedto the argument see `applyExpressionFunctionApplication`.
 </div>
 
 
@@ -2257,7 +2428,7 @@ to the argument see `applyExpressionFunctionApplication`.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line64">line 64</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line77">line 77</a>
     </li></ul></dd>
     
 
@@ -2301,18 +2472,7 @@ to the argument see `applyExpressionFunctionApplication`.
 
 
 <div class="description">
-    Takes a list of variables, denoted `v1,...,vk`, an expression
-which is denoted `g(e1,...,em)`, and a list of temporary
-metavariables.
-
-For an application, returns an EF with the meaning
-`λv_1,...,v_k.g(H_1(v_1,...,v_k),...,H_m(v_1,...,v_k))`
-where each `H_i` denotes a temporary EFA as well as a list of the
-newly created temporary metavariables `[H_1,...,H_m]`.
-
-I.e. it returns an 'imitation' expression function where
-the body is the original expression with each argument
-replaced by a temporary EFA.
+    Takes a list of variables, denoted `v1,...,vk`, an expressionwhich is denoted `g(e1,...,em)`, and a list of temporarymetavariables.For an application, returns an EF with the meaning`λv_1,...,v_k.g(H_1(v_1,...,v_k),...,H_m(v_1,...,v_k))`where each `H_i` denotes a temporary EFA as well as a list of thenewly created temporary metavariables `[H_1,...,H_m]`.I.e. it returns an 'imitation' expression function wherethe body is the original expression with each argumentreplaced by a temporary EFA.
 </div>
 
 
@@ -2428,7 +2588,7 @@ replaced by a temporary EFA.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line438">line 438</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line510">line 510</a>
     </li></ul></dd>
     
 
@@ -2482,9 +2642,7 @@ replaced by a temporary EFA.
 
 
 <div class="description">
-    Takes a list of variables v_1,...,v_k and a single variable (a point)
-v_i and returns an EF with the meaning λv_1,...,v_k.v_i.
-I.e. returns a projection expression function for v_i with k arguments.
+    Takes a list of variables v_1,...,v_k and a single variable (a point)v_i and returns an EF with the meaning λv_1,...,v_k.v_i.I.e. returns a projection expression function for v_i with k arguments.
 </div>
 
 
@@ -2600,7 +2758,327 @@ I.e. returns a projection expression function for v_i with k arguments.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line410">line 410</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line482">line 482</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="occursFree"><span class="type-signature"></span>occursFree<span class="signature">(inner, outer)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Return true iff an instance (i.e., copy) of the inner expression occurs inthe outer expression and that occurrence is free (not just in outer, butabsolutely)
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>inner</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the expression to seek a free occurrence of</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>outer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the expression in which to search</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line257">line 257</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="replace"><span class="type-signature"></span>replace<span class="signature">(toReplace, withThis)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    The API provides a function for replacing an expression, wherever it sits inits parent tree, with another expression.  But the behavior can vary from oneAPI implementation to another:  Does the function return the replacedexpression, the replacement, or neither?  Does the variable that referred tothe replaced expression now refer to the replacement, or not?  We standardizethat here by creating this wrapper, which always returns the replacement, andcan thus be used to update variables if needed.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>toReplace</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The expression to be replaced</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>withThis</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">OM</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The expression with which to replace it</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line169">line 169</a>
     </li></ul></dd>
     
 
@@ -2644,18 +3122,7 @@ I.e. returns a projection expression function for v_i with k arguments.
 
 
 <div class="description">
-    Takes an expression, a variable, and a replacement expression.
-Manipulates the expression in place in order to replace all occurences
-of the variable with the expression in such a way that variable capture
-will not occur.
-
-Because this function will be called whenever a metavariable's instantiation
-is discovered by the solve() routine in MatchingChallenge, it must guarantee
-that NO occurrences of the variable remain after the function is complete.
-
-Note that this function addresses only variable capture that would occur
-from a binding expression inside expr; it does not address any binders that
-may sit in a parent above expr.
+    Takes an expression, a variable, and a replacement expression.Manipulates the expression in place in order to replace all occurencesof the variable with the expression in such a way that variable capturewill not occur.Because this function will be called whenever a metavariable's instantiationis discovered by the solve() routine in MatchingChallenge, it must guaranteethat NO occurrences of the variable remain after the function is complete.Note that this function addresses only variable capture that would occurfrom a binding expression inside expr; it does not address any binders thatmay sit in a parent above expr.
 </div>
 
 
@@ -2794,7 +3261,144 @@ may sit in a parent above expr.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line215">line 215</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line285">line 285</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="setAPI"><span class="type-signature"></span>setAPI<span class="signature">(APIObject)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Provide an API by which this module can deal with expressions.  More needsto be documented about this; the only existing API is the OpenMath API.See openmath-api.js for details.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>APIObject</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the namespace containing all expression-related  functions</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line19">line 19</a>
     </li></ul></dd>
     
 
@@ -2840,13 +3444,13 @@ may sit in a parent above expr.
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="OpenMathAPI.html">OpenMathAPI</a></li></ul><h3>Classes</h3><ul><li><a href="Constraint.html">Constraint</a></li><li><a href="ConstraintList.html">ConstraintList</a></li><li><a href="MatchingChallenge.html">MatchingChallenge</a></li></ul><h3>Global</h3><ul><li><a href="global.html#alphaConvert">alphaConvert</a></li><li><a href="global.html#alphaEquivalent">alphaEquivalent</a></li><li><a href="global.html#applyExpressionFunctionApplication">applyExpressionFunctionApplication</a></li><li><a href="global.html#betaReduce">betaReduce</a></li><li><a href="global.html#canApplyExpressionFunctionApplication">canApplyExpressionFunctionApplication</a></li><li><a href="global.html#CASES">CASES</a></li><li><a href="global.html#checkVariable">checkVariable</a></li><li><a href="global.html#getExpressionArgumentsFromApplication">getExpressionArgumentsFromApplication</a></li><li><a href="global.html#getExpressionFunctionFromApplication">getExpressionFunctionFromApplication</a></li><li><a href="global.html#getNewVariableRelativeTo">getNewVariableRelativeTo</a></li><li><a href="global.html#isExpressionFunction">isExpressionFunction</a></li><li><a href="global.html#isExpressionFunctionApplication">isExpressionFunctionApplication</a></li><li><a href="global.html#makeConstantExpression">makeConstantExpression</a></li><li><a href="global.html#makeExpressionFunction">makeExpressionFunction</a></li><li><a href="global.html#makeExpressionFunctionApplication">makeExpressionFunctionApplication</a></li><li><a href="global.html#makeImitationExpression">makeImitationExpression</a></li><li><a href="global.html#makeProjectionExpression">makeProjectionExpression</a></li><li><a href="global.html#replaceWithoutCapture">replaceWithoutCapture</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="OpenMathAPI.html">OpenMathAPI</a></li></ul><h3>Classes</h3><ul><li><a href="Constraint.html">Constraint</a></li><li><a href="ConstraintList.html">ConstraintList</a></li><li><a href="MatchingChallenge.html">MatchingChallenge</a></li></ul><h3>Global</h3><ul><li><a href="global.html#alphaConvert">alphaConvert</a></li><li><a href="global.html#alphaEquivalent">alphaEquivalent</a></li><li><a href="global.html#applyExpressionFunctionApplication">applyExpressionFunctionApplication</a></li><li><a href="global.html#betaReduce">betaReduce</a></li><li><a href="global.html#canApplyExpressionFunctionApplication">canApplyExpressionFunctionApplication</a></li><li><a href="global.html#CASES">CASES</a></li><li><a href="global.html#checkVariable">checkVariable</a></li><li><a href="global.html#getAPI">getAPI</a></li><li><a href="global.html#getExpressionArgumentsFromApplication">getExpressionArgumentsFromApplication</a></li><li><a href="global.html#getExpressionFunctionFromApplication">getExpressionFunctionFromApplication</a></li><li><a href="global.html#getNewVariableRelativeTo">getNewVariableRelativeTo</a></li><li><a href="global.html#isExpressionFunction">isExpressionFunction</a></li><li><a href="global.html#isExpressionFunctionApplication">isExpressionFunctionApplication</a></li><li><a href="global.html#isFree">isFree</a></li><li><a href="global.html#makeConstantExpression">makeConstantExpression</a></li><li><a href="global.html#makeExpressionFunction">makeExpressionFunction</a></li><li><a href="global.html#makeExpressionFunctionApplication">makeExpressionFunctionApplication</a></li><li><a href="global.html#makeImitationExpression">makeImitationExpression</a></li><li><a href="global.html#makeProjectionExpression">makeProjectionExpression</a></li><li><a href="global.html#occursFree">occursFree</a></li><li><a href="global.html#replace">replace</a></li><li><a href="global.html#replaceWithoutCapture">replaceWithoutCapture</a></li><li><a href="global.html#setAPI">setAPI</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu Oct 08 2020 11:38:19 GMT-0400 (Eastern Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Mon Jan 25 2021 14:42:34 GMT-0500 (Eastern Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
