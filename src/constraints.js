@@ -162,7 +162,7 @@ export class Constraint {
     /**
      * Applies this constraint, like a substitution, to a single pattern.
      * Used by instantiate() in ConstraintList.
-     * @param {OM} pattern - a single pattern
+     * @param {OM} target - a single pattern
      * @returns a copy of the pattern with any substitutions
      */
     applyInstantiation(target) {
@@ -445,7 +445,7 @@ export class ConstraintList {
     /**
      * Extracts from each pattern a list of metavariable pairs (m1,m2).
      * Such a pair means the restriction that a solution S cannot have S(m1) appearing free in S(m2).
-     * Pairs are represented by an object with `inner: m1` and `outer m2` properties.
+     * Pairs are represented by an object with `inner: m1` and `outer: m2` properties.
      */
     computeBindingConstraints() {
         this.contents.forEach(constraint =>
