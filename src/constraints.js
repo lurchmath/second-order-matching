@@ -50,7 +50,7 @@ export {
  * not a metavariable
  *
  * EFA represents the case in which the pattern is an expression function application,
- * or a function with a metavariable as its 'head', and `SIMPLIFICATION`
+ * or a function with a metavariable as its 'head', and <code>SIMPLIFICATION</code>
  * does not hold
  *
  * FAILURE represents the case of failure, when no other cases apply
@@ -92,8 +92,8 @@ export class Constraint {
 
     /**
      * @param {Constraint} other - another Constraint
-     * @returns `true` if patterns and expressions are structurally equal
-     * OR alpha equivalent, `false` otherwise.
+     * @returns <code>true</code> if patterns and expressions are structurally equal
+     * OR alpha equivalent, <code>false</code> otherwise.
      */
     equals(other) {
         return (
@@ -157,7 +157,7 @@ export class Constraint {
     }
 
     /**
-     * Calls `getCase` again, in case pattern or expression have changes
+     * Calls <code>getCase</code> again, in case pattern or expression have changes
      */
     reEvalCase() {
         this.case = this.getCase(this.pattern, this.expression);
@@ -239,9 +239,9 @@ export class Constraint {
 export class ConstraintList {
     /**
      * Creates an array from arguments.
-     * Also computes the first variable from the list `v0, v1, v2,...` such that neither it nor
+     * Also computes the first variable from the list <code>v0, v1, v2,...</code> such that neither it nor
      * any variable after it in that list appears in any of the constraints.
-     * Call this `vN`. See `nextNewVariable` for the use.
+     * Call this <code>vN</code>. See <code>nextNewVariable</code> for the use.
      * @param ...constraints - an arbitrary number of Constraints (can be zero)
      */
     constructor(...constraints) {
@@ -262,7 +262,7 @@ export class ConstraintList {
     }
 
     /**
-     * @returns a new variable starting at `vN` (see constructor for definition of `vN`).
+     * @returns a new variable starting at <code>vN</code> (see constructor for definition of <code>vN</code>).
      */
     nextNewVariable() {
         return getAPI().variable('v' + this.nextNewVariableIndex++);
@@ -453,7 +453,7 @@ export class ConstraintList {
     /**
      * Extracts from each pattern a list of metavariable pairs (m1,m2).
      * Such a pair means the restriction that a solution S cannot have S(m1) appearing free in S(m2).
-     * Pairs are represented by an object with `inner: m1` and `outer: m2` properties.
+     * Pairs are represented by an object with <code>inner: m1</code> and <code>outer: m2</code> properties.
      */
     computeBindingConstraints() {
         this.contents.forEach(constraint =>

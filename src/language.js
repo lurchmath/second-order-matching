@@ -70,7 +70,7 @@ export function isExpressionFunction(expression) {
  * F(arg) where F is either an expression function (EF), or a
  * metavariable which is expected to be replaced by an EF.
  * In the case that F is an EF, the expression function can be applied
- * to the argument see `applyExpressionFunctionApplication`.
+ * to the argument see <code>applyExpressionFunctionApplication</code>.
  * @param {OM} func - either an EF or something which can be instantiated as an EF.
  * @param {OM[]} arguments - a list of OM expressions
  */
@@ -97,7 +97,7 @@ export function isExpressionFunctionApplication(expression) {
 
 /**
  * Tests whether an EFA is of the form EF(args).
- * If the EFA is of this form, `applyExpressionFunctionApplication`
+ * If the EFA is of this form, <code>applyExpressionFunctionApplication</code>
  * can be called with this EFA as an argument.
  * @param {OM} EFA - an expression function application
  */
@@ -136,7 +136,7 @@ export function getExpressionArgumentsFromApplication(EFA) {
 }
 
 /**
- * If `canApplyExpressionFunctionApplication` is true,
+ * If <code>canApplyExpressionFunctionApplication</code> is true,
  * returns the beta reduction of the EF and the arguments it is applied to.
  * @param {OM} EFA - an expression function application
  */
@@ -344,7 +344,7 @@ export function replaceWithoutCapture(expr, variable, replacement) {
 
 /**
  * Checks if two expressions are alpha equivalent.
- * Two expresssions are alpha equivalent if one can be transformed into the other
+ * Two expressions are alpha equivalent if one can be transformed into the other
  * by the renaming of bound variables.
  * If called when neither expr1 nor expr2 are applications or bindings, this function
  * returns false because alpha equivalence is not defined for free variables or constants.
@@ -407,7 +407,7 @@ export function alphaEquivalent(expr1, expr2, firstcall=true) {
  * with all v_i replaced by the corresponding e_i.
  *
  * This beta reduction is capture avoiding.
- * See `replaceWithoutCapture` for details.
+ * See <code>replaceWithoutCapture</code> for details.
  * @param {OM} EF - an expression function with n variables
  * @param {OM[]} expr_list - a list of expressions of length n
  * @returns an expression manipulated as described above
@@ -440,7 +440,7 @@ export function betaReduce(EF, expr_list) {
 
 /**
  * Helper function used when adding pairs to a constraint list.
- * Takes a variable and checks if it of the form, `vX` where `X` is some number.
+ * Takes a variable and checks if it of the form, <code>vX</code> where <code>X</code> is some number.
  * If it is of this form, it returns X + 1 if it is greater than the given index.
  * @param {OM} variable - the variable to be checked
  * @param {Number} nextNewVariableIndex - the number to check against
@@ -491,14 +491,14 @@ export function makeProjectionExpression(variables, point) {
 }
 
 /**
- * Takes a list of variables, denoted `v1,...,vk`, an expression
- * which is denoted `g(e1,...,em)`, and a list of temporary
+ * Takes a list of variables, denoted <code>v1,...,vk</code>, an expression
+ * which is denoted <code>g(e1,...,em)</code>, and a list of temporary
  * metavariables.
  *
  * For an application, returns an EF with the meaning
- * `λv_1,...,v_k.g(H_1(v_1,...,v_k),...,H_m(v_1,...,v_k))`
- * where each `H_i` denotes a temporary EFA as well as a list of the
- * newly created temporary metavariables `[H_1,...,H_m]`.
+ * <code>λv_1,...,v_k.g(H_1(v_1,...,v_k),...,H_m(v_1,...,v_k))</code>
+ * where each <code>H_i</code> denotes a temporary EFA as well as a list of the
+ * newly created temporary metavariables <code>[H_1,...,H_m]</code>.
  *
  * I.e. it returns an 'imitation' expression function where
  * the body is the original expression with each argument
@@ -514,7 +514,7 @@ export function makeImitationExpression(variables, expr, temp_metavars) {
      * parent function, and a list of temporary metavariables.
      * Returns an expression which will become the body
      * of the imitation function. This is an application of the form:
-     * `head(temp_metavars[0](bound_vars),...,temp_metavars[len-1](bound_vars))`
+     * <code>head(temp_metavars[0](bound_vars),...,temp_metavars[len-1](bound_vars))</code>
      */
     function createBody(head, bound_vars, temp_metavars, bind, binding_variables) {
         let args = [];
