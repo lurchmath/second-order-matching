@@ -460,12 +460,12 @@ export class ConstraintList {
             getAPI().filterSubexpressions(constraint.pattern,getAPI().isBinding).forEach(binding =>
                 getAPI().filterSubexpressions(binding,getAPI().isMetavariable).forEach(innerMV => {
                     if (getAPI().variableIsFree(innerMV,binding)) {
-                        getAPI().bindingVariables(binding).forEach(outerMV => {
+                        getAPI().bindingVariables(binding).forEach(outerV => {
                             if (!this.bindingConstraints.find(existing =>
-                                    getAPI().equal(existing.outer,outerMV)
+                                    getAPI().equal(existing.outer,outerV)
                                  && getAPI().equal(existing.inner,innerMV))
                                 ) {
-                                this.bindingConstraints.push({ inner: innerMV, outer: outerMV });
+                                this.bindingConstraints.push({ inner: innerMV, outer: outerV });
                             }
                         });
                     }
