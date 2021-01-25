@@ -29,5 +29,6 @@
     "transformIgnorePatterns": []
   },
   "author": "George Tillisch and Nathan Carter (nathancarter.github.io)",
-  "license": "ISC"
+  "license": "ISC",
+  "homepage": "https://github.com/lurchmath/second-order-matching"
 }
