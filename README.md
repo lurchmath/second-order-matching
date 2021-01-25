@@ -1,9 +1,10 @@
 
 # Second-Order Matching
 
-## Documentation
+## Usage
 
-[See online JSDoc stuff here.](https://lurchmath.github.io/second-order-matching/docs/)
+- Install with `npm i second-order-matching`.
+- [Detailed source code docs are here.](https://lurchmath.github.io/second-order-matching/docs/)
 
 ## Current state (January 2021)
 
