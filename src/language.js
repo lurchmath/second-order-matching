@@ -310,7 +310,7 @@ export function replaceWithoutCapture(expr, variable, replacement) {
             // but the replacement is a non-variable.  This is illegal, because
             // OpenMath bound variable positions can be occupied only by variables.
             if (!API.isVariable(replacement)) {
-                throw 'Cannot replace a bound variable with a non-varible';
+                throw 'Cannot replace a bound variable with a non-variable';
             // Case 4: expr is a binding and it binds the variable to be replaced,
             // and the replacement is also a variable.  We can go ahead and replace
             // as requested, knowing that this is just a special case of alpha
