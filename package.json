@@ -1,10 +1,9 @@
 {
   "name": "second-order-matching",
   "version": "1.0.0",
-  "description": "",
-  "main": "src/second-order-matching.js",
+  "description": "An implementation of the Huet-Lang pattern-matching algorithm in JavaScript",
+  "main": "index.js",
   "dependencies": {},
-  "type": "module",
   "devDependencies": {
     "@babel/cli": "^7.12.10",
     "@babel/core": "^7.8.6",
@@ -29,6 +28,6 @@
     },
     "transformIgnorePatterns": []
   },
-  "author": "George Tillisch and Nathan Carter",
+  "author": "George Tillisch and Nathan Carter (nathancarter.github.io)",
   "license": "ISC"
 }

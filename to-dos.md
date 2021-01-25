@@ -11,7 +11,6 @@
   now assumes ES6.  Consequently, a lot of code that was written in ES5 style
   can be made much slicker (for example, lots of `for` loops with actual
   index-based counters, etc.).
-- Publish this repository to npm so it's easy to use in other projects.
 - The `replaceWithoutCapture` function in [language.js](src/language.js) has a
   "FIXME" comment in case 5. It generates new variables relative to an
   expression in a suboptimal way. One optimal fix would be a class for
