@@ -9,12 +9,6 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-Object.defineProperty(exports, "Exprs", {
-  enumerable: true,
-  get: function get() {
-    return _language.Exprs;
-  }
-});
 Object.defineProperty(exports, "isExpressionFunction", {
   enumerable: true,
   get: function get() {
@@ -43,6 +37,24 @@ Object.defineProperty(exports, "canApplyExpressionFunctionApplication", {
   enumerable: true,
   get: function get() {
     return _language.canApplyExpressionFunctionApplication;
+  }
+});
+Object.defineProperty(exports, "getVariablesIn", {
+  enumerable: true,
+  get: function get() {
+    return _language.getVariablesIn;
+  }
+});
+Object.defineProperty(exports, "occursFree", {
+  enumerable: true,
+  get: function get() {
+    return _language.occursFree;
+  }
+});
+Object.defineProperty(exports, "isFree", {
+  enumerable: true,
+  get: function get() {
+    return _language.isFree;
   }
 });
 Object.defineProperty(exports, "applyExpressionFunctionApplication", {
@@ -99,6 +111,18 @@ Object.defineProperty(exports, "makeImitationExpression", {
     return _language.makeImitationExpression;
   }
 });
+Object.defineProperty(exports, "setAPI", {
+  enumerable: true,
+  get: function get() {
+    return _language.setAPI;
+  }
+});
+Object.defineProperty(exports, "getAPI", {
+  enumerable: true,
+  get: function get() {
+    return _language.getAPI;
+  }
+});
 exports.ConstraintList = exports.Constraint = exports.CASES = void 0;
 
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
@@ -138,7 +162,7 @@ var _language = require("./language.js");
  * not a metavariable
  *
  * EFA represents the case in which the pattern is an expression function application,
- * or a function with a metavariable as its 'head', and `SIMPLIFICATION`
+ * or a function with a metavariable as its 'head', and <code>SIMPLIFICATION</code>
  * does not hold
  *
  * FAILURE represents the case of failure, when no other cases apply
@@ -165,7 +189,7 @@ var Constraint = /*#__PURE__*/function () {
   function Constraint(pattern, expression) {
     (0, _classCallCheck2["default"])(this, Constraint);
 
-    if (!_language.Exprs.isExpression(pattern) || !_language.Exprs.isExpression(expression)) {
+    if (!(0, _language.getAPI)().isExpression(pattern) || !(0, _language.getAPI)().isExpression(expression)) {
       throw Error('Both arguments must be expressions');
     }
 
@@ -181,18 +205,18 @@ var Constraint = /*#__PURE__*/function () {
   (0, _createClass2["default"])(Constraint, [{
     key: "copy",
     value: function copy() {
-      return new Constraint(this.pattern.copy(), this.expression.copy());
+      return new Constraint((0, _language.getAPI)().copy(this.pattern), (0, _language.getAPI)().copy(this.expression));
     }
     /**
      * @param {Constraint} other - another Constraint
-     * @returns `true` if patterns and expressions are structurally equal
-     * OR alpha equivalent, `false` otherwise.
+     * @returns <code>true</code> if patterns and expressions are structurally equal
+     * OR alpha equivalent, <code>false</code> otherwise.
      */
 
   }, {
     key: "equals",
     value: function equals(other) {
-      return (this.pattern.equals(other.pattern) || (0, _language.alphaEquivalent)(this.pattern, other.pattern)) && (this.expression.equals(other.expression) || (0, _language.alphaEquivalent)(this.expression, other.expression));
+      return ((0, _language.getAPI)().equal(this.pattern, other.pattern) || (0, _language.alphaEquivalent)(this.pattern, other.pattern)) && ((0, _language.getAPI)().equal(this.expression, other.expression) || (0, _language.alphaEquivalent)(this.expression, other.expression));
     }
     /**
      * @returns true if the pattern is a metavariable, false otherwise.
@@ -201,7 +225,7 @@ var Constraint = /*#__PURE__*/function () {
   }, {
     key: "isSubstitution",
     value: function isSubstitution() {
-      return _language.Exprs.isMetavariable(this.pattern);
+      return (0, _language.getAPI)().isMetavariable(this.pattern);
     }
     /**
      * Returns the case, as described in the corresponding paper
@@ -213,20 +237,20 @@ var Constraint = /*#__PURE__*/function () {
   }, {
     key: "getCase",
     value: function getCase(pattern, expression) {
-      if (pattern.equals(expression)) {
+      if ((0, _language.getAPI)().equal(pattern, expression)) {
         return CASES.IDENTITY;
-      } else if (_language.Exprs.isMetavariable(pattern)) {
+      } else if ((0, _language.getAPI)().isMetavariable(pattern)) {
         return CASES.BINDING;
-      } else if (pattern.type == 'a' && !(0, _language.isExpressionFunctionApplication)(pattern) && expression.type == 'a' && pattern.children.length == expression.children.length || pattern.type == 'bi' && expression.type == 'bi' && pattern.symbol.equals(expression.symbol) && pattern.variables.length == expression.variables.length) {
+      } else if ((0, _language.getAPI)().isApplication(pattern) && !(0, _language.isExpressionFunctionApplication)(pattern) && (0, _language.getAPI)().isApplication(expression) && (0, _language.getAPI)().getChildren(pattern).length == (0, _language.getAPI)().getChildren(expression).length || (0, _language.getAPI)().isBinding(pattern) && (0, _language.getAPI)().isBinding(expression) && (0, _language.getAPI)().equal((0, _language.getAPI)().bindingHead(pattern), (0, _language.getAPI)().bindingHead(expression)) && (0, _language.getAPI)().bindingVariables(pattern).length == (0, _language.getAPI)().bindingVariables(expression).length) {
         return CASES.SIMPLIFICATION;
-      } else if ((0, _language.isExpressionFunctionApplication)(pattern) || _language.Exprs.isMetavariable(pattern.children[1])) {
+      } else if ((0, _language.isExpressionFunctionApplication)(pattern) || (0, _language.getAPI)().isApplication(pattern) && (0, _language.getAPI)().isMetavariable((0, _language.getAPI)().getChildren(pattern)[1])) {
         return CASES.EFA;
       } else {
         return CASES.FAILURE;
       }
     }
     /**
-     * Calls `getCase` again, in case pattern or expression have changes
+     * Calls <code>getCase</code> again, in case pattern or expression have changes
      */
 
   }, {
@@ -237,18 +261,24 @@ var Constraint = /*#__PURE__*/function () {
     /**
      * Applies this constraint, like a substitution, to a single pattern.
      * Used by instantiate() in ConstraintList.
-     * @param {OM} pattern - a single pattern
+     * @param {OM} target - a single pattern
      * @returns a copy of the pattern with any substitutions
      */
 
   }, {
     key: "applyInstantiation",
     value: function applyInstantiation(target) {
-      var result = target.copy();
+      var result = (0, _language.getAPI)().copy(target);
       (0, _language.replaceWithoutCapture)(result, this.pattern, this.expression);
-      result.descendantsSatisfying(_language.canApplyExpressionFunctionApplication).forEach(function (x) {
-        return x.replaceWith((0, _language.applyExpressionFunctionApplication)(x));
+
+      var properSubExprToChange = function properSubExprToChange(x) {
+        return x != result && (0, _language.canApplyExpressionFunctionApplication)(x);
+      };
+
+      (0, _language.getAPI)().filterSubexpressions(result, properSubExprToChange).forEach(function (x) {
+        return (0, _language.getAPI)().replace(x, (0, _language.applyExpressionFunctionApplication)(x));
       });
+      if ((0, _language.canApplyExpressionFunctionApplication)(result)) result = (0, _language.applyExpressionFunctionApplication)(result);
       return result;
     }
     /**
@@ -265,25 +295,25 @@ var Constraint = /*#__PURE__*/function () {
     value: function breakIntoArgPairs() {
       var arg_pairs = [];
 
-      if (this.pattern.type == 'a' && this.expression.type == 'a') {
-        var pattern_children = this.pattern.children;
-        var expression_children = this.expression.children; // In getting the case, we checked that the length of children was the same
+      if ((0, _language.getAPI)().isApplication(this.pattern) && (0, _language.getAPI)().isApplication(this.expression)) {
+        var pattern_children = (0, _language.getAPI)().getChildren(this.pattern);
+        var expression_children = (0, _language.getAPI)().getChildren(this.expression); // In getting the case, we checked that the length of children was the same
 
         for (var i = 0; i < pattern_children.length; i++) {
-          arg_pairs.push(new Constraint(pattern_children[i].copy(), expression_children[i].copy()));
+          arg_pairs.push(new Constraint((0, _language.getAPI)().copy(pattern_children[i]), (0, _language.getAPI)().copy(expression_children[i])));
         }
-      } else if (this.pattern.type == 'bi' && this.expression.type == 'bi') {
-        var pattern_vars = this.pattern.variables;
-        var expression_vars = this.expression.variables;
-        var pattern_body = this.pattern.body;
-        var expression_body = this.expression.body; // In getting the case, we checked that the length of variables was the same
+      } else if ((0, _language.getAPI)().isBinding(this.pattern) && (0, _language.getAPI)().isBinding(this.expression)) {
+        var pattern_vars = (0, _language.getAPI)().bindingVariables(this.pattern);
+        var expression_vars = (0, _language.getAPI)().bindingVariables(this.expression);
+        var pattern_body = (0, _language.getAPI)().bindingBody(this.pattern);
+        var expression_body = (0, _language.getAPI)().bindingBody(this.expression); // In getting the case, we checked that the length of variables was the same
 
         for (var _i = 0; _i < pattern_vars.length; _i++) {
-          arg_pairs.push(new Constraint(pattern_vars[_i].copy(), expression_vars[_i].copy()));
+          arg_pairs.push(new Constraint((0, _language.getAPI)().copy(pattern_vars[_i]), (0, _language.getAPI)().copy(expression_vars[_i])));
         } // Also push the body of each binding to arg pairs
 
 
-        arg_pairs.push(new Constraint(pattern_body.copy(), expression_body.copy()));
+        arg_pairs.push(new Constraint((0, _language.getAPI)().copy(pattern_body), (0, _language.getAPI)().copy(expression_body)));
       }
 
       return arg_pairs;
@@ -303,9 +333,9 @@ exports.Constraint = Constraint;
 var ConstraintList = /*#__PURE__*/function () {
   /**
    * Creates an array from arguments.
-   * Also computes the first variable from the list `v0, v1, v2,...` such that neither it nor
+   * Also computes the first variable from the list <code>v0, v1, v2,...</code> such that neither it nor
    * any variable after it in that list appears in any of the constraints.
-   * Call this `vN`. See `nextNewVariable` for the use.
+   * Call this <code>vN</code>. See <code>nextNewVariable</code> for the use.
    * @param ...constraints - an arbitrary number of Constraints (can be zero)
    */
   function ConstraintList() {
@@ -333,10 +363,10 @@ var ConstraintList = /*#__PURE__*/function () {
     key: "nextNewVariable",
 
     /**
-     * @returns a new variable starting at `vN` (see constructor for definition of `vN`).
+     * @returns a new variable starting at <code>vN</code> (see constructor for definition of <code>vN</code>).
      */
     value: function nextNewVariable() {
-      return _language.Exprs.variable('v' + this.nextNewVariableIndex++);
+      return (0, _language.getAPI)().variable('v' + this.nextNewVariableIndex++);
     }
     /**
      * @returns a deep copy of the list.
@@ -351,8 +381,8 @@ var ConstraintList = /*#__PURE__*/function () {
       var result = (0, _construct2["default"])(ConstraintList, (0, _toConsumableArray2["default"])(contents_copy));
       result.bindingConstraints = this.bindingConstraints.map(function (bc) {
         return {
-          inner: bc.inner.copy(),
-          outer: bc.outer.copy()
+          inner: (0, _language.getAPI)().copy(bc.inner),
+          outer: (0, _language.getAPI)().copy(bc.outer)
         };
       });
       result.nextNewVariableIndex = this.nextNewVariableIndex;
@@ -392,13 +422,13 @@ var ConstraintList = /*#__PURE__*/function () {
           return c.equals(constraint);
         }) == -1) {
           // Set the next new var index
-          var p_vars = _language.Exprs.getVariablesIn(constraint.pattern);
+          var p_vars = (0, _language.getVariablesIn)(constraint.pattern);
 
           for (var j = 0; j < p_vars.length; j++) {
             _this2.nextNewVariableIndex = (0, _language.checkVariable)(p_vars[j], _this2.nextNewVariableIndex);
           }
 
-          var e_vars = _language.Exprs.getVariablesIn(constraint.expression);
+          var e_vars = (0, _language.getVariablesIn)(constraint.expression);
 
           for (var k = 0; k < e_vars.length; k++) {
             _this2.nextNewVariableIndex = (0, _language.checkVariable)(e_vars[k], _this2.nextNewVariableIndex);
@@ -529,11 +559,11 @@ var ConstraintList = /*#__PURE__*/function () {
           return false;
         }
 
-        if (seen_so_far.includes(constraint.pattern.name)) {
+        if (seen_so_far.includes((0, _language.getAPI)().getVariableName(constraint.pattern))) {
           return false;
         }
 
-        seen_so_far.push(constraint.pattern.name);
+        seen_so_far.push((0, _language.getAPI)().getVariableName(constraint.pattern));
       }
 
       return true;
@@ -548,16 +578,15 @@ var ConstraintList = /*#__PURE__*/function () {
   }, {
     key: "lookup",
     value: function lookup(variable) {
-      if (!_language.Exprs.isExpression(variable)) {
-        variable = _language.Exprs.variable(variable);
-
-        _language.Exprs.setMetavariable(variable);
+      if (!(0, _language.getAPI)().isExpression(variable)) {
+        variable = (0, _language.getAPI)().variable(variable);
+        (0, _language.getAPI)().setMetavariable(variable);
       }
 
       for (var i = 0; i < this.contents.length; i++) {
         var constraint = this.contents[i];
 
-        if (constraint.pattern.equals(variable)) {
+        if ((0, _language.getAPI)().equal(constraint.pattern, variable)) {
           return constraint.expression;
         }
       }
@@ -614,7 +643,7 @@ var ConstraintList = /*#__PURE__*/function () {
     /**
      * Extracts from each pattern a list of metavariable pairs (m1,m2).
      * Such a pair means the restriction that a solution S cannot have S(m1) appearing free in S(m2).
-     * Pairs are represented by an object with `inner: m1` and `outer m2` properties.
+     * Pairs are represented by an object with <code>inner: m1</code> and <code>outer: m2</code> properties.
      */
 
   }, {
@@ -623,18 +652,16 @@ var ConstraintList = /*#__PURE__*/function () {
       var _this4 = this;
 
       this.contents.forEach(function (constraint) {
-        return constraint.pattern.descendantsSatisfying(function (d) {
-          return d.type == 'bi';
-        }).forEach(function (binding) {
-          return binding.descendantsSatisfying(_language.Exprs.isMetavariable).forEach(function (innerMV) {
-            if (innerMV.isFree(binding)) {
-              binding.variables.forEach(function (outerMV) {
+        return (0, _language.getAPI)().filterSubexpressions(constraint.pattern, (0, _language.getAPI)().isBinding).forEach(function (binding) {
+          return (0, _language.getAPI)().filterSubexpressions(binding, (0, _language.getAPI)().isMetavariable).forEach(function (innerMV) {
+            if ((0, _language.getAPI)().variableIsFree(innerMV, binding)) {
+              (0, _language.getAPI)().bindingVariables(binding).forEach(function (outerV) {
                 if (!_this4.bindingConstraints.find(function (existing) {
-                  return existing.outer.equals(outerMV) && existing.inner.equals(innerMV);
+                  return (0, _language.getAPI)().equal(existing.outer, outerV) && (0, _language.getAPI)().equal(existing.inner, innerMV);
                 })) {
                   _this4.bindingConstraints.push({
                     inner: innerMV,
-                    outer: outerMV
+                    outer: outerV
                   });
                 }
               });
