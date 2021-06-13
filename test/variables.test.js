@@ -315,6 +315,10 @@ describe('Expression manipluation', () => {
         var bind3 = OM.simple('for.all[a,b,c,R(f(a),g(b),h(c))]');
         M.replaceWithoutCapture(bind3, OM.var('b'), OM.var('B'));
         expect(bind3.equals(OM.simple('for.all[a,B,c,R(f(a),g(B),h(c))]'))).toBe(true);
+
+        var bind3 = OM.simple('for.all[x,P(x,y)]');
+        M.replaceWithoutCapture(bind3,OM.var('y'),OM.simple('Q(x,y,x0)'))
+        expect(bind3.equals(OM.simple('for.all[x1,P(x1,Q(x,y,x0))]'))).toBe(true);
     });
 
     test('should implement alpha equivalence for expressions', () => {

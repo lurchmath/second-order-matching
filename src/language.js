@@ -331,7 +331,7 @@ export function replaceWithoutCapture(expr, variable, replacement) {
                         //      need some way of generating global new variables
                         //      E.g. a class called new variable stream
                         expr = replace(expr,alphaConvert(expr, bound_var,
-                            getNewVariableRelativeTo(expr)));
+                            getNewVariableRelativeTo(expr, replacement)));
                     }
                 } );
             }
