@@ -1,6 +1,6 @@
 {
   "name": "second-order-matching",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "An implementation of the Huet-Lang pattern-matching algorithm in JavaScript",
   "type": "module",
   "main": "index.js",
