@@ -429,7 +429,7 @@ export function betaReduce(EF, expr_list) {
         throw 'In beta reduction, the first argument must be an expression function'
     }
     if (!(expr_list instanceof Array)) {
-        throw 'In beta reduction,, the second argument must be a list of expressions'
+        throw 'In beta reduction, the second argument must be a list of expressions'
     }
     const variables = API.bindingVariables(EF);
     if (variables.length != expr_list.length) {
