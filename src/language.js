@@ -339,6 +339,13 @@ export function replaceWithoutCapture(expr, variable, replacement) {
             // we can actually do the replacement in the body.
             replaceWithoutCapture(API.bindingBody(expr), variable, replacement);
         }
+        // In OpenMath as implemented in openmath.js in this repository, the head of a
+        // binding is always a symbol (atomic).  That will not necessarily be the case in
+        // every other expression library.  Furthermore, that head symbol should be seen
+        // as outside the scope of the quantifier.  For example, some standards express
+        // something like "the sum from 1 to n" with a compound head expression on a binding,
+        // including sum, 1, and n as subexpressions of that head expression.
+        replaceWithoutCapture(API.bindingHead(expr),variable,replacement)
     }
 }
 
@@ -379,8 +386,12 @@ export function alphaEquivalent(expr1, expr2, firstcall=true) {
     } else if (API.isBinding(expr1)) {
         const expr1_vars = API.bindingVariables(expr1);
         const expr2_vars = API.bindingVariables(expr2);
+        // Note that, while in the OpenMath implementation in this repository, binding heads
+        // are always symbols, that is not the case in every expression library.  So we use
+        // alphaEquivalent() below to recur inside the heads of bindings.  For OpenMath, this
+        // is equivalent to using API.equal().
         if ((expr1_vars.length != expr2_vars.length)
-            || !API.equal(API.bindingHead(expr1),API.bindingHead(expr2))) {
+            || !alphaEquivalent(API.bindingHead(expr1),API.bindingHead(expr2),false)) {
             return false;
         }
         // Alpha convert all bound variables in both expressions to
