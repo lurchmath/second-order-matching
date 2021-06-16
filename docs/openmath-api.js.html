@@ -74,12 +74,7 @@ const trueValue = OM.string('true');
  *     the essential functions
  *     {@link OpenMathAPI.variable variable},
  *     {@link OpenMathAPI.application application}, and
- *     {@link OpenMathAPI.binding binding}.  You will also need to write the function
- *     {@link OpenMathAPI.symbol symbol}, but if your expressions do not distinguish
- *     variables from other types of symbols, but consider all identifiers equal, you
- *     can use some prefix internally to distinguish them without exposing that detail
- *     outside of the API.  See the documentation for {@link OpenMathAPI.symbol symbol} for
- *     more specifics on this idea.&lt;/li>
+ *     {@link OpenMathAPI.binding binding}.&lt;/li>
  * &lt;li>It must be possible to mark a variable with the "is a metavariable" boolean flag.
  *     If your expression class does not support attributes on expressions, you can do
  *     this using, for example, a prefix used only internally, as in the previous point.
@@ -109,6 +104,14 @@ const trueValue = OM.string('true');
  *     variable appears free in an ancestor expression.  This should be do-able if your
  *     expression class can do all of the above things.  See the documentation for
  *     {@link OpenMathAPI.variableIsFree variableIsFree} for details.&lt;/li>
+ * &lt;li>You must provide an expression (typically an atomic, like a symbol or variable) that
+ *     will be used as the operator for metalinguistic expressions.  (Such expressions
+ *     arise when we write things like P(x) not as an expression in the language itself,
+ *     but to mean the computation of an expression in the language by substituting x into
+ *     a function P that generates expressions.)  You can use any expression that will not
+ *     be appearing naturally in any matching problem you provide to this package, so that
+ *     there will be no confusion or ambiguity.  An unusual symbol is sufficient, such as
+ *     one named "_expression_function" or something equally unlikely to occur elsewhere.&lt;/li>
  * &lt;/ul>
  * 
  * @namespace OpenMathAPI
@@ -256,32 +259,36 @@ export const API = {
     variable : (name) => OM.var(name),
 
     ////////////////////////////////////////////////////////////////////////////////
-    // Sometimes we wish to create a new symbol in the language.
-    // This may be a special type of expression, or a type of variable or string,
-    // based on the language.  In OpenMath, it is a first-class citizen.
+    // The matching package needs to be able to write expressions that have
+    // metalinguistic meaning.  To do so, it needs some unique expression to use to
+    // flag such metalinguistic expressions, so they are not confused with ordinary
+    // expressions.  We provide a single OpenMath symbol for this purpose.
     ////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * &lt;p>The &lt;code>symbol&lt;/code> function constructs an instance of your expression class that
-     * is a symbol with the given name, which should be distinct from a variable with
-     * the same name.&lt;/p>
+     * &lt;p>The &lt;code>metaFlag&lt;/code> member should be any instance of your expression class
+     * that is highly unlikely to occur naturally in any matching problem posed to this
+     * module, so that we can use it internally as a flag for special types of
+     * "meta-expressions."&lt;/p>
      * 
-     * &lt;p>If your class does not support more than one type of identifier, simply use a
-     * prefix.  For example, you can:&lt;/p>
+     * &lt;p>Specifically, we will use it as the head &lt;code>H&lt;/code> of an application
+     * &lt;code>H(P,x)&lt;/code> to indicate the application of an expression function &lt;code>P&lt;/code>
+     * to an expression &lt;code>x&lt;/code>, and we will also use it as the head of a binding
+     * &lt;code>H(v1,...,vn,B)&lt;/code> to indicate an expression function with input variables
+     * &lt;code>v1&lt;/code> through &lt;code>vn&lt;/code> and body &lt;code>B&lt;/code>.&lt;/p>
      * 
-     * &lt;ul>
-     * &lt;li>Make the variable contructor for the name &lt;code>N&lt;/code> create a variable named &lt;code>"v"+N&lt;/code>.&lt;/li>
-     * &lt;li>Make the symbol contructor for the name &lt;code>N&lt;/code> create a variable named &lt;code>"s"+N&lt;/code>.&lt;/li>
-     * &lt;li>Make the variable name function drop the one-letter prefix.&lt;/li>
-     * &lt;/ul>
+     * &lt;p>To create your own expression functions, you can simply construct a binding using
+     * a copy of the &lt;code>metaFlag&lt;/code> expression as the head, as shown in the previous
+     * paragraph.  To create your own expression function applications, you can simply
+     * construct an application like the &lt;code>H(P,x)&lt;/code> of the previous paragraph.
+     * Or alternately, you can use the {@link makeExpressionFunction makeExpressionFunction}
+     * and {@link makeExpressionFunctionApplication makeExpressionFunctionApplication}
+     * functions provided in this module.&lt;/p>
      * 
-     * &lt;p>The OpenMath implementation uses a constructor with a similar purpose that is
-     * built into the OpenMath module.&lt;/p>
-     * @function symbol
-     * @param {string} name - the name to use for the symbol
-     * @memberof OpenMathAPI
+     * &lt;p>The specific instance provided here will not be used other than for comparisons of
+     * equality.  Copies of this will be made to populate actual expressions.&lt;/p>
      */
-    symbol : (name) => OM.sym(name,'SecondOrderMatching'),
+    metaFlag : OM.sym('Meta','SecondOrderMatching'),
 
     ////////////////////////////////////////////////////////////////////////////////
     // Which expressions are function applications?
@@ -493,8 +500,8 @@ export const API = {
      * other instances of itself.&lt;/p>
      * 
      * &lt;p>If your expression class doesn't support adding attributes to expressions,
-     * you could use prefixes, as documented in {@link OpenMathAPI.symbol symbol},
-     * and simply change the "v" prefix to an "m" for metavariables.&lt;/p>
+     * you could use prefixes or suffixes to distinguish metavariables from
+     * non-metavariables.&lt;/p>
      * 
      * &lt;p>The OpenMath implementation uses the fact that OpenMath expressions can be
      * decorated with an arbitrary number of attributes.  We use one whose key is
@@ -555,7 +562,7 @@ export const API = {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Mon Jan 25 2021 15:56:38 GMT-0500 (Eastern Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Jun 16 2021 09:48:01 GMT-0400 (Eastern Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

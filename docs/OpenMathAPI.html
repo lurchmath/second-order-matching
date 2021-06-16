@@ -37,7 +37,7 @@
     <div class="container-overview">
     
         
-            <div class="description"><p>This namespace creates an API by which this package can use a simple JavaScriptimplementation of OpenMath to store and manipulate mathematical expressions.</p><p>As documented on the main page, it is not necessary for you touse OpenMath.  If you have your own class, you can create an object that wrapsyour expression class in an API spoken by this module, so that you need not convertyour custom expression types to/from OpenMath.</p><p>To do so, create a single object that maps names of functions in this module's APIto their implementations using your custom expression class.  To see how to getstarted, and how to connect the resulting object to this module, see the second codeexample on the main page of this documentation.</p><p>Every function documented below is explained in two ways: First, the generalrequirement of that element of the API is described without reference to OpenMathspecifically, so that those who are reading this for the purposes of writing theirown expression API have that information in general terms.  Secondly, the specificsof the OpenMath implementation in this file is described.</p><p>To enable you to write an API like the one below, your custom expression class musthave the following features.</p><ul><li>It must be a hierarchical structure (as in    filterSubexpressions) of objects that can    be variables (or at least identifiers more broadly), function applications,    bindings (that is, the application of quantifiers or quantifier-like symbols),    and optionally other atomic expressions as well.</li><li>It must be possible to tell when an instance is each of these things, so that you    can write the essential functions    <a href="OpenMathAPI.html#.isVariable">isVariable</a>,    <a href="OpenMathAPI.html#.isApplication">isApplication</a>, and    <a href="OpenMathAPI.html#.isBinding">isBinding</a>.</li><li>It must be possible to construct instances of each type, so that you can write    the essential functions    <a href="OpenMathAPI.html#.variable">variable</a>,    <a href="OpenMathAPI.html#.application">application</a>, and    <a href="OpenMathAPI.html#.binding">binding</a>.  You will also need to write the function    <a href="OpenMathAPI.html#.symbol">symbol</a>, but if your expressions do not distinguish    variables from other types of symbols, but consider all identifiers equal, you    can use some prefix internally to distinguish them without exposing that detail    outside of the API.  See the documentation for <a href="OpenMathAPI.html#.symbol">symbol</a> for    more specifics on this idea.</li><li>It must be possible to mark a variable with the "is a metavariable" boolean flag.    If your expression class does not support attributes on expressions, you can do    this using, for example, a prefix used only internally, as in the previous point.    See the documentation for <a href="OpenMathAPI.html#.setMetavariable">setMetavariable</a> for    more specifics on this idea.    This enables you to write    <a href="OpenMathAPI.html#.isMetavariable">isMetavariable</a>,    <a href="OpenMathAPI.html#.setMetavariable">setMetavariable</a>, and    <a href="OpenMathAPI.html#.clearMetavariable">clearMetavariable</a>.</li><li>It must be possible to query the essential details of each type of expression:    <ul>    <li>For a variable, you must be able to write        <a href="OpenMathAPI.html#.getVariableName">getVariableName</a>.    <li>For an application, you must be able to write        <a href="OpenMathAPI.html#.getChildren">getChildren</a>.  This treates the function application        like a LISP S-expression.  For example, <code>3+5</code> would be seen as <code>(+ 3 5)</code> and        should therefore return three children.    <li>For a binding, you must be able to write       <a href="OpenMathAPI.html#.bindingHead">bindingHead</a> (the quantifier or other head symbol),       <a href="OpenMathAPI.html#.bindingVariables">bindingVariables</a> (the array of bound variables),       <a href="OpenMathAPI.html#.bindingBody">bindingBody</a> (the body inside the expression).       For example, in the expression "for all x and y, x+y=y+x," the head is the       universal quantifier (the "for all" symbol), the bound variables are x and y,       and the body is the expression x+y=y+x.    </ul></li><li>You must be able to write a function that checks whether a given instance of a given    variable appears free in an ancestor expression.  This should be do-able if your    expression class can do all of the above things.  See the documentation for    <a href="OpenMathAPI.html#.variableIsFree">variableIsFree</a> for details.</li></ul></div>
+            <div class="description"><p>This namespace creates an API by which this package can use a simple JavaScriptimplementation of OpenMath to store and manipulate mathematical expressions.</p><p>As documented on the main page, it is not necessary for you touse OpenMath.  If you have your own class, you can create an object that wrapsyour expression class in an API spoken by this module, so that you need not convertyour custom expression types to/from OpenMath.</p><p>To do so, create a single object that maps names of functions in this module's APIto their implementations using your custom expression class.  To see how to getstarted, and how to connect the resulting object to this module, see the second codeexample on the main page of this documentation.</p><p>Every function documented below is explained in two ways: First, the generalrequirement of that element of the API is described without reference to OpenMathspecifically, so that those who are reading this for the purposes of writing theirown expression API have that information in general terms.  Secondly, the specificsof the OpenMath implementation in this file is described.</p><p>To enable you to write an API like the one below, your custom expression class musthave the following features.</p><ul><li>It must be a hierarchical structure (as in    filterSubexpressions) of objects that can    be variables (or at least identifiers more broadly), function applications,    bindings (that is, the application of quantifiers or quantifier-like symbols),    and optionally other atomic expressions as well.</li><li>It must be possible to tell when an instance is each of these things, so that you    can write the essential functions    <a href="OpenMathAPI.html#.isVariable">isVariable</a>,    <a href="OpenMathAPI.html#.isApplication">isApplication</a>, and    <a href="OpenMathAPI.html#.isBinding">isBinding</a>.</li><li>It must be possible to construct instances of each type, so that you can write    the essential functions    <a href="OpenMathAPI.html#.variable">variable</a>,    <a href="OpenMathAPI.html#.application">application</a>, and    <a href="OpenMathAPI.html#.binding">binding</a>.</li><li>It must be possible to mark a variable with the "is a metavariable" boolean flag.    If your expression class does not support attributes on expressions, you can do    this using, for example, a prefix used only internally, as in the previous point.    See the documentation for <a href="OpenMathAPI.html#.setMetavariable">setMetavariable</a> for    more specifics on this idea.    This enables you to write    <a href="OpenMathAPI.html#.isMetavariable">isMetavariable</a>,    <a href="OpenMathAPI.html#.setMetavariable">setMetavariable</a>, and    <a href="OpenMathAPI.html#.clearMetavariable">clearMetavariable</a>.</li><li>It must be possible to query the essential details of each type of expression:    <ul>    <li>For a variable, you must be able to write        <a href="OpenMathAPI.html#.getVariableName">getVariableName</a>.    <li>For an application, you must be able to write        <a href="OpenMathAPI.html#.getChildren">getChildren</a>.  This treates the function application        like a LISP S-expression.  For example, <code>3+5</code> would be seen as <code>(+ 3 5)</code> and        should therefore return three children.    <li>For a binding, you must be able to write       <a href="OpenMathAPI.html#.bindingHead">bindingHead</a> (the quantifier or other head symbol),       <a href="OpenMathAPI.html#.bindingVariables">bindingVariables</a> (the array of bound variables),       <a href="OpenMathAPI.html#.bindingBody">bindingBody</a> (the body inside the expression).       For example, in the expression "for all x and y, x+y=y+x," the head is the       universal quantifier (the "for all" symbol), the bound variables are x and y,       and the body is the expression x+y=y+x.    </ul></li><li>You must be able to write a function that checks whether a given instance of a given    variable appears free in an ancestor expression.  This should be do-able if your    expression class can do all of the above things.  See the documentation for    <a href="OpenMathAPI.html#.variableIsFree">variableIsFree</a> for details.</li><li>You must provide an expression (typically an atomic, like a symbol or variable) that    will be used as the operator for metalinguistic expressions.  (Such expressions    arise when we write things like P(x) not as an expression in the language itself,    but to mean the computation of an expression in the language by substituting x into    a function P that generates expressions.)  You can use any expression that will not    be appearing naturally in any matching problem you provide to this package, so that    there will be no confusion or ambiguity.  An unusual symbol is sufficient, such as    one named "_expression_function" or something equally unlikely to occur elsewhere.</li></ul></div>
         
 
         
@@ -212,7 +212,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line277">line 277</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line284">line 284</a>
     </li></ul></dd>
     
 
@@ -395,7 +395,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line337">line 337</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line344">line 344</a>
     </li></ul></dd>
     
 
@@ -532,7 +532,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line398">line 398</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line405">line 405</a>
     </li></ul></dd>
     
 
@@ -669,7 +669,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line357">line 357</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line364">line 364</a>
     </li></ul></dd>
     
 
@@ -806,7 +806,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line376">line 376</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line383">line 383</a>
     </li></ul></dd>
     
 
@@ -943,7 +943,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line499">line 499</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line506">line 506</a>
     </li></ul></dd>
     
 
@@ -1080,7 +1080,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line141">line 141</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line144">line 144</a>
     </li></ul></dd>
     
 
@@ -1240,7 +1240,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line152">line 152</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line155">line 155</a>
     </li></ul></dd>
     
 
@@ -1377,7 +1377,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line293">line 293</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line300">line 300</a>
     </li></ul></dd>
     
 
@@ -1514,7 +1514,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line204">line 204</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line207">line 207</a>
     </li></ul></dd>
     
 
@@ -1651,7 +1651,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="language.js.html">language.js</a>, <a href="language.js.html#line174">line 174</a>
+        <a href="language.js.html">language.js</a>, <a href="language.js.html#line170">line 170</a>
     </li></ul></dd>
     
 
@@ -1798,7 +1798,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line264">line 264</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line271">line 271</a>
     </li></ul></dd>
     
 
@@ -1935,7 +1935,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line322">line 322</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line329">line 329</a>
     </li></ul></dd>
     
 
@@ -2072,7 +2072,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line96">line 96</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line99">line 99</a>
     </li></ul></dd>
     
 
@@ -2209,7 +2209,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line482">line 482</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line489">line 489</a>
     </li></ul></dd>
     
 
@@ -2346,7 +2346,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line189">line 189</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line192">line 192</a>
     </li></ul></dd>
     
 
@@ -2506,7 +2506,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line166">line 166</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line169">line 169</a>
     </li></ul></dd>
     
 
@@ -2666,7 +2666,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line122">line 122</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line125">line 125</a>
     </li></ul></dd>
     
 
@@ -2710,7 +2710,7 @@
 
 
 <div class="description">
-    <p>The <code>setMetavariable</code> function takes an expression as input.  If it is nota variable or symbol, this function does nothing.  But if it is, then thisfunction adds to it an attribute (or any kind of mark) that will distinguishthe variable as a metavariable.  Note these important attributes of this mark:</p><ol><li>It affects only this instance of the variable.  Other variables with the    same name are not marked.</li><li>It affects copies made later of this instance.  That is, copying this    instance should copy the mark as well.</li><li>A test of equality between two variables of the same name, but one being    a metavariable and the other not, should yield a false result (not equal).    But two non-metavariables with the same name are equal,    as are two metavariables with the same name.</li></ol><p>The purpose of metavariables need not be documented here, but briefly,they are used when pattern matching, to distinguish a variablethat can match against any expression from a variable that can match onlyother instances of itself.</p><p>If your expression class doesn't support adding attributes to expressions,you could use prefixes, as documented in <a href="OpenMathAPI.html#.symbol">symbol</a>,and simply change the "v" prefix to an "m" for metavariables.</p><p>The OpenMath implementation uses the fact that OpenMath expressions can bedecorated with an arbitrary number of attributes.  We use one whose key isa special symbol defined earlier and whose value is the constant "true."</p>
+    <p>The <code>setMetavariable</code> function takes an expression as input.  If it is nota variable or symbol, this function does nothing.  But if it is, then thisfunction adds to it an attribute (or any kind of mark) that will distinguishthe variable as a metavariable.  Note these important attributes of this mark:</p><ol><li>It affects only this instance of the variable.  Other variables with the    same name are not marked.</li><li>It affects copies made later of this instance.  That is, copying this    instance should copy the mark as well.</li><li>A test of equality between two variables of the same name, but one being    a metavariable and the other not, should yield a false result (not equal).    But two non-metavariables with the same name are equal,    as are two metavariables with the same name.</li></ol><p>The purpose of metavariables need not be documented here, but briefly,they are used when pattern matching, to distinguish a variablethat can match against any expression from a variable that can match onlyother instances of itself.</p><p>If your expression class doesn't support adding attributes to expressions,you could use prefixes or suffixes to distinguish metavariables fromnon-metavariables.</p><p>The OpenMath implementation uses the fact that OpenMath expressions can bedecorated with an arbitrary number of attributes.  We use one whose key isa special symbol defined earlier and whose value is the constant "true."</p>
 </div>
 
 
@@ -2803,144 +2803,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line445">line 445</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id=".symbol"><span class="type-signature">(static) </span>symbol<span class="signature">(name)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>The <code>symbol</code> function constructs an instance of your expression class thatis a symbol with the given name, which should be distinct from a variable withthe same name.</p><p>If your class does not support more than one type of identifier, simply use aprefix.  For example, you can:</p><ul><li>Make the variable contructor for the name <code>N</code> create a variable named <code>"v"+N</code>.</li><li>Make the symbol contructor for the name <code>N</code> create a variable named <code>"s"+N</code>.</li><li>Make the variable name function drop the one-letter prefix.</li></ul><p>The OpenMath implementation uses a constructor with a similar purpose that isbuilt into the OpenMath module.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">the name to use for the symbol</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line236">line 236</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line452">line 452</a>
     </li></ul></dd>
     
 
@@ -3077,7 +2940,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line218">line 218</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line221">line 221</a>
     </li></ul></dd>
     
 
@@ -3237,7 +3100,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line418">line 418</a>
+        <a href="openmath-api.js.html">openmath-api.js</a>, <a href="openmath-api.js.html#line425">line 425</a>
     </li></ul></dd>
     
 
@@ -3289,7 +3152,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Mon Jan 25 2021 15:56:38 GMT-0500 (Eastern Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Jun 16 2021 09:48:01 GMT-0400 (Eastern Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
