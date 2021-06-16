@@ -25,7 +25,7 @@ class BasicExpr {
         } )
     }
     type () {
-        return this.text.length > 0 ? this.text[0] : this.children[0]
+        return this.text.length > 0 ? 'v' : this.children[0]
     }
     copy () {
         const result = this.children.length > 0 ?
@@ -52,6 +52,9 @@ class BasicExpr {
     }
     simpleEncode () { return this.toJSON() }
 }
+const BE = arg => new BasicExpr( arg )
+const EFA = (...args) => M.makeExpressionFunctionApplication( ...args )
+const EF = (...args) => M.makeExpressionFunction(args.slice(0,args.length-1),args[args.length-1])
 const API = {
     isExpression : (e) => e instanceof BasicExpr,
     filterSubexpressions : (e,f) => ( f(e) ? [ e ] : [ ] ).concat(
@@ -73,9 +76,8 @@ const API = {
         toReplace.parent = null
     },
     isVariable : (e) => e.type() === 'v',
-    getVariableName : (v) => v.text.substring( 2 ),
-    variable : (name) => BE( `v_${name}` ),
-    symbol : (name) => BE( `s_${name}` ),
+    getVariableName : (v) => v.text.substring(1),
+    variable : (name) => BE( `_${name}` ),
     isApplication : (e) => e.type() === 'a',
     application : (es) => BE( [ 'a', ...es ] ),
     getChildren : (a) => a.children.slice( 1 ),
@@ -92,11 +94,11 @@ const API = {
         }
         return true
     },
-    isMetavariable : (e) => API.isExpression(e) && e.text[1] === '*',
-    setMetavariable : (e) => e.text = `${e.text[0]}*${e.text.substring(2)}`,
-    clearMetavariable : (e) => e.text = `${e.text[0]}_${e.text.substring(2)}`
+    isMetavariable : (e) => API.isExpression(e) && e.text[0] === '*',
+    setMetavariable : (e) => e.text = `*${e.text.substring(1)}`,
+    clearMetavariable : (e) => e.text = `_${e.text.substring(1)}`,
+    metaFlag : BE( 'metaFlag' )
 };
-const BE = arg => new BasicExpr( arg )
 const VAR = name => API.variable( name )
 const MV = name => {
     const result = VAR( name )
@@ -109,8 +111,6 @@ const BIN = (...args) => {
     const body = args.pop()
     return API.binding( sym, args, body )
 }
-const EFA = (...args) => M.makeExpressionFunctionApplication( ...args )
-const EF = (...args) => M.makeExpressionFunction(args.slice(0,args.length-1),args[args.length-1])
 M.setAPI( API )
 
 // describe('The MatchingChallenge class (basic functionality)', () => {
@@ -1616,7 +1616,7 @@ describe('The MatchingChallenge class (solving)', () => {
 //         ////////// Test 56 //////////
 //         constraints = newConstraints(
 //             ['_P_of_0', 'gte(0,0)'],
-//             ['for.all[_k,implies(_P_of__k,SecondOrderMatching.EFA(_P,plus(_k,1)))]',
+//             ['for.all[_k,implies(_P_of__k,SecondOrderMatching.Meta(_P,plus(_k,1)))]',
 //              'for.all[n,implies(gte(n,0),gte(plus(n,1),0))]'],
 //             ['for.all[_n,_P_of__n]', 'for.all[n,gte(n,0)]'],
 //         );
@@ -1638,7 +1638,7 @@ describe('The MatchingChallenge class (solving)', () => {
 //         ////////// Test 57 //////////
 //         constraints = newConstraints(
 //             ['_P_of_0', 'eq(plus(0,0),0)'],
-//             ['for.all[_k,implies(_P_of__k,SecondOrderMatching.EFA(_P,plus(_k,1)))]',
+//             ['for.all[_k,implies(_P_of__k,SecondOrderMatching.Meta(_P,plus(_k,1)))]',
 //              'for.all[m,implies(eq(plus(m,0),m),eq(plus(plus(m,1),0),plus(m,1)))]'],
 //             ['for.all[_n,_P_of__n]', 'for.all[k,eq(plus(k,0),k)]'],
 //         );
@@ -1660,7 +1660,7 @@ describe('The MatchingChallenge class (solving)', () => {
 //         ////////// Test 58 //////////
 //         constraints = newConstraints(
 //             ['_P_of_0', 'P(0)'],
-//             ['for.all[_k,implies(_P_of__k,SecondOrderMatching.EFA(_P,plus(_k,1)))]',
+//             ['for.all[_k,implies(_P_of__k,SecondOrderMatching.Meta(_P,plus(_k,1)))]',
 //              'for.all[k,implies(P(k),P(plus(k,1)))]'],
 //             ['for.all[_n,_P_of__n]', 'for.all[n,P(n)]'],
 //         );
@@ -1682,7 +1682,7 @@ describe('The MatchingChallenge class (solving)', () => {
 //         ////////// Test 59 //////////
 //         constraints = newConstraints(
 //             ['_P_of_0', 'eq(7,5)'],
-//             ['for.all[_k,implies(_P_of__k,SecondOrderMatching.EFA(_P,plus(_k,1)))]',
+//             ['for.all[_k,implies(_P_of__k,SecondOrderMatching.Meta(_P,plus(_k,1)))]',
 //              'for.all[n,implies(eq(7,5),eq(7,5))]'],
 //             ['for.all[_n,_P_of__n]', 'for.all[n,eq(7,5)]'],
 //         );
@@ -1704,7 +1704,7 @@ describe('The MatchingChallenge class (solving)', () => {
 //         ////////// Test 60 //////////
 //         constraints = newConstraints(
 //             ['_P_of_0', 'R(n,1)'],
-//             ['for.all[_k,implies(_P_of__k,SecondOrderMatching.EFA(_P,plus(_k,1)))]',
+//             ['for.all[_k,implies(_P_of__k,SecondOrderMatching.Meta(_P,plus(_k,1)))]',
 //              'for.all[m,implies(R(m,1),R(plus(m,1),1))]'],
 //             ['for.all[_n,_P_of__n]', 'for.all[m,R(m,1)]'],
 //         );
@@ -1715,7 +1715,7 @@ describe('The MatchingChallenge class (solving)', () => {
 //         ////////// Test 61 //////////
 //         constraints = newConstraints(
 //             ['_P_of_0', 'gte(k,0)'],
-//             ['for.all[_k,implies(_P_of__k,SecondOrderMatching.EFA(_P,plus(_k,1)))]',
+//             ['for.all[_k,implies(_P_of__k,SecondOrderMatching.Meta(_P,plus(_k,1)))]',
 //              'for.all[k,implies(gte(k,k),gte(k,plus(k,1)))]'],
 //             ['for.all[_n,_P_of__n]', 'for.all[n,gte(n,k)]'],
 //         );
@@ -1726,7 +1726,7 @@ describe('The MatchingChallenge class (solving)', () => {
 //         ////////// Test 62 //////////
 //         constraints = newConstraints(
 //             ['_P_of_0', 'gte(n,0)'],
-//             ['for.all[_k,implies(_P_of__k,SecondOrderMatching.EFA(_P,plus(_k,1)))]',
+//             ['for.all[_k,implies(_P_of__k,SecondOrderMatching.Meta(_P,plus(_k,1)))]',
 //                 'for.all[k,implies(gte(n,k),gte(n,plus(k,1)))]'],
 //             ['for.all[_n,_P_of__n]', 'for.all[n,gte(n,n)]'],
 //         );
@@ -1737,7 +1737,7 @@ describe('The MatchingChallenge class (solving)', () => {
 //         ////////// Test 63 //////////
 //         constraints = newConstraints(
 //             ['_P_of_0', 'gte(0,0)'],
-//             ['for.all[_k,implies(_P_of__k,SecondOrderMatching.EFA(_P,plus(_k,1)))]',
+//             ['for.all[_k,implies(_P_of__k,SecondOrderMatching.Meta(_P,plus(_k,1)))]',
 //                 'for.all[n,implies(gte(n,0),gte(0,plus(n,1)))]'],
 //             ['for.all[_n,_P_of__n]', 'for.all[n,gte(0,0)]'],
 //         );

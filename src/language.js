@@ -8,7 +8,7 @@
 
 "use strict"
 
-let API, expressionFunctionSymbol, expressionFunctionApplicationSymbol;
+let API;
 /**
  * Provide an API by which this module can deal with expressions.  More needs
  * to be documented about this; the only existing API is the OpenMath API.
@@ -16,11 +16,7 @@ let API, expressionFunctionSymbol, expressionFunctionApplicationSymbol;
  * @param {Object} APIObject - the namespace containing all expression-related
  *   functions
  */
-export function setAPI ( APIObject ) {
-    API = APIObject;
-    expressionFunctionSymbol = API.symbol('EF');
-    expressionFunctionApplicationSymbol = API.symbol('EFA')
-}
+export const setAPI = APIObject => API = APIObject;
 /**
  * Get the API stored in the global variable in this module, as set by
  * setAPI().
@@ -50,7 +46,7 @@ export function makeExpressionFunction(variables, body) {
 all elements of first argument must have type variable';
         }
     }
-    return API.binding(expressionFunctionSymbol, variables, body);
+    return API.binding(API.metaFlag, variables, body);
 }
 
 /**
@@ -61,7 +57,7 @@ export function isExpressionFunction(expression) {
     return (
         API.isExpression(expression)
         && API.isBinding(expression)
-        && API.equal(API.bindingHead(expression),expressionFunctionSymbol)
+        && API.equal(API.bindingHead(expression),API.metaFlag)
     );
 }
 
@@ -81,7 +77,7 @@ export function makeExpressionFunctionApplication(func, args) {
     if (!(args instanceof Array)) {
         args = [args]
     }
-    return API.application([expressionFunctionApplicationSymbol, func, ...args]);
+    return API.application([API.metaFlag, func, ...args]);
 }
 
 /**
@@ -91,7 +87,7 @@ export function isExpressionFunctionApplication(expression) {
     return (
         API.isExpression(expression)
         && API.isApplication(expression)
-        && API.equal(API.getChildren(expression)[0],expressionFunctionApplicationSymbol)
+        && API.equal(API.getChildren(expression)[0],API.metaFlag)
     );
 }
 

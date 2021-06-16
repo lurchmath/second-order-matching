@@ -157,7 +157,7 @@ export const newMC = (constraints) => {
  */
 export const lambdaString = (s) => {
     let [v, body] = s.split(/\.(.+)/);
-    return ('SecondOrderMatching.EF[' + v + "," + body + ']');
+    return ('SecondOrderMatching.Meta[' + v + "," + body + ']');
 }
 
 /**

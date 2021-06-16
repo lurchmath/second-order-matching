@@ -6,7 +6,7 @@ algorithm for second-order pattern matching.  You can read a summary of the
 algorithm [in this paper](https://dl.acm.org/doi/10.1145/1637837.1637839),
 and a summary of that paper in [a PDF file in this repository](https://github.com/lurchmath/second-order-matching/blob/master/Summary%20of%20Moore%20on%20Huet-Lang.pdf).
 
-This implementation was written by George Tillisch in Summer 2019 and is
+This implementation was written by George Tillisch in Summer 2019 and has been
 maintained by Nathan Carter since then.
 
 Working with this code requires that you have some class defined for representing
